@@ -1,0 +1,21 @@
+name: CI
+
+on: push
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Prepare
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - name: Dependencies
+        run: flutter pub get
+      - name: Analyze
+        run: dart analyze
+      - name: Test
+        run: flutter test
