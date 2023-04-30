@@ -72,7 +72,6 @@ class HttpClient {
   String parseResponse(http.Response response) {
     if (response.statusCode < 200 || response.statusCode > 299) {
       // TODO parse error body
-      print(response.body);
       throw Exception('Server request failed with status code ${response.statusCode}');
     }
     return response.body;

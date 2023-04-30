@@ -28,8 +28,8 @@ class Auth implements DescopeAuth {
 
 extension on UserResponse {
   MeResponse convert() {
-    final emailValue = (email ?? "").isNotEmpty ? email : null;
-    final phoneValue = (phone ?? "").isNotEmpty ? phone : null;
+    final emailValue = (email ?? '').isNotEmpty ? email : null;
+    final phoneValue = (phone ?? '').isNotEmpty ? phone : null;
     return MeResponse(userId, loginIds, name, picture, emailValue, verifiedEmail, phoneValue, verifiedPhone);
   }
 }
