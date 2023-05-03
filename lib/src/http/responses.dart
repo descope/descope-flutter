@@ -1,7 +1,10 @@
 import 'dart:typed_data';
 import 'package:json_annotation/json_annotation.dart';
+import 'http_client.dart';
 
 part 'responses.g.dart';
+
+const refreshCookieName = "DSR";
 
 @JsonSerializable()
 class JWTServerResponse {
@@ -12,6 +15,9 @@ class JWTServerResponse {
 
   JWTServerResponse(this.sessionJwt, this.refreshJwt, this.user, this.firstSeen);
   static var fromJson = _$JWTServerResponseFromJson;
+  static var decoder = _parseHeaders(fromJson, (response, headers) {
+    response.refreshJwt = headers[refreshCookieName] ?? response.refreshJwt;
+  });
 }
 
 @JsonSerializable()
@@ -21,6 +27,7 @@ class MaskedAddressServerResponse {
 
   MaskedAddressServerResponse(this.maskedEmail, this.maskedPhone);
   static var fromJson = _$MaskedAddressServerResponseFromJson;
+  static var decoder = _ignoreHeaders(fromJson);
 }
 
 @JsonSerializable()
@@ -36,6 +43,7 @@ class UserResponse {
 
   UserResponse(this.userId, this.loginIds, this.name, this.picture, this.email, this.verifiedEmail, this.phone, this.verifiedPhone);
   static var fromJson = _$UserResponseFromJson;
+  static var decoder = _ignoreHeaders(fromJson);
 }
 
 @JsonSerializable()
@@ -48,6 +56,7 @@ class PasswordPolicyServerResponse {
 
   PasswordPolicyServerResponse(this.minLength, this.lowercase, this.uppercase, this.number, this.nonAlphanumeric);
   static var fromJson = _$PasswordPolicyServerResponseFromJson;
+  static var decoder = _ignoreHeaders(fromJson);
 }
 
 @JsonSerializable()
@@ -58,6 +67,7 @@ class EnchantedLinkServerResponse {
 
   EnchantedLinkServerResponse(this.linkId, this.pendingRef, this.maskedEmail);
   static var fromJson = _$EnchantedLinkServerResponseFromJson;
+  static var decoder = _ignoreHeaders(fromJson);
 }
 
 @JsonSerializable()
@@ -69,6 +79,7 @@ class TotpServerResponse {
 
   TotpServerResponse(this.provisioningUrl, this.image, this.key);
   static var fromJson = _$TotpServerResponseFromJson;
+  static var decoder = _ignoreHeaders(fromJson);
 }
 
 @JsonSerializable()
@@ -77,6 +88,7 @@ class OAuthServerResponse {
 
   OAuthServerResponse(this.url);
   static var fromJson = _$OAuthServerResponseFromJson;
+  static var decoder = _ignoreHeaders(fromJson);
 }
 
 @JsonSerializable()
@@ -85,6 +97,7 @@ class SsoServerResponse {
 
   SsoServerResponse(this.url);
   static var fromJson = _$SsoServerResponseFromJson;
+  static var decoder = _ignoreHeaders(fromJson);
 }
 
 class Uint8ListConverter implements JsonConverter<Uint8List, List<int>> {
@@ -99,4 +112,16 @@ class Uint8ListConverter implements JsonConverter<Uint8List, List<int>> {
   List<int> toJson(Uint8List object) {
     return object.toList();
   }
+}
+
+ResponseDecoder<T> _ignoreHeaders<T>(T Function(Map<String, dynamic>) fromJson) {
+  return (json, headers) => fromJson(json);
+}
+
+ResponseDecoder<T> _parseHeaders<T>(T Function(Map<String, dynamic>) fromJson, void Function(T, Map<String, String>) parser) {
+  return (json, headers) {
+    final response = fromJson(json);
+    parser(response, headers);
+    return response;
+  };
 }

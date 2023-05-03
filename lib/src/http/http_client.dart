@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-typedef ResponseDecoder<T> = T Function(Map<String, dynamic>);
+typedef ResponseDecoder<T> = T Function(Map<String, dynamic> json, Map<String, String> headers);
 
-ResponseDecoder<void> emptyResponse = (json) => {};
+ResponseDecoder<void> emptyResponse = (json, headers) => {};
 
 class HttpClient {
   final String baseURL;
@@ -39,7 +39,7 @@ class HttpClient {
     final response = await sendRequest(request);
     final data = parseResponse(response);
     final json = jsonDecode(data) as Map<String, dynamic>;
-    return decoder(json);
+    return decoder(json, response.headers);
   }
 
   http.Request makeRequest(String route, String method, Map<String, String> headers, Map<String, String> params, String? body) {

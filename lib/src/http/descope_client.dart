@@ -11,31 +11,31 @@ class DescopeClient extends HttpClient {
   // OTP
 
   Future<MaskedAddressServerResponse> otpSignUp(DeliveryMethod method, String loginId, User? user) {
-    return post('otp/signup/${method.name}', MaskedAddressServerResponse.fromJson, body: {
+    return post('otp/signup/${method.name}', MaskedAddressServerResponse.decoder, body: {
       'loginId': loginId,
       'user': user?.toMap(),
     });
   }
 
   Future<MaskedAddressServerResponse> otpSignIn(DeliveryMethod method, String loginId) {
-    return post('otp/signin/${method.name}', MaskedAddressServerResponse.fromJson, body: {
+    return post('otp/signin/${method.name}', MaskedAddressServerResponse.decoder, body: {
       'loginId': loginId,
     });
   }
 
   Future<MaskedAddressServerResponse> otpSignUpIn(DeliveryMethod method, String loginId) {
-    return post('otp/signup-in/${method.name}', MaskedAddressServerResponse.fromJson, body: {'loginId': loginId});
+    return post('otp/signup-in/${method.name}', MaskedAddressServerResponse.decoder, body: {'loginId': loginId});
   }
 
   Future<JWTServerResponse> otpVerify(DeliveryMethod method, String loginId, String code) {
-    return post('otp/verify/${method.name}', JWTServerResponse.fromJson, body: {
+    return post('otp/verify/${method.name}', JWTServerResponse.decoder, body: {
       'loginId': loginId,
       'code': code,
     });
   }
 
   Future<MaskedAddressServerResponse> otpUpdateEmail(String email, String loginId, String refreshJwt) {
-    return post('otp/update/email', MaskedAddressServerResponse.fromJson, headers: authorization(refreshJwt), body: {
+    return post('otp/update/email', MaskedAddressServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
       'email': email,
     });
@@ -43,7 +43,7 @@ class DescopeClient extends HttpClient {
 
   Future<MaskedAddressServerResponse> otpUpdatePhone(String phone, DeliveryMethod method, String loginId, String refreshJwt) {
     method.ensurePhoneMethod();
-    return post('otp/update/phone/${method.name}', MaskedAddressServerResponse.fromJson, headers: authorization(refreshJwt), body: {
+    return post('otp/update/phone/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
       'phone': phone,
     });
@@ -52,21 +52,21 @@ class DescopeClient extends HttpClient {
   // TOTP
 
   Future<TotpServerResponse> totpSignUp(String loginId, User? user) {
-    return post('totp/signup', TotpServerResponse.fromJson, body: {
+    return post('totp/signup', TotpServerResponse.decoder, body: {
       'loginId': loginId,
       'user': user?.toMap(),
     });
   }
 
   Future<JWTServerResponse> totpVerify(String loginId, String code) {
-    return post('totp/verify', JWTServerResponse.fromJson, body: {
+    return post('totp/verify', JWTServerResponse.decoder, body: {
       'loginId': loginId,
       'code': code,
     });
   }
 
   Future<TotpServerResponse> totpUpdate(String loginId, String refreshJwt) {
-    return post('totp/update', TotpServerResponse.fromJson, headers: authorization(refreshJwt), body: {
+    return post('totp/update', TotpServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
     });
   }
@@ -74,7 +74,7 @@ class DescopeClient extends HttpClient {
   // Password
 
   Future<JWTServerResponse> passwordSignUp(String loginId, String password, [User? user]) {
-    return post('password/signup', JWTServerResponse.fromJson, body: {
+    return post('password/signup', JWTServerResponse.decoder, body: {
       'loginId': loginId,
       'password': password,
       'user': user?.toMap(),
@@ -82,7 +82,7 @@ class DescopeClient extends HttpClient {
   }
 
   Future<JWTServerResponse> passwordSignIn(String loginId, String password) {
-    return post('password/signin', JWTServerResponse.fromJson, body: {
+    return post('password/signin', JWTServerResponse.decoder, body: {
       'loginId': loginId,
       'password': password,
     });
@@ -111,13 +111,13 @@ class DescopeClient extends HttpClient {
   }
 
   Future<PasswordPolicyServerResponse> passwordGetPolicy() {
-    return get('password/reset', PasswordPolicyServerResponse.fromJson);
+    return get('password/reset', PasswordPolicyServerResponse.decoder);
   }
 
   // Magic Link
 
   Future<MaskedAddressServerResponse> magicLinkSignUp(DeliveryMethod method, String loginId, User? user, String? uri) {
-    return post('magiclink/signup/${method.name})', MaskedAddressServerResponse.fromJson, body: {
+    return post('magiclink/signup/${method.name})', MaskedAddressServerResponse.decoder, body: {
       'loginId': loginId,
       'user': user?.toMap(),
       'uri': uri,
@@ -125,27 +125,27 @@ class DescopeClient extends HttpClient {
   }
 
   Future<MaskedAddressServerResponse> magicLinkSignIn(DeliveryMethod method, String loginId, String? uri) {
-    return post('magiclink/signin/${method.name}', MaskedAddressServerResponse.fromJson, body: {
+    return post('magiclink/signin/${method.name}', MaskedAddressServerResponse.decoder, body: {
       'loginId': loginId,
       'uri': uri,
     });
   }
 
   Future<MaskedAddressServerResponse> magicLinkSignUpOrIn(DeliveryMethod method, String loginId, String? uri) {
-    return post('magiclink/signup-in/${method.name}', MaskedAddressServerResponse.fromJson, body: {
+    return post('magiclink/signup-in/${method.name}', MaskedAddressServerResponse.decoder, body: {
       'loginId': loginId,
       'uri': uri,
     });
   }
 
   Future<JWTServerResponse> magicLinkVerify(String token) {
-    return post('magiclink/verify', JWTServerResponse.fromJson, body: {
+    return post('magiclink/verify', JWTServerResponse.decoder, body: {
       'token': token,
     });
   }
 
   Future<MaskedAddressServerResponse> magicLinkUpdateEmail(String email, String loginId, String? uri, String refreshJwt) {
-    return post('magiclink/update/email', MaskedAddressServerResponse.fromJson, headers: authorization(refreshJwt), body: {
+    return post('magiclink/update/email', MaskedAddressServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
       'email': email,
       'uri': uri,
@@ -154,7 +154,7 @@ class DescopeClient extends HttpClient {
 
   Future<MaskedAddressServerResponse> magicLinkUpdatePhone(String phone, DeliveryMethod method, String loginId, String? uri, String refreshJwt) {
     method.ensurePhoneMethod();
-    return post('magiclink/update/phone/${method.name}', MaskedAddressServerResponse.fromJson, headers: authorization(refreshJwt), body: {
+    return post('magiclink/update/phone/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
       'phone': phone,
       'uri': uri,
@@ -164,7 +164,7 @@ class DescopeClient extends HttpClient {
   // Enchanted Link
 
   Future<EnchantedLinkServerResponse> enchantedLinkSignUp(String loginId, User? user, String? uri) {
-    return post('enchantedlink/signup/email', EnchantedLinkServerResponse.fromJson, body: {
+    return post('enchantedlink/signup/email', EnchantedLinkServerResponse.decoder, body: {
       'loginId': loginId,
       'user': user?.toMap(),
       'uri': uri,
@@ -172,21 +172,21 @@ class DescopeClient extends HttpClient {
   }
 
   Future<EnchantedLinkServerResponse> enchantedLinkSignIn(String loginId, String? uri) {
-    return post('enchantedlink/signin/email', EnchantedLinkServerResponse.fromJson, body: {
+    return post('enchantedlink/signin/email', EnchantedLinkServerResponse.decoder, body: {
       'loginId': loginId,
       'uri': uri,
     });
   }
 
   Future<EnchantedLinkServerResponse> enchantedLinkSignUpOrIn(String loginId, String? uri) {
-    return post('enchantedlink/signup-in/email', EnchantedLinkServerResponse.fromJson, body: {
+    return post('enchantedlink/signup-in/email', EnchantedLinkServerResponse.decoder, body: {
       'loginId': loginId,
       'uri': uri,
     });
   }
 
   Future<EnchantedLinkServerResponse> enchantedLinkUpdateEmail(String email, String loginId, String? uri, String refreshJwt) {
-    return post('enchantedlink/update/email', EnchantedLinkServerResponse.fromJson, headers: authorization(refreshJwt), body: {
+    return post('enchantedlink/update/email', EnchantedLinkServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
       'email': email,
       'uri': uri,
@@ -194,7 +194,7 @@ class DescopeClient extends HttpClient {
   }
 
   Future<JWTServerResponse> enchantedLinkPendingSession(String pendingRef) {
-    return post('enchantedlink/pending-session', JWTServerResponse.fromJson, body: {
+    return post('enchantedlink/pending-session', JWTServerResponse.decoder, body: {
       'pendingRef': pendingRef,
     });
   }
@@ -202,14 +202,14 @@ class DescopeClient extends HttpClient {
   // OAuth
 
   Future<OAuthServerResponse> oauthStart(OAuthProvider provider, String? redirectUrl) {
-    return post('oauth/authorize', OAuthServerResponse.fromJson, params: {
+    return post('oauth/authorize', OAuthServerResponse.decoder, params: {
       'provider': provider.name,
       'redirectURL': redirectUrl,
     });
   }
 
   Future<JWTServerResponse> oauthExchange(String code) {
-    return post('oauth/exchange', JWTServerResponse.fromJson, body: {
+    return post('oauth/exchange', JWTServerResponse.decoder, body: {
       'code': code,
     });
   }
@@ -217,14 +217,14 @@ class DescopeClient extends HttpClient {
   // SSO
 
   Future<SsoServerResponse> ssoStart(String emailOrTenantId, String? redirectUrl) {
-    return post('saml/authorize', SsoServerResponse.fromJson, params: {
+    return post('saml/authorize', SsoServerResponse.decoder, params: {
       'tenant': emailOrTenantId,
       'redirectURL': redirectUrl,
     });
   }
 
   Future<JWTServerResponse> ssoExchange(String code) {
-    return post('saml/exchange', JWTServerResponse.fromJson, body: {
+    return post('saml/exchange', JWTServerResponse.decoder, body: {
       'code': code,
     });
   }
@@ -232,11 +232,11 @@ class DescopeClient extends HttpClient {
   // Others
 
   Future<UserResponse> me(String refreshJwt) {
-    return get('me', UserResponse.fromJson, headers: authorization(refreshJwt));
+    return get('me', UserResponse.decoder, headers: authorization(refreshJwt));
   }
 
   Future<JWTServerResponse> refresh(String refreshJwt) {
-    return post('refresh', JWTServerResponse.fromJson, headers: authorization(refreshJwt));
+    return post('refresh', JWTServerResponse.decoder, headers: authorization(refreshJwt));
   }
 
   Future<void> logout(String refreshJwt) {
