@@ -10,8 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^0.13.5
-  json_annotation: ^4.8.0
+  http: 0.13.6
+  json_annotation: 4.8.1
 
 dev_dependencies:
   flutter_test:
