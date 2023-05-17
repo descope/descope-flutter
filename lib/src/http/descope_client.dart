@@ -111,7 +111,7 @@ class DescopeClient extends HttpClient {
   }
 
   Future<PasswordPolicyServerResponse> passwordGetPolicy() {
-    return get('password/reset', PasswordPolicyServerResponse.decoder);
+    return get('password/policy', PasswordPolicyServerResponse.decoder);
   }
 
   // Magic Link
