@@ -87,7 +87,7 @@ abstract class DescopeTotp {
 
   /// Authenticates a new user using a TOTP.
   ///
-  /// This function creates a mew user identified by [loginId] and
+  /// This function creates a new user identified by [loginId] and
   /// the optional information provided on via the [user] object.
   /// It returns a [TotpResponse.key] (seed) that allows
   /// authenticator apps to generate TOTP codes. The same information
@@ -364,7 +364,7 @@ abstract class DescopeOAuth {
 }
 
 
-/// Authenticate a user using a SSO.
+/// Authenticate a user using SSO.
 ///
 /// Use the Descope console to configure your SSO details in order for this method to work properly.
 ///
@@ -375,11 +375,11 @@ abstract class DescopeSso {
   /// Starts an SSO redirect chain to authenticate a user.
   ///
   /// This function returns a URL to redirect to in order to
-  /// authenticate the user against the chosen [provider].
+  /// authenticate the user according to the provided [emailOrTenantId].
   ///
   /// It's recommended to use `flutter_web_auth` to perform the authentication.
   ///
-  /// - Important: Make sure a default OAuth redirect URL is configured
+  /// - Important: Make sure a SSO is set up correctly and a redirect URL is configured
   ///     in the Descope console, or provided by this call via [redirectUrl].
   Future<String> start({required String emailOrTenantId, String? redirectUrl});
 
