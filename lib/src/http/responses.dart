@@ -6,7 +6,7 @@ part 'responses.g.dart';
 
 const refreshCookieName = "DSR";
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class JWTServerResponse {
   String sessionJwt;
   String? refreshJwt;
@@ -20,7 +20,7 @@ class JWTServerResponse {
   });
 }
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class MaskedAddressServerResponse {
   String? maskedEmail;
   String? maskedPhone;
@@ -30,7 +30,7 @@ class MaskedAddressServerResponse {
   static var decoder = _ignoreHeaders(fromJson);
 }
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class UserResponse {
   String userId;
   List<String> loginIds;
@@ -46,7 +46,7 @@ class UserResponse {
   static var decoder = _ignoreHeaders(fromJson);
 }
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class PasswordPolicyServerResponse {
   int minLength;
   bool lowercase;
@@ -59,7 +59,7 @@ class PasswordPolicyServerResponse {
   static var decoder = _ignoreHeaders(fromJson);
 }
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class EnchantedLinkServerResponse {
   String linkId;
   String pendingRef;
@@ -70,7 +70,7 @@ class EnchantedLinkServerResponse {
   static var decoder = _ignoreHeaders(fromJson);
 }
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class TotpServerResponse {
   final String provisioningUrl;
   @Uint8ListConverter()
@@ -82,7 +82,7 @@ class TotpServerResponse {
   static var decoder = _ignoreHeaders(fromJson);
 }
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class OAuthServerResponse {
   final String url;
 
@@ -91,7 +91,7 @@ class OAuthServerResponse {
   static var decoder = _ignoreHeaders(fromJson);
 }
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class SsoServerResponse {
   final String url;
 
