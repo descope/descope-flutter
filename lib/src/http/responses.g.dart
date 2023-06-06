@@ -16,27 +16,12 @@ JWTServerResponse _$JWTServerResponseFromJson(Map<String, dynamic> json) =>
       json['firstSeen'] as bool,
     );
 
-Map<String, dynamic> _$JWTServerResponseToJson(JWTServerResponse instance) =>
-    <String, dynamic>{
-      'sessionJwt': instance.sessionJwt,
-      'refreshJwt': instance.refreshJwt,
-      'user': instance.user,
-      'firstSeen': instance.firstSeen,
-    };
-
 MaskedAddressServerResponse _$MaskedAddressServerResponseFromJson(
         Map<String, dynamic> json) =>
     MaskedAddressServerResponse(
       json['maskedEmail'] as String?,
       json['maskedPhone'] as String?,
     );
-
-Map<String, dynamic> _$MaskedAddressServerResponseToJson(
-        MaskedAddressServerResponse instance) =>
-    <String, dynamic>{
-      'maskedEmail': instance.maskedEmail,
-      'maskedPhone': instance.maskedPhone,
-    };
 
 UserResponse _$UserResponseFromJson(Map<String, dynamic> json) => UserResponse(
       json['userId'] as String,
@@ -49,18 +34,6 @@ UserResponse _$UserResponseFromJson(Map<String, dynamic> json) => UserResponse(
       json['verifiedPhone'] as bool,
     );
 
-Map<String, dynamic> _$UserResponseToJson(UserResponse instance) =>
-    <String, dynamic>{
-      'userId': instance.userId,
-      'loginIds': instance.loginIds,
-      'name': instance.name,
-      'picture': instance.picture,
-      'email': instance.email,
-      'verifiedEmail': instance.verifiedEmail,
-      'phone': instance.phone,
-      'verifiedPhone': instance.verifiedPhone,
-    };
-
 PasswordPolicyServerResponse _$PasswordPolicyServerResponseFromJson(
         Map<String, dynamic> json) =>
     PasswordPolicyServerResponse(
@@ -71,16 +44,6 @@ PasswordPolicyServerResponse _$PasswordPolicyServerResponseFromJson(
       json['nonAlphanumeric'] as bool,
     );
 
-Map<String, dynamic> _$PasswordPolicyServerResponseToJson(
-        PasswordPolicyServerResponse instance) =>
-    <String, dynamic>{
-      'minLength': instance.minLength,
-      'lowercase': instance.lowercase,
-      'uppercase': instance.uppercase,
-      'number': instance.number,
-      'nonAlphanumeric': instance.nonAlphanumeric,
-    };
-
 EnchantedLinkServerResponse _$EnchantedLinkServerResponseFromJson(
         Map<String, dynamic> json) =>
     EnchantedLinkServerResponse(
@@ -89,14 +52,6 @@ EnchantedLinkServerResponse _$EnchantedLinkServerResponseFromJson(
       json['maskedEmail'] as String,
     );
 
-Map<String, dynamic> _$EnchantedLinkServerResponseToJson(
-        EnchantedLinkServerResponse instance) =>
-    <String, dynamic>{
-      'linkId': instance.linkId,
-      'pendingRef': instance.pendingRef,
-      'maskedEmail': instance.maskedEmail,
-    };
-
 TotpServerResponse _$TotpServerResponseFromJson(Map<String, dynamic> json) =>
     TotpServerResponse(
       json['provisioningUrl'] as String,
@@ -104,30 +59,12 @@ TotpServerResponse _$TotpServerResponseFromJson(Map<String, dynamic> json) =>
       json['key'] as String,
     );
 
-Map<String, dynamic> _$TotpServerResponseToJson(TotpServerResponse instance) =>
-    <String, dynamic>{
-      'provisioningUrl': instance.provisioningUrl,
-      'image': const Uint8ListConverter().toJson(instance.image),
-      'key': instance.key,
-    };
-
 OAuthServerResponse _$OAuthServerResponseFromJson(Map<String, dynamic> json) =>
     OAuthServerResponse(
       json['url'] as String,
     );
 
-Map<String, dynamic> _$OAuthServerResponseToJson(
-        OAuthServerResponse instance) =>
-    <String, dynamic>{
-      'url': instance.url,
-    };
-
 SsoServerResponse _$SsoServerResponseFromJson(Map<String, dynamic> json) =>
     SsoServerResponse(
       json['url'] as String,
     );
-
-Map<String, dynamic> _$SsoServerResponseToJson(SsoServerResponse instance) =>
-    <String, dynamic>{
-      'url': instance.url,
-    };
