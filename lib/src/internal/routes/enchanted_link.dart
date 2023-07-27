@@ -13,8 +13,8 @@ class EnchantedLink implements DescopeEnchantedLink {
   EnchantedLink(this.client);
 
   @override
-  Future<EnchantedLinkResponse> signUp({required String loginId, User? user, String? uri}) async {
-    return (await client.enchantedLinkSignUp(loginId, user, uri)).convert();
+  Future<EnchantedLinkResponse> signUp({required String loginId, SignUpDetails? details, String? uri}) async {
+    return (await client.enchantedLinkSignUp(loginId, details, uri)).convert();
   }
 
   @override

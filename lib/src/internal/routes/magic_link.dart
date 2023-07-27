@@ -10,8 +10,8 @@ class MagicLink implements DescopeMagicLink {
   MagicLink(this.client);
 
   @override
-  Future<String> signUp({required DeliveryMethod method, required String loginId, User? user, String? uri}) async {
-    return (await client.magicLinkSignUp(method, loginId, user, uri)).convert(method);
+  Future<String> signUp({required DeliveryMethod method, required String loginId, SignUpDetails? details, String? uri}) async {
+    return (await client.magicLinkSignUp(method, loginId, details, uri)).convert(method);
   }
 
   @override

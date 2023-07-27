@@ -1,7 +1,7 @@
-import 'package:descope/src/types/responses.dart';
-
 import '../session/session.dart';
 import '../types/others.dart';
+import '../types/responses.dart';
+import '../types/user.dart';
 
 /// General authentication functions
 abstract class DescopeAuth {
@@ -9,7 +9,7 @@ abstract class DescopeAuth {
   ///
   /// The user must have an active [DescopeSession] whose [refreshJwt] should be
   /// passed as a parameter to this function.
-  Future<MeResponse> me(String refreshJwt);
+  Future<DescopeUser> me(String refreshJwt);
 
   /// Refreshes a [DescopeSession].
   ///
@@ -32,9 +32,9 @@ abstract class DescopeOtp {
   /// The OTP code will be sent to the user identified by [loginId]
   /// via a delivery [method] of choice.
   /// - Important: Make sure the delivery information corresponding with
-  ///     the delivery [method] is given either in the optional [user] parameter or as
+  ///     the delivery [method] is given either in the optional [details] parameter or as
   ///     the [loginId] itself, i.e., the email address, phone number, etc.
-  Future<String> signUp({required DeliveryMethod method, required String loginId, User? user});
+  Future<String> signUp({required DeliveryMethod method, required String loginId, SignUpDetails? details});
 
   /// Authenticates an existing user using an OTP
   ///
@@ -85,11 +85,11 @@ abstract class DescopeTotp {
   /// Authenticates a new user using a TOTP.
   ///
   /// This function creates a new user identified by [loginId] and
-  /// the optional information provided on via the [user] object.
+  /// the optional information provided on via the [details] object.
   /// It returns a [TotpResponse.key] (seed) that allows
   /// authenticator apps to generate TOTP codes. The same information
   /// is returned in multiple formats.
-  Future<TotpResponse> signUp({required String loginId, User? user});
+  Future<TotpResponse> signUp({required String loginId, SignUpDetails? details});
 
   /// Updates an existing user by adding TOTP as an authentication method.
   ///
@@ -116,9 +116,9 @@ abstract class DescopePassword {
   /// or any other unique identifier. The provided [password] will allow
   /// the user to sign in in the future and must conform to the password policy
   /// defined in the password settings in the Descope console.
-  /// The optional [user] provides additional details about the user signing up.
+  /// The optional [details] provides additional details about the user signing up.
   /// Returns an [AuthenticationResponse] upon successful authentication.
-  Future<AuthenticationResponse> signUp({required String loginId, required String password, User? user});
+  Future<AuthenticationResponse> signUp({required String loginId, required String password, SignUpDetails? details});
 
   /// Authenticates an existing user using a password.
   ///
@@ -179,12 +179,12 @@ abstract class DescopeMagicLink {
   /// The magic link will be sent to the user identified by [loginId]
   /// via a delivery [method] of choice.
   /// - Important: Make sure the delivery information corresponding with
-  ///     the delivery [method] is given either in the optional [user] parameter or as
+  ///     the delivery [method] is given either in the optional [details] parameter or as
   ///     the [loginId] itself, i.e., the email address, phone number, etc.
   ///
   /// - Important: Make sure a default magic link URI is configured
   ///     in the Descope console, or provided by this call via [uri].
-  Future<String> signUp({required DeliveryMethod method, required String loginId, User? user, String? uri});
+  Future<String> signUp({required DeliveryMethod method, required String loginId, SignUpDetails? details, String? uri});
 
   /// Authenticates an existing user using a magic link.
   ///
@@ -252,18 +252,18 @@ abstract class DescopeMagicLink {
 abstract class DescopeEnchantedLink {
   /// Authenticates a new user using an enchanted link, sent via email.
   ///
-  /// A new user identified by [loginId] and the optional [user] details will be added
+  /// A new user identified by [loginId] and the optional [details] details will be added
   /// upon successful authentication.
   /// The caller should use the returned [EnchantedLinkResponse.linkId] to show the
   /// user which link they need to press in the enchanted link email, and then use
   /// the [EnchantedLinkResponse.pendingRef] value to poll until the authentication is verified.
   ///
   /// - Important: Make sure an email address is provided via
-  ///     the [user] parameter or as the [loginId] itself.
+  ///     the [details] parameter or as the [loginId] itself.
   ///
   /// - Important: Make sure a default Enchanted link URI is configured
   ///     in the Descope console, or provided via [uri] by this call.
-  Future<EnchantedLinkResponse> signUp({required String loginId, User? user, String? uri});
+  Future<EnchantedLinkResponse> signUp({required String loginId, SignUpDetails? details, String? uri});
 
   /// Authenticates an existing user using an enchanted link, sent via email.
   ///

@@ -11,8 +11,8 @@ class Password implements DescopePassword {
   Password(this.client);
 
   @override
-  Future<AuthenticationResponse> signUp({required String loginId, required String password, User? user}) async {
-    return (await client.passwordSignUp(loginId, password, user)).convert();
+  Future<AuthenticationResponse> signUp({required String loginId, required String password, SignUpDetails? details}) async {
+    return (await client.passwordSignUp(loginId, password, details)).convert();
   }
 
   @override

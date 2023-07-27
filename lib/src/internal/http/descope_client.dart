@@ -10,10 +10,10 @@ class DescopeClient extends HttpClient {
 
   // OTP
 
-  Future<MaskedAddressServerResponse> otpSignUp(DeliveryMethod method, String loginId, User? user) {
+  Future<MaskedAddressServerResponse> otpSignUp(DeliveryMethod method, String loginId, [SignUpDetails? details]) {
     return post('otp/signup/${method.name}', MaskedAddressServerResponse.decoder, body: {
       'loginId': loginId,
-      'user': user?.toMap(),
+      'user': details?.toMap(),
     });
   }
 
@@ -51,10 +51,10 @@ class DescopeClient extends HttpClient {
 
   // TOTP
 
-  Future<TotpServerResponse> totpSignUp(String loginId, User? user) {
+  Future<TotpServerResponse> totpSignUp(String loginId, [SignUpDetails? details]) {
     return post('totp/signup', TotpServerResponse.decoder, body: {
       'loginId': loginId,
-      'user': user?.toMap(),
+      'user': details?.toMap(),
     });
   }
 
@@ -73,11 +73,11 @@ class DescopeClient extends HttpClient {
 
   // Password
 
-  Future<JWTServerResponse> passwordSignUp(String loginId, String password, [User? user]) {
+  Future<JWTServerResponse> passwordSignUp(String loginId, String password, [SignUpDetails? details]) {
     return post('password/signup', JWTServerResponse.decoder, body: {
       'loginId': loginId,
       'password': password,
-      'user': user?.toMap(),
+      'user': details?.toMap(),
     });
   }
 
@@ -116,10 +116,10 @@ class DescopeClient extends HttpClient {
 
   // Magic Link
 
-  Future<MaskedAddressServerResponse> magicLinkSignUp(DeliveryMethod method, String loginId, User? user, String? uri) {
+  Future<MaskedAddressServerResponse> magicLinkSignUp(DeliveryMethod method, String loginId, [SignUpDetails? details, String? uri]) {
     return post('magiclink/signup/${method.name})', MaskedAddressServerResponse.decoder, body: {
       'loginId': loginId,
-      'user': user?.toMap(),
+      'user': details?.toMap(),
       'uri': uri,
     });
   }
@@ -163,10 +163,10 @@ class DescopeClient extends HttpClient {
 
   // Enchanted Link
 
-  Future<EnchantedLinkServerResponse> enchantedLinkSignUp(String loginId, User? user, String? uri) {
+  Future<EnchantedLinkServerResponse> enchantedLinkSignUp(String loginId, [SignUpDetails? details, String? uri]) {
     return post('enchantedlink/signup/email', EnchantedLinkServerResponse.decoder, body: {
       'loginId': loginId,
-      'user': user?.toMap(),
+      'user': details?.toMap(),
       'uri': uri,
     });
   }
@@ -262,7 +262,7 @@ class DescopeClient extends HttpClient {
 
 // Extensions
 
-extension on User {
+extension on SignUpDetails {
   Map<String, dynamic> toMap() {
     return {
       'email': email,

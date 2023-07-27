@@ -1,6 +1,6 @@
 import '/src/sdk/routes.dart';
-import '/src/types/others.dart';
 import '/src/types/responses.dart';
+import '/src/types/user.dart';
 import '../http/descope_client.dart';
 import '../http/responses.dart';
 import 'shared.dart';
@@ -11,7 +11,7 @@ class Auth implements DescopeAuth {
   Auth(this.client);
 
   @override
-  Future<MeResponse> me(String refreshJwt) async {
+  Future<DescopeUser> me(String refreshJwt) async {
     return (await client.me(refreshJwt)).convert();
   }
 
@@ -27,9 +27,14 @@ class Auth implements DescopeAuth {
 }
 
 extension on UserResponse {
-  MeResponse convert() {
+  DescopeUser convert() {
     final emailValue = (email ?? '').isNotEmpty ? email : null;
     final phoneValue = (phone ?? '').isNotEmpty ? phone : null;
-    return MeResponse(userId, loginIds, name, picture, emailValue, verifiedEmail, phoneValue, verifiedPhone);
+    Uri? uri;
+    final pic = picture;
+    if (pic != null && pic.isNotEmpty) {
+      uri = Uri.parse(pic);
+    }
+    return DescopeUser(userId, loginIds, createdTime, name, uri, emailValue, verifiedEmail, phoneValue, verifiedPhone);
   }
 }

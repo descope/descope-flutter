@@ -10,8 +10,8 @@ class Otp implements DescopeOtp {
   Otp(this.client);
 
   @override
-  Future<String> signUp({required DeliveryMethod method, required String loginId, User? user}) async {
-    return (await client.otpSignUp(method, loginId, user)).convert(method);
+  Future<String> signUp({required DeliveryMethod method, required String loginId, SignUpDetails? details}) async {
+    return (await client.otpSignUp(method, loginId, details)).convert(method);
   }
 
   @override

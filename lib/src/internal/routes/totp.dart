@@ -11,8 +11,8 @@ class Totp implements DescopeTotp {
   Totp(this.client);
 
   @override
-  Future<TotpResponse> signUp({required String loginId, User? user}) async {
-    return (await client.totpSignUp(loginId, user)).convert();
+  Future<TotpResponse> signUp({required String loginId, SignUpDetails? details}) async {
+    return (await client.totpSignUp(loginId, details)).convert();
   }
 
   @override
