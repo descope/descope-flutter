@@ -26,7 +26,7 @@ import 'package:descope_flutter/descope.dart';
 
 // ...
 
-final descope = DescopeSDK(projectId: '<Your-Project-ID>');
+final descope = DescopeSdk(projectId: '<Your-Project-ID>');
 ```
 
 ## Usage

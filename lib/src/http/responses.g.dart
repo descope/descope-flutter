@@ -16,13 +16,6 @@ JWTServerResponse _$JWTServerResponseFromJson(Map<String, dynamic> json) =>
       json['firstSeen'] as bool,
     );
 
-MaskedAddressServerResponse _$MaskedAddressServerResponseFromJson(
-        Map<String, dynamic> json) =>
-    MaskedAddressServerResponse(
-      json['maskedEmail'] as String?,
-      json['maskedPhone'] as String?,
-    );
-
 UserResponse _$UserResponseFromJson(Map<String, dynamic> json) => UserResponse(
       json['userId'] as String,
       (json['loginIds'] as List<dynamic>).map((e) => e as String).toList(),
@@ -32,6 +25,14 @@ UserResponse _$UserResponseFromJson(Map<String, dynamic> json) => UserResponse(
       json['verifiedEmail'] as bool,
       json['phone'] as String?,
       json['verifiedPhone'] as bool,
+      json['createdTime'] as int,
+    );
+
+MaskedAddressServerResponse _$MaskedAddressServerResponseFromJson(
+        Map<String, dynamic> json) =>
+    MaskedAddressServerResponse(
+      json['maskedEmail'] as String?,
+      json['maskedPhone'] as String?,
     );
 
 PasswordPolicyServerResponse _$PasswordPolicyServerResponseFromJson(

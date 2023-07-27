@@ -1,7 +1,8 @@
-import '../routes.dart';
+import 'package:descope/src/types/responses.dart';
+
 import '../http/descope_client.dart';
 import '../http/responses.dart';
-import '../session/session.dart';
+import '../routes.dart';
 import '../types/others.dart';
 import 'shared.dart';
 
@@ -33,12 +34,12 @@ class EnchantedLink implements DescopeEnchantedLink {
   }
 
   @override
-  Future<DescopeSession> checkForSession({required String pendingRef}) async {
+  Future<AuthenticationResponse> checkForSession({required String pendingRef}) async {
     return (await client.enchantedLinkPendingSession(pendingRef)).convert();
   }
 
   @override
-  Future<DescopeSession> pollForSession({required String pendingRef, Duration? timeout}) async {
+  Future<AuthenticationResponse> pollForSession({required String pendingRef, Duration? timeout}) async {
     final start = DateTime.now();
     do {
       try {

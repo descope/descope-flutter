@@ -1,7 +1,8 @@
-import '../routes.dart';
+import 'package:descope/src/types/responses.dart';
+
 import '../http/descope_client.dart';
 import '../http/responses.dart';
-import '../session/session.dart';
+import '../routes.dart';
 import '../types/others.dart';
 import 'shared.dart';
 
@@ -21,7 +22,7 @@ class Totp implements DescopeTotp {
   }
 
   @override
-  Future<DescopeSession> verify({required String loginId, required String code}) async {
+  Future<AuthenticationResponse> verify({required String loginId, required String code}) async {
     return (await client.totpVerify(loginId, code)).convert();
   }
 }

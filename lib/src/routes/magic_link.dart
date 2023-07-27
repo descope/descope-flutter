@@ -1,6 +1,7 @@
-import '../routes.dart';
+import 'package:descope/src/types/responses.dart';
+
 import '../http/descope_client.dart';
-import '../session/session.dart';
+import '../routes.dart';
 import '../types/others.dart';
 import 'shared.dart';
 
@@ -35,7 +36,7 @@ class MagicLink implements DescopeMagicLink {
   }
 
   @override
-  Future<DescopeSession> verify({required String token}) async {
+  Future<AuthenticationResponse> verify({required String token}) async {
     return (await client.magicLinkVerify(token)).convert();
   }
 }

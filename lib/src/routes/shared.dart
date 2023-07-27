@@ -1,6 +1,9 @@
+import 'package:descope/src/session/token.dart';
+import 'package:descope/src/types/responses.dart';
+import 'package:descope/src/types/user.dart';
+
 import '../http/responses.dart';
 import '../types/others.dart';
-import '../session/session.dart';
 
 extension ConvertMaskedAddress on MaskedAddressServerResponse {
   String convert(DeliveryMethod method) {
@@ -14,12 +17,38 @@ extension ConvertMaskedAddress on MaskedAddressServerResponse {
   }
 }
 
+extension on UserResponse {
+  DescopeUser convert() {
+    Uri? uri;
+    final picture = this.picture;
+    if (picture != null) {
+      uri = Uri.parse(picture);
+    }
+    return DescopeUser(userId, loginIds, createdTime, name, uri, email, verifiedEmail, phone, verifiedPhone);
+  }
+}
+
 extension ConvertJWTResponse on JWTServerResponse {
-  DescopeSession convert() {
+  AuthenticationResponse convert() {
     final refreshJwt = this.refreshJwt;
     if (refreshJwt == null) {
       throw Exception('Missing refresh JWT');
     }
-    return DescopeSession(sessionJwt, refreshJwt);
+    final user = this.user;
+    if (user == null) {
+      throw Exception('Missing user details');
+    }
+    return AuthenticationResponse(Token.decode(sessionJwt), Token.decode(refreshJwt), firstSeen, user.convert());
+  }
+}
+
+extension ConvertJWTResponseToRefresh on JWTServerResponse {
+  RefreshResponse toRefreshResponse() {
+    Token? refreshToken;
+    final refreshJwt = this.refreshJwt;
+    if (refreshJwt != null) {
+      refreshToken = Token.decode(refreshJwt);
+    }
+    return RefreshResponse(Token.decode(sessionJwt), refreshToken);
   }
 }

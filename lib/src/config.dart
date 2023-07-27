@@ -1,4 +1,3 @@
-
 /// The default base URL for the Descope API.
 const defaultBaseUrl = 'https://api.descope.com';
 
@@ -11,5 +10,7 @@ class DescopeConfig {
   final String baseUrl;
 
   /// Creates a new `DescopeConfig` object.
-  const DescopeConfig(this.projectId, this.baseUrl);
+  DescopeConfig(this.projectId, [this.baseUrl = defaultBaseUrl]);
+
+  static DescopeConfig initial = DescopeConfig("");
 }
