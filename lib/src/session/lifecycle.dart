@@ -1,4 +1,4 @@
-import '/src/routes.dart';
+import '../sdk/routes.dart';
 import 'session.dart';
 
 abstract class DescopeSessionLifecycle {

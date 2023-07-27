@@ -1,8 +1,7 @@
-import 'package:descope/src/types/responses.dart';
-
+import '/src/sdk/routes.dart';
+import '/src/types/others.dart';
+import '/src/types/responses.dart';
 import '../http/descope_client.dart';
-import '../routes.dart';
-import '../types/others.dart';
 import 'shared.dart';
 
 class OAuth implements DescopeOAuth {

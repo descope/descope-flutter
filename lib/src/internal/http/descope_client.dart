@@ -1,5 +1,5 @@
-import '../config.dart';
-import '../types/others.dart';
+import '/src/sdk/config.dart';
+import '/src/types/others.dart';
 import 'http_client.dart';
 import 'responses.dart';
 

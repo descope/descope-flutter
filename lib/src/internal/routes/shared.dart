@@ -1,9 +1,8 @@
-import 'package:descope/src/session/token.dart';
-import 'package:descope/src/types/responses.dart';
-import 'package:descope/src/types/user.dart';
-
+import '/src/session/token.dart';
+import '/src/types/others.dart';
+import '/src/types/responses.dart';
+import '/src/types/user.dart';
 import '../http/responses.dart';
-import '../types/others.dart';
 
 extension ConvertMaskedAddress on MaskedAddressServerResponse {
   String convert(DeliveryMethod method) {

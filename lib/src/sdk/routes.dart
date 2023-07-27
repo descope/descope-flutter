@@ -1,7 +1,7 @@
 import 'package:descope/src/types/responses.dart';
 
-import 'session/session.dart';
-import 'types/others.dart';
+import '../session/session.dart';
+import '../types/others.dart';
 
 /// General authentication functions
 abstract class DescopeAuth {

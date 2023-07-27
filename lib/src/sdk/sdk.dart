@@ -1,17 +1,17 @@
+import '/src/internal/http/descope_client.dart';
+import '/src/internal/routes/auth.dart';
+import '/src/internal/routes/enchanted_link.dart';
+import '/src/internal/routes/magic_link.dart';
+import '/src/internal/routes/oauth.dart';
+import '/src/internal/routes/otp.dart';
+import '/src/internal/routes/password.dart';
+import '/src/internal/routes/sso.dart';
+import '/src/internal/routes/totp.dart';
+import '../session/lifecycle.dart';
+import '../session/manager.dart';
+import '../session/storage.dart';
 import 'config.dart';
-import 'http/descope_client.dart';
 import 'routes.dart';
-import 'routes/auth.dart';
-import 'routes/enchanted_link.dart';
-import 'routes/magic_link.dart';
-import 'routes/oauth.dart';
-import 'routes/otp.dart';
-import 'routes/password.dart';
-import 'routes/sso.dart';
-import 'routes/totp.dart';
-import 'session/lifecycle.dart';
-import 'session/manager.dart';
-import 'session/storage.dart';
 
 /// Provides functions for working with the Descope API.
 class DescopeSdk {
