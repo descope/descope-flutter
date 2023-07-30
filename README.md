@@ -115,7 +115,6 @@ existing session automatically, so you can check straight away if there's
 an authenticated user.
 
 ```dart
-// Application class onCreate
 Descope.projectId = "...";
 final session = Descope.sessionManager.session;
 if (session != null) {

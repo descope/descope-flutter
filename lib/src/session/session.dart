@@ -67,9 +67,6 @@ class DescopeSession {
     if (identical(this, other)) {
       return true;
     }
-    if (other.runtimeType != runtimeType) {
-      return false;
-    }
     return other is DescopeSession && other.sessionJwt == sessionJwt && other.refreshJwt == refreshJwt && other.user == user;
   }
 

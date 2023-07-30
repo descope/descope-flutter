@@ -1,16 +1,15 @@
 library descope_flutter;
 
-import 'package:descope/src/session/session.dart';
+import '/src/sdk/config.dart';
+import '/src/sdk/routes.dart';
+import '/src/sdk/sdk.dart';
+import '/src/session/manager.dart';
+import '/src/session/session.dart';
 
-import 'src/sdk/config.dart';
-import 'src/sdk/routes.dart';
-import 'src/sdk/sdk.dart';
-import 'src/session/manager.dart';
-
-export 'src/sdk/sdk.dart' show DescopeSdk;
-export 'src/session/session.dart' show DescopeSession;
-export 'src/session/token.dart' show DescopeToken;
-export 'src/types/others.dart';
+export '/src/sdk/sdk.dart' show DescopeSdk;
+export '/src/session/session.dart' show DescopeSession;
+export '/src/session/token.dart' show DescopeToken;
+export '/src/types/others.dart';
 
 /// Provides functions for working with the Descope API.
 ///

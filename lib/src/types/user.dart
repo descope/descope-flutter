@@ -1,5 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:collection/collection.dart';
+
 import '/src/session/session.dart';
 
 part 'user.g.dart';
@@ -87,7 +88,7 @@ class DescopeUser {
     }
     return other is DescopeUser &&
         other.userId == userId &&
-        const DeepCollectionEquality().equals(other.loginIds, loginIds) &&
+        listEquals(other.loginIds, loginIds) &&
         other.createdAt == createdAt &&
         other.name == name &&
         other.picture == picture &&
