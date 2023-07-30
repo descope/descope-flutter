@@ -1,7 +1,7 @@
-import '../routes.dart';
+import '/src/sdk/routes.dart';
+import '/src/types/others.dart';
+import '/src/types/responses.dart';
 import '../http/descope_client.dart';
-import '../session/session.dart';
-import '../types/others.dart';
 import 'shared.dart';
 
 class MagicLink implements DescopeMagicLink {
@@ -10,8 +10,8 @@ class MagicLink implements DescopeMagicLink {
   MagicLink(this.client);
 
   @override
-  Future<String> signUp({required DeliveryMethod method, required String loginId, User? user, String? uri}) async {
-    return (await client.magicLinkSignUp(method, loginId, user, uri)).convert(method);
+  Future<String> signUp({required DeliveryMethod method, required String loginId, SignUpDetails? details, String? uri}) async {
+    return (await client.magicLinkSignUp(method, loginId, details, uri)).convert(method);
   }
 
   @override
@@ -35,7 +35,7 @@ class MagicLink implements DescopeMagicLink {
   }
 
   @override
-  Future<DescopeSession> verify({required String token}) async {
+  Future<AuthenticationResponse> verify({required String token}) async {
     return (await client.magicLinkVerify(token)).convert();
   }
 }

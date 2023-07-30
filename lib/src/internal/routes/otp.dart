@@ -1,7 +1,7 @@
-import '../routes.dart';
+import '/src/sdk/routes.dart';
+import '/src/types/others.dart';
+import '/src/types/responses.dart';
 import '../http/descope_client.dart';
-import '../session/session.dart';
-import '../types/others.dart';
 import 'shared.dart';
 
 class Otp implements DescopeOtp {
@@ -10,8 +10,8 @@ class Otp implements DescopeOtp {
   Otp(this.client);
 
   @override
-  Future<String> signUp({required DeliveryMethod method, required String loginId, User? user}) async {
-    return (await client.otpSignUp(method, loginId, user)).convert(method);
+  Future<String> signUp({required DeliveryMethod method, required String loginId, SignUpDetails? details}) async {
+    return (await client.otpSignUp(method, loginId, details)).convert(method);
   }
 
   @override
@@ -25,7 +25,7 @@ class Otp implements DescopeOtp {
   }
 
   @override
-  Future<DescopeSession> verify({required DeliveryMethod method, required String loginId, required String code}) async {
+  Future<AuthenticationResponse> verify({required DeliveryMethod method, required String loginId, required String code}) async {
     return (await client.otpVerify(method, loginId, code)).convert();
   }
 

@@ -16,22 +16,132 @@ You can read more on the [Descope Website](https://descope.com).
   - [Passwords](#password-authentication) (unrecommended form of authentication)
 - [Session Management](#session-management)
 
-## Setup
+## Quickstart
 
-A Descope `Project ID` is required to initialize the SDK. Find it on the
-[project page in the Descope Console](https://app.descope.com/settings/project).
+A Descope `Project ID` is required to initialize the SDK. Find it
+on the [project page](https://app.descope.com/settings/project) in
+the Descope Console.
 
 ```dart
 import 'package:descope_flutter/descope.dart';
 
-// ...
-
-final descope = DescopeSDK(projectId: '<Your-Project-ID>');
+// Where your application is being created
+Descope.projectId = '<Your-Project-ID>';
 ```
 
-## Usage
+Authenticate the user in your application by starting one of the
+authentication methods. For example, let's use OTP via email:
 
-Here are some examples how to manage and authenticate users:
+```dart
+// sends an OTP code to the given email address
+await Descope.otp.signUp(method: DeliveryMethod.Email, loginId: "andy@example.com");
+```
+
+Finish the authentication by verifying the OTP code the user entered:
+
+```dart
+// if the user entered the right code the authentication is successful
+final authResponse = await Descope.otp.verify(method: DeliveryMethod.Email, loginId: "andy@example.com", code: code);
+
+// we create a DescopeSession object that represents an authenticated user session
+final session = DescopeSession(authResponse);
+
+// the session manager automatically takes care of persisting the session
+// and refreshing it as needed
+Descope.sessionManager.manageSession(session);
+```
+
+On the next application launch check if there's a logged in user to
+decide which screen to show:
+
+```dart
+// check if we have a valid session from a previous launch and that it hasn't expired yet
+if (Descope.sessionManager.session?.refreshToken?.isExpired == true) {
+    // Show main UI
+} else {
+    // Show login UI
+}
+```
+
+Use the active session to authenticate outgoing API requests to the
+application's backend:
+
+```dart
+request.setAuthorization(Descope.sessionManager);
+```
+
+## Session Management
+
+The `DescopeSessionManager` class is used to manage an authenticated
+user session for an application.
+
+The session manager takes care of loading and saving the session as well
+as ensuring that it's refreshed when needed.
+
+Once the user completes a sign in flow successfully you should set the
+`DescopeSession` object as the active session of the session manager.
+
+```dart
+final authResponse = await Descope.otp.verify(method: DeliverMethod.Email, loginId: "andy@example.com", code: "123456");
+final session = DescopeSession(authResponse);
+Descope.sessionManager.manageSession(session);
+```
+
+The session manager can then be used at any time to ensure the session
+is valid and to authenticate outgoing requests to your backend with a
+bearer token authorization header.
+
+```dart
+request.setAuthorization(Descope.sessionManager);
+```
+
+If your backend uses a different authorization mechanism you can of course
+use the session JWT directly instead of the extension function. You can either
+add another extension function on `http.Request` such as the one above, or you
+can do the following.
+
+```dart
+await Descope.sessionManager.refreshSessionIfNeeded();
+final sessionJwt = Descope.sessionManager.session?.sessionJwt;
+if (sessionJwt != null) {
+    request.headers["X-Auth-Token"] = sessionJwt;
+} else {
+    // unauthorized
+}
+```
+
+When the application is relaunched the `DescopeSessionManager` loads any
+existing session automatically, so you can check straight away if there's
+an authenticated user.
+
+```dart
+Descope.projectId = "...";
+final session = Descope.sessionManager.session;
+if (session != null) {
+    print("User is logged in: $session");
+}
+```
+
+When the user wants to sign out of the application we revoke the
+active session and clear it from the session manager:
+
+```dart
+final refreshJwt = Descope.sessionManager.session?.refreshJwt;
+if (refreshJwt != null) {
+  Descope.auth.logout(refreshJwt);
+  Descope.sessionManager.clearSession();
+}
+```
+
+You can customize how the `DescopeSessionManager` behaves by using
+your own `storage` and `lifecycle` objects. See the documentation
+for more details.
+
+## Authentication Methods
+
+We can authenticate users by using any combination of the authentication methods
+supported by this SDK.
+Here are some examples for how to authenticate users:
 
 ### OTP Authentication
 
@@ -42,17 +152,15 @@ The user can either `sign up`, `sign in` or `sign up or in`
 
 ```dart
 // Every user must have a loginID. All other user information is optional
-final maskedEmail = await descope.otp.signUp(method: DeliveryMethod.email, loginId: 'desmond_c@mail.com',
+final maskedEmail = await Descope.otp.signUp(method: DeliveryMethod.email, loginId: 'desmond_c@mail.com',
     user: User(name: 'Desmond Copeland'));
 ```
 
 The user will receive a code using the selected delivery method. Verify that code using:
 
 ```dart
-final descopeSession = await descope.otp.verify(method: DeliveryMethod.email, loginId: "desmond_c@mail.com", code: "123456");
+final authResponse = await Descope.otp.verify(method: DeliveryMethod.email, loginId: "desmond_c@mail.com", code: "123456");
 ```
-
-Read more on [session management](#session-management)
 
 ### Magic Link
 
@@ -67,7 +175,7 @@ The user can either `sign up`, `sign in` or `sign up or in`
 ```dart
 // If configured globally, the redirect URI is optional. If provided however, it will be used
 // instead of any global configuration
-await descope.magicLink.signUp(method: DeliveryMethod.email, loginId: 'desmond_c@mail.com',
+await Descope.magicLink.signUp(method: DeliveryMethod.email, loginId: 'desmond_c@mail.com',
     user: User(name: 'Desmond Copeland'), uri: 'https://your-redirect-address.com/verify');
 ```
 
@@ -75,10 +183,8 @@ To verify a magic link, your redirect page must call the validation function
 on the token (`t`) parameter (`https://your-redirect-address.com/verify?t=<token>`):
 
 ```dart
-final descopeSession = await descope.magicLink.verify(token: '<token>');
+final authResponse = await Descope.magicLink.verify(token: '<token>');
 ```
-
-Read more on [session management](#session-management)
 
 ### Enchanted Link
 
@@ -103,7 +209,7 @@ The user can either `sign up`, `sign in` or `sign up or in`
 ```dart
 // If configured globally, the redirect URI is optional. If provided however, it will be used
 // instead of any global configuration
-final enchantedLinkResponse = await descope.enchantedLink.signUp(loginId: 'desmond_c@mail.com',
+final enchantedLinkResponse = await Descope.enchantedLink.signUp(loginId: 'desmond_c@mail.com',
     user: User(name: 'Desmond Copeland'), uri: 'https://your-redirect-address.com/verify');
 ```
 
@@ -112,10 +218,8 @@ After that, start polling for a valid session. It will be returned once the user
 clicks on the correct link (assuming the redirected web page calls the `validate` method);
 
 ```dart
-final descopeSession = await descope.enchantedLink.pollForSession(pendingRef: enchantedLinkResponse.pendingRef);
+final authResponse = await Descope.enchantedLink.pollForSession(pendingRef: enchantedLinkResponse.pendingRef);
 ```
-
-Read more on [session management](#session-management)
 
 ### OAuth
 
@@ -132,7 +236,7 @@ import 'package:flutter_web_auth/flutter_web_auth.dart';
 // Choose an oauth provider out of the supported providers
 // If configured globally, the redirect URL is optional. If provided however, it will be used
 // instead of any global configuration.
-final authUrl = await descope.oauth.start(provider: OAuthProvider.google, redirectUrl: 'exampleauthschema://my-app.com/handle-oauth');
+final authUrl = await Descope.oauth.start(provider: OAuthProvider.google, redirectUrl: 'exampleauthschema://my-app.com/handle-oauth');
 ```
 
 Take the generated URL and authenticate the user using `flutter_web_auth`
@@ -146,11 +250,9 @@ Exchange it to validate the user:
 final result = await FlutterWebAuth.authenticate(url: authUrl, callbackUrlScheme: 'exampleauthschema');
 // Extract the returned code
 final code = Uri.parse(result).queryParameters['code'];
-// Exchange code for session
-final descopeSession = await descope.oauth.exchange(code: code!);
+// Exchange code for an authentication response
+final authResponse = await Descope.oauth.exchange(code: code!);
 ```
-
-Read more on [session management](#session-management)
 
 ### SSO/SAML
 
@@ -165,7 +267,7 @@ To start a flow call:
 // Choose which tenant to log into
 // If configured globally, the return URL is optional. If provided however, it will be used
 // instead of any global configuration.
-final authUrl = await descope.sso.start(emailOrTenantId: 'my-tenant-ID', redirectUrl: 'exampleauthschema://my-app.com/handle-saml');
+final authUrl = await Descope.sso.start(emailOrTenantId: 'my-tenant-ID', redirectUrl: 'exampleauthschema://my-app.com/handle-saml');
 ```
 
 Take the generated URL and authenticate the user using `flutter_web_auth`
@@ -179,11 +281,9 @@ Exchange it to validate the user:
 final result = await FlutterWebAuth.authenticate(url: authUrl, callbackUrlScheme: 'exampleauthschema');
 // Extract the returned code
 final code = Uri.parse(result).queryParameters['code'];
-// Exchange code for session
-final descopeSession = await descope.sso.exchange(code: code!);
+// Exchange code for an authentication response
+final authResponse = await Descope.sso.exchange(code: code!);
 ```
-
-Read more on [session management](#session-management)
 
 ### TOTP Authentication
 
@@ -197,7 +297,7 @@ Existing users can add TOTP using the `update` function.
 
 ```dart
 // Every user must have a loginID. All other user information is optional
-final totpResponse = await descope.totp.signUp(loginId: 'desmond@descope.com', user: User(name: 'Desmond Copeland'));
+final totpResponse = await Descope.totp.signUp(loginId: 'desmond@descope.com', user: User(name: 'Desmond Copeland'));
 
 // Use one of the provided options to have the user add their credentials to the authenticator
 // totpResponse.provisioningUrl
@@ -211,10 +311,8 @@ image or inserting the key manually. After that, signing in is done using the co
 the app produces.
 
 ```dart
-final descopeSession = await descope.totp.verify(loginId: 'desmond@descope.com', code: '123456');
+final authResponse = await Descope.totp.verify(loginId: 'desmond@descope.com', code: '123456');
 ```
-
-Read more on [session management](#session-management)
 
 ### Password Authentication
 
@@ -227,51 +325,9 @@ The user can either `sign up` or `sign in`
 
 ```dart
 // Every user must have a loginID. All other user information is optional
-final descopeSession = await descope.password.signUp(loginId: 'desmond_c@mail.com', password: 'cleartext-password',
+final authResponse = await Descope.password.signUp(loginId: 'desmond_c@mail.com', password: 'cleartext-password',
     user: User(name: 'Desmond Copeland'));
 ```
-
-Read more on [session management](#session-management)
-
-## Session Management
-
-After authenticating successfully, the `DescopeSession` needs to be
-managed throughout the lifecycle of the application.
-
-### Persistence
-
-The `DescopeSession` should be persisted between usages. Do it be securely saving the
-`DescopeSession.refreshJwt` and `DescopeSession.sessionJwt`.
-When the app is reloaded, recreate the session using:
-
-```dart
-final descopeSession = DescopeSession('<loaded-session-jwt>', '<loaded-refresh-jwt>');
-```
-
-### Session Refresh
-
-When the session JWT expires, it needs to be refreshed.
-
-You can manually refresh it by calling:
-
-```dart
-final refreshedDescopeSession = await descope.auth.refreshSession(descopeSession.refreshJwt);
-```
-
-### Session Validation
-
-Every secure request performed between your client and server needs to be validated. The client sends
-the session and refresh tokens with every request, to validated by the server.
-
-On the server side, it will validate the session and also refresh it in the event it has expired.
-Every request should receive the given session token if it's still valid, or a new one if it was refreshed.
-Make sure to save the returned session as it might have been refreshed.
-
-The `refreshJwt` is optional here to validate a session, but is required
-to refresh the session in the event it has expired.
-
-Usually, the tokens can be passed in and out via HTTP headers or via a cookie.
-The implementation can defer according to your server implementation.
 
 ## Additional Information
 

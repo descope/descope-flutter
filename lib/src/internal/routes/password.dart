@@ -1,8 +1,8 @@
-import '../routes.dart';
+import '/src/sdk/routes.dart';
+import '/src/types/others.dart';
+import '/src/types/responses.dart';
 import '../http/descope_client.dart';
 import '../http/responses.dart';
-import '../session/session.dart';
-import '../types/others.dart';
 import 'shared.dart';
 
 class Password implements DescopePassword {
@@ -11,12 +11,12 @@ class Password implements DescopePassword {
   Password(this.client);
 
   @override
-  Future<DescopeSession> signUp({required String loginId, required String password, User? user}) async {
-    return (await client.passwordSignUp(loginId, password, user)).convert();
+  Future<AuthenticationResponse> signUp({required String loginId, required String password, SignUpDetails? details}) async {
+    return (await client.passwordSignUp(loginId, password, details)).convert();
   }
 
   @override
-  Future<DescopeSession> signIn({required String loginId, required String password}) async {
+  Future<AuthenticationResponse> signIn({required String loginId, required String password}) async {
     return (await client.passwordSignIn(loginId, password)).convert();
   }
 

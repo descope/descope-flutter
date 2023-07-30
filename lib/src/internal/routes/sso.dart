@@ -1,6 +1,6 @@
-import '../routes.dart';
+import '/src/sdk/routes.dart';
+import '/src/types/responses.dart';
 import '../http/descope_client.dart';
-import '../session/session.dart';
 import 'shared.dart';
 
 class Sso implements DescopeSso {
@@ -14,7 +14,7 @@ class Sso implements DescopeSso {
   }
 
   @override
-  Future<DescopeSession> exchange({required String code}) async {
+  Future<AuthenticationResponse> exchange({required String code}) async {
     return (await client.oauthExchange(code)).convert();
   }
 }

@@ -1,8 +1,8 @@
-import '../routes.dart';
+import '/src/sdk/routes.dart';
+import '/src/types/others.dart';
+import '/src/types/responses.dart';
 import '../http/descope_client.dart';
 import '../http/responses.dart';
-import '../session/session.dart';
-import '../types/others.dart';
 import 'shared.dart';
 
 const defaultPollDuration = Duration(minutes: 2);
@@ -13,8 +13,8 @@ class EnchantedLink implements DescopeEnchantedLink {
   EnchantedLink(this.client);
 
   @override
-  Future<EnchantedLinkResponse> signUp({required String loginId, User? user, String? uri}) async {
-    return (await client.enchantedLinkSignUp(loginId, user, uri)).convert();
+  Future<EnchantedLinkResponse> signUp({required String loginId, SignUpDetails? details, String? uri}) async {
+    return (await client.enchantedLinkSignUp(loginId, details, uri)).convert();
   }
 
   @override
@@ -33,12 +33,12 @@ class EnchantedLink implements DescopeEnchantedLink {
   }
 
   @override
-  Future<DescopeSession> checkForSession({required String pendingRef}) async {
+  Future<AuthenticationResponse> checkForSession({required String pendingRef}) async {
     return (await client.enchantedLinkPendingSession(pendingRef)).convert();
   }
 
   @override
-  Future<DescopeSession> pollForSession({required String pendingRef, Duration? timeout}) async {
+  Future<AuthenticationResponse> pollForSession({required String pendingRef, Duration? timeout}) async {
     final start = DateTime.now();
     do {
       try {

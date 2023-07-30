@@ -21,16 +21,6 @@ class JWTServerResponse {
 }
 
 @JsonSerializable(createToJson: false)
-class MaskedAddressServerResponse {
-  String? maskedEmail;
-  String? maskedPhone;
-
-  MaskedAddressServerResponse(this.maskedEmail, this.maskedPhone);
-  static var fromJson = _$MaskedAddressServerResponseFromJson;
-  static var decoder = _ignoreHeaders(fromJson);
-}
-
-@JsonSerializable(createToJson: false)
 class UserResponse {
   String userId;
   List<String> loginIds;
@@ -40,11 +30,23 @@ class UserResponse {
   bool verifiedEmail;
   String? phone;
   bool verifiedPhone;
+  int createdTime;
 
-  UserResponse(this.userId, this.loginIds, this.name, this.picture, this.email, this.verifiedEmail, this.phone, this.verifiedPhone);
+  UserResponse(this.userId, this.loginIds, this.name, this.picture, this.email, this.verifiedEmail, this.phone, this.verifiedPhone, this.createdTime);
   static var fromJson = _$UserResponseFromJson;
   static var decoder = _ignoreHeaders(fromJson);
 }
+
+@JsonSerializable(createToJson: false)
+class MaskedAddressServerResponse {
+  String? maskedEmail;
+  String? maskedPhone;
+
+  MaskedAddressServerResponse(this.maskedEmail, this.maskedPhone);
+  static var fromJson = _$MaskedAddressServerResponseFromJson;
+  static var decoder = _ignoreHeaders(fromJson);
+}
+
 
 @JsonSerializable(createToJson: false)
 class PasswordPolicyServerResponse {

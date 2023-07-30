@@ -1,7 +1,7 @@
-import '../routes.dart';
+import '/src/sdk/routes.dart';
+import '/src/types/others.dart';
+import '/src/types/responses.dart';
 import '../http/descope_client.dart';
-import '../session/session.dart';
-import '../types/others.dart';
 import 'shared.dart';
 
 class OAuth implements DescopeOAuth {
@@ -15,7 +15,7 @@ class OAuth implements DescopeOAuth {
   }
 
   @override
-  Future<DescopeSession> exchange({required String code}) async {
+  Future<AuthenticationResponse> exchange({required String code}) async {
     return (await client.oauthExchange(code)).convert();
   }
 }

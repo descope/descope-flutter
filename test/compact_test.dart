@@ -1,4 +1,4 @@
-import 'package:descope/src/http/http_client.dart';
+import 'package:descope/src/internal/http/http_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
