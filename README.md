@@ -23,7 +23,7 @@ on the [project page](https://app.descope.com/settings/project) in
 the Descope Console.
 
 ```dart
-import 'package:descope_flutter/descope.dart';
+import 'package:descope/descope.dart';
 
 // Where your application is being created
 Descope.projectId = '<Your-Project-ID>';
@@ -136,6 +136,99 @@ if (refreshJwt != null) {
 You can customize how the `DescopeSessionManager` behaves by using
 your own `storage` and `lifecycle` objects. See the documentation
 for more details.
+
+## Running Flows
+
+We can authenticate users by building and running Flows. Flows are built in the Descope
+[flow editor](https://app.descope.com/flows). The editor allows you to easily
+define both the behavior and the UI that take the user through their
+authentication journey. Read more about it in the  Descope
+[getting started](https://docs.descope.com/build/guides/gettingstarted/) guide.
+
+### Setup #1: Define and host your flow
+
+Before we can run a flow, it must first be defined and hosted. Every project
+comes with predefined flows out of the box. You can customize your flows to suit your needs
+and host it. Follow
+the [getting started](https://docs.descope.com/build/guides/gettingstarted/) guide for more details.
+You can host the flow yourself or leverage Descope's hosted flow page. Read more about it [here](https://docs.descope.com/customize/auth/oidc/#hosted-flow-application).
+You can also check out the [auth-hosting repo itself](https://github.com/descope/auth-hosting).
+
+### (Android Only) Setup #2: Enable App Links
+
+Running a flow via the Flutter SDK, when targeting Android, requires setting up [App Links](https://developer.android.com/training/app-links#android-app-links).
+This is essential for the SDK to be notified when the user has successfully
+authenticated using a flow. Once you have a domain set up and
+[verified](https://developer.android.com/training/app-links/verify-android-applinks)
+for sending App Links, you'll need to handle the incoming deep links in your app:
+
+#### Define a route to handle the App Link sent at the end of a flow
+_this code example demonstrates how app links should be handled - you can customize it to fit your app_
+```dart
+final _router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (_, __) => const MyHomePage(title: 'Flutter Demo Home Page'), // Your main app
+      routes: [
+        GoRoute(
+          path: 'auth', // This path needs to correspond to the deep link you configured in your manifest - see below
+          redirect: (context, state) async {
+            try {
+              Descope.flow.exchange(state.uri); // Call exchange to complete the flow
+            } catch (e) {
+              // Handle errors here
+            }
+            return "/"; // This route doesn't display anything but returns the root path where the user will be signed in
+          },
+        ),
+      ],
+    ),
+  ],
+);
+```
+
+#### Add a matching Manifest declaration
+Read more about the flutter specific `meta-data` tag mentioned here in the [official documentation](https://docs.flutter.dev/ui/navigation/deep-linking).
+```xml
+<activity
+        android:name=".MainActivity"
+        android:exported="true"
+        android:launchMode="singleTop"
+        android:theme="@style/LaunchTheme"
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+        android:hardwareAccelerated="true"
+        android:windowSoftInputMode="adjustResize"> <!-- exported, singleTop are enabled by default but required for the deep links to work -->
+        
+    <!-- add the following at the end of the activity tag, after anything you have defined currently -->
+    
+    <meta-data android:name="flutter_deeplinking_enabled" android:value="true" />
+    <intent-filter android:autoVerify="true"> <!-- autoVerify required for app links -->
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <!-- replace with your host, the path can change must must be reflected when running the flow -->
+        <!-- the path should correspond with the routing path defined above -->
+        <data android:scheme="https" android:host="<YOUR_HOST_HERE>" android:path="/auth" />
+    </intent-filter>
+</activity>
+```
+
+### Run a Flow
+
+After completing the prerequisite steps, it is now possible to run a flow.
+The flow will run in a Chrome [Custom Tab](https://developer.chrome.com/docs/android/custom-tabs/) on Android,
+or via [ASWebAuthenticationSession](https://developer.apple.com/documentation/authenticationservices/aswebauthenticationsession) on iOS.
+Run the flow by calling the flow start function:
+
+```dart
+final authResponse = await Descope.flow.start("<URL_FOR_FLOW_IN_SETUP_#1>", deepLinkUrl: "<URL_FOR_APP_LINK_IN_SETUP_#2>");
+final session = DescopeSession(authResponse);
+Descope.sessionManager.manageSession(session);
+```
+
+When running on iOS nothing else is required. When running on Android, `Descope.flow.exchange()` function must be called.
+See the [app link setup](#-android-only--setup-2--enable-app-links) for more details.
 
 ## Authentication Methods
 

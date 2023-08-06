@@ -22,6 +22,39 @@ abstract class DescopeAuth {
   Future<void> logout(String refreshJwt);
 }
 
+/// Authenticate a user using a flow.
+///
+/// Descope Flows is a visual no-code interface to build screens and authentication flows
+/// for common user interactions with your application. Flows are hosted on a webpage and
+/// are run using a sandboxed browser view.
+///
+/// Under the hood, this authentication method uses platform specific classes to
+/// display the flows: `ASWebAuthenticationSession` on iOS and `Chrome Custom Tabs` on Android.
+/// If targeting Android you need to set up `Android App Links` in order to communicate back
+/// to the application. Read more about it in the README under the `Running Flows` section.
+abstract class DescopeFlow {
+
+  /// Starts a user authentication flow.
+  ///
+  /// The flow screens are presented in a sandboxed browser view that's displayed by this
+  /// method call. The method then waits until the authentication completed successfully,
+  /// at which point it will return an [AuthenticationResponse] as in all other
+  /// authentication methods. Provide this call with a [flowUrl] where the flow
+  /// is hosted, and optionally a [deepLinkUrl] if targeting Android. This is the URL
+  /// that needs to be called by Descope in order to return a result from the flow.
+  /// This result URI should then be processed by the [exchange] function.
+  Future<AuthenticationResponse> start(String flowUrl, {String? deepLinkUrl});
+
+  /// Exchange a URI for an [AuthenticationResponse].
+  ///
+  /// This method should be called only when targeting Android.
+  /// When a flow completes successfully, the result will be sent through
+  /// the configured deep link URL. However, it must still be exchanged for an
+  /// actual [AuthenticationResponse] to complete the authentication flow.
+  /// The [AuthenticationResponse] will be returned to the original call to [start].
+  void exchange(Uri incomingUri);
+}
+
 /// Authenticate users using a one time password (OTP) code, sent via
 /// a delivery method of choice. The code then needs to be verified using
 /// the [verify] function. It is also possible to add an email or phone to

@@ -1,7 +1,7 @@
 import '/src/sdk/routes.dart';
 import '/src/types/others.dart';
 import '/src/types/responses.dart';
-import '../http/descope_client.dart';
+import '/src/internal/http/descope_client.dart';
 import 'shared.dart';
 
 class MagicLink implements DescopeMagicLink {

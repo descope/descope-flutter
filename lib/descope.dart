@@ -6,6 +6,7 @@ import '/src/sdk/sdk.dart';
 import '/src/session/manager.dart';
 import '/src/session/session.dart';
 
+export '/src/sdk/config.dart' show DescopeConfig;
 export '/src/sdk/sdk.dart' show DescopeSdk;
 export '/src/session/session.dart' show DescopeSession;
 export '/src/session/token.dart' show DescopeToken;
@@ -64,6 +65,9 @@ class Descope {
   static set sessionManage(DescopeSessionManager sessionManager) {
     _sdk.sessionManager = sessionManager;
   }
+
+  /// Authenticate using an authentication flow
+  static DescopeFlow get flow => _sdk.flow;
 
   /// General functions.
   static DescopeAuth get auth => _sdk.auth;
