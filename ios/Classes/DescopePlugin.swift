@@ -161,7 +161,7 @@ private class KeychainStore {
     private func queryForItem(key: String) -> [String: Any] {
         return [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: "com.descope.DescopeKit",
+            kSecAttrService as String: "com.descope.Flutter",
             kSecAttrLabel as String: "DescopeSession",
             kSecAttrAccount as String: key,
         ]

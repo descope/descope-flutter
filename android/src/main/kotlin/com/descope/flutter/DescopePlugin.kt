@@ -50,19 +50,13 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   private fun initStorageIfNeeded(call: MethodCall, result: Result): Boolean {
     if (this::storage.isInitialized) return false
 
-    val projectId = call.argument<String>("projectId")
-    if (projectId == null) {
-      result.error("MISSINGARGS", "'projectId' argument is required", null)
-      return true
-    }
-
     val context = this.context
     if (context == null) {
       result.error("NULLCONTEXT", "Context is null", null)
       return true
     }
 
-    storage = EncryptedStorage(projectId, context)
+    storage = EncryptedStorage(context)
     return false
   }
 
@@ -140,10 +134,10 @@ private fun launchUri(context: Context, uri: Uri) {
   customTabsIntent.launchUrl(context, uri)
 }
 
-private class EncryptedStorage(name: String, context: Context) {
+private class EncryptedStorage(context: Context) {
   private val masterKey = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
   private val sharedPreferences = EncryptedSharedPreferences.create(
-    name,
+    "com.descope.flutter",
     masterKey,
     context,
     EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,

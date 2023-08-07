@@ -36,9 +36,9 @@ class SessionStorage implements DescopeSessionStorage {
   final Store _store;
   _Value? _lastValue;
 
-  SessionStorage(String projectId, [Store? store])
+  SessionStorage({required String projectId, Store? store})
       : _projectId = projectId,
-        _store = store ?? PlatformStore(projectId);
+        _store = store ?? PlatformStore();
 
   @override
   Future<void> saveSession(DescopeSession session) async {
@@ -58,7 +58,7 @@ class SessionStorage implements DescopeSessionStorage {
         final decoded = jsonDecode(data) as Map<String, dynamic>;
         final value = _Value.fromJson(decoded);
         return DescopeSession.fromJwt(value.sessionJwt, value.refreshJwt, value.user);
-      } on Exception catch (e){
+      } on Exception {
         return null;
       }
     }
@@ -87,13 +87,11 @@ class Store {
 class PlatformStore implements Store {
   static const _mChannel = MethodChannel('descope_flutter/methods');
 
-  final String _projectId;
-
-  PlatformStore(this._projectId);
+  PlatformStore();
 
   @override
   Future<String?> loadItem(String key) async {
-    final result = await _mChannel.invokeMethod('loadItem', {'key': key, 'projectId': _projectId});
+    final result = await _mChannel.invokeMethod('loadItem', {'key': key});
     if (result == null) {
       return null;
     }
@@ -107,12 +105,12 @@ class PlatformStore implements Store {
 
   @override
   Future<void> removeItem(String key) async {
-    final result = await _mChannel.invokeMethod('removeItem', {'key': key, 'projectId': _projectId});
+    await _mChannel.invokeMethod('removeItem', {'key': key});
   }
 
   @override
   Future<void> saveItem({required String key, required String data}) async {
-    final result = await _mChannel.invokeMethod('saveItem', {'key': key, 'data': data, 'projectId': _projectId});
+    await _mChannel.invokeMethod('saveItem', {'key': key, 'data': data});
   }
 }
 

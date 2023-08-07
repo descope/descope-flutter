@@ -54,7 +54,7 @@ class DescopeSdk {
   set sessionManager(DescopeSessionManager manager) => _sessionManager = manager;
 
   DescopeSessionManager _initDefaultManager() {
-    final manager = DescopeSessionManager(SessionStorage(config.projectId), SessionLifecycle(auth));
+    final manager = DescopeSessionManager(SessionStorage(projectId: config.projectId), SessionLifecycle(auth));
     _sessionManager = manager;
     return manager;
   }

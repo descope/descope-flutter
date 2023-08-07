@@ -31,7 +31,7 @@ class Descope {
   static String get projectId => _projectId;
 
   static set projectId(String projectId) {
-    _config = DescopeConfig(projectId);
+    _config = DescopeConfig(projectId: projectId);
     _projectId = projectId;
   }
 
