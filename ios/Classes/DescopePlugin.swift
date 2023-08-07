@@ -7,6 +7,7 @@ private let redirectURL = "\(redirectScheme)://flow"
 public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     
     private let defaultContextProvider = DefaultContextProvider()
+    private let keychainStore = KeychainStore()
     private var eventSink: FlutterEventSink?
     
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -21,17 +22,45 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
-        case "start":
-            if let args = call.arguments as? Dictionary<String, Any>,
-               let urlString = args["url"] as? String {
-                startFlow(urlString)
-                result(urlString)
-            } else {
-                result(FlutterError.init(code: "MISSINGURL", message: nil, details: nil))
-            }
+        case "startFlow":
+            startFlow(call: call, result: result)
+        case "loadItem":
+            loadItem(call: call, result: result)
+        case "saveItem":
+            saveItem(call: call, result: result)
+        case "removeItem":
+            removeItem(call: call, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
+    }
+    
+    // Flows
+    
+    private func startFlow(call: FlutterMethodCall, result: FlutterResult) {
+        guard let args = call.arguments as? Dictionary<String, Any>, let urlString = args["url"] as? String else { return result(FlutterError(code: "MISSINGARGS", message: "'url' is required for startFlow", details: nil)) }
+        startFlow(urlString)
+        result(urlString)
+    }
+    
+    // Storage
+    
+    private func loadItem(call: FlutterMethodCall, result: FlutterResult) {
+        guard let args = call.arguments as? Dictionary<String, Any>, let key = args["key"] as? String else { return result(FlutterError(code: "MISSINARGS", message: "'key' is required for loadItem", details: nil)) }
+        guard let data = keychainStore.loadItem(key: key) else { return result(nil) }
+        result(String(bytes: data, encoding: .utf8))
+    }
+    
+    private func saveItem(call: FlutterMethodCall, result: FlutterResult) {
+        guard let args = call.arguments as? Dictionary<String, Any>, let key = args["key"] as? String, let data = args["data"] as? String else { return result(FlutterError(code: "MISSINARGS", message: "'key' and 'data' are required for saveItem", details: nil)) }
+        keychainStore.saveItem(key: key, data: Data(data.utf8))
+        result(key)
+    }
+    
+    private func removeItem(call: FlutterMethodCall, result: FlutterResult) {
+        guard let args = call.arguments as? Dictionary<String, Any>, let key = args["key"] as? String else { return result(FlutterError(code: "MISSINARGS", message: "'key' is required for removeItem", details: nil)) }
+        keychainStore.removeItem(key: key)
+        result(key)
     }
     
     // FlutterStreamHandler
@@ -89,5 +118,52 @@ private class DefaultContextProvider: NSObject, ASWebAuthenticationPresentationC
         
         return keyWindow ?? ASPresentationAnchor()
 #endif
+    }
+}
+
+private class KeychainStore {
+    public func loadItem(key: String) -> Data? {
+        var query = queryForItem(key: key)
+        query[kSecReturnData as String] = true
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
+        
+        var value: AnyObject?
+        SecItemCopyMatching(query as CFDictionary, &value)
+        return value as? Data
+    }
+    
+    public func saveItem(key: String, data: Data) {
+        var values: [String: Any] = [
+            kSecValueData as String: data,
+        ]
+        
+        #if os(macOS)
+        values[kSecAttrAccess as String] = SecAccessCreateWithOwnerAndACL(getuid(), 0, SecAccessOwnerType(kSecUseOnlyUID), nil, nil)
+        #else
+        values[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
+        #endif
+
+        let query = queryForItem(key: key)
+        let result = SecItemCopyMatching(query as CFDictionary, nil)
+        if result == errSecSuccess {
+            SecItemUpdate(query as CFDictionary, values as CFDictionary)
+        } else if result == errSecItemNotFound {
+            let merged = query.merging(values, uniquingKeysWith: { $1 })
+            SecItemAdd(merged as CFDictionary, nil)
+        }
+    }
+    
+    public func removeItem(key: String) {
+        let query = queryForItem(key: key)
+        SecItemDelete(query as CFDictionary)
+    }
+    
+    private func queryForItem(key: String) -> [String: Any] {
+        return [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: "com.descope.DescopeKit",
+            kSecAttrLabel as String: "DescopeSession",
+            kSecAttrAccount as String: key,
+        ]
     }
 }

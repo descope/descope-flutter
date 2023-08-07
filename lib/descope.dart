@@ -7,10 +7,12 @@ import '/src/session/manager.dart';
 import '/src/session/session.dart';
 
 export '/src/sdk/config.dart' show DescopeConfig;
+export '/src/sdk/routes.dart';
 export '/src/sdk/sdk.dart' show DescopeSdk;
 export '/src/session/session.dart' show DescopeSession;
 export '/src/session/token.dart' show DescopeToken;
 export '/src/types/others.dart';
+export '/src/types/responses.dart';
 
 /// Provides functions for working with the Descope API.
 ///
@@ -62,7 +64,7 @@ class Descope {
   /// See the documentation for [DescopeSessionManager] for more details.
   static DescopeSessionManager get sessionManager => _sdk.sessionManager;
 
-  static set sessionManage(DescopeSessionManager sessionManager) {
+  static set sessionManager(DescopeSessionManager sessionManager) {
     _sdk.sessionManager = sessionManager;
   }
 

@@ -15,5 +15,5 @@ _Value _$ValueFromJson(Map<String, dynamic> json) => _Value(
 Map<String, dynamic> _$ValueToJson(_Value instance) => <String, dynamic>{
       'sessionJwt': instance.sessionJwt,
       'refreshJwt': instance.refreshJwt,
-      'user': instance.user,
+      'user': DescopeUser.toJson(instance.user),
     };

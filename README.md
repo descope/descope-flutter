@@ -6,6 +6,9 @@ You can read more on the [Descope Website](https://descope.com).
 
 ## Features
 
+- [Quickstart](#quickstart)
+- [Session Management](#session-management)
+- [Authentication Flows](#running-flows)
 - Authenticate users using the authentication methods that suit your needs:
   - [OTP](#otp-authentication) (one-time password)
   - [TOTP](#totp-authentication) (timed one-time password / authenticator app)
@@ -14,7 +17,6 @@ You can read more on the [Descope Website](https://descope.com).
   - [OAuth](#oauth) (social)
   - [SSO / SAML](#ssosaml)
   - [Passwords](#password-authentication) (unrecommended form of authentication)
-- [Session Management](#session-management)
 
 ## Quickstart
 
@@ -25,8 +27,9 @@ the Descope Console.
 ```dart
 import 'package:descope/descope.dart';
 
-// Where your application is being created
+// Where your application state is being created
 Descope.projectId = '<Your-Project-ID>';
+await Descope.sessionManager.load();
 ```
 
 Authenticate the user in your application by starting one of the
@@ -44,7 +47,7 @@ Finish the authentication by verifying the OTP code the user entered:
 final authResponse = await Descope.otp.verify(method: DeliveryMethod.Email, loginId: "andy@example.com", code: code);
 
 // we create a DescopeSession object that represents an authenticated user session
-final session = DescopeSession(authResponse);
+final session = DescopeSession.fromAuthenticationResponse(authResponse);
 
 // the session manager automatically takes care of persisting the session
 // and refreshing it as needed
@@ -76,14 +79,19 @@ The `DescopeSessionManager` class is used to manage an authenticated
 user session for an application.
 
 The session manager takes care of loading and saving the session as well
-as ensuring that it's refreshed when needed.
+as ensuring that it's refreshed when needed. Make sure you load any saved
+session when your app state is first loaded by calling:
+
+```dart
+await Descope.sessionManager.load();
+```
 
 Once the user completes a sign in flow successfully you should set the
 `DescopeSession` object as the active session of the session manager.
 
 ```dart
 final authResponse = await Descope.otp.verify(method: DeliverMethod.Email, loginId: "andy@example.com", code: "123456");
-final session = DescopeSession(authResponse);
+final session = DescopeSession.fromAuthenticationResponse(authResponse);
 Descope.sessionManager.manageSession(session);
 ```
 
@@ -223,7 +231,7 @@ Run the flow by calling the flow start function:
 
 ```dart
 final authResponse = await Descope.flow.start("<URL_FOR_FLOW_IN_SETUP_#1>", deepLinkUrl: "<URL_FOR_APP_LINK_IN_SETUP_#2>");
-final session = DescopeSession(authResponse);
+final session = DescopeSession.fromAuthenticationResponse(authResponse);
 Descope.sessionManager.manageSession(session);
 ```
 

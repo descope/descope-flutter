@@ -71,6 +71,11 @@ class DescopeSessionManager {
 
   DescopeSession? get session => _session;
 
+  Future<void> load() async {
+    _session = await storage.loadSession();
+    lifecycle.session = _session;
+  }
+
   /// Set an active [DescopeSession] in this manager.
   ///
   /// You should call this function after a user finishes logging in to the
@@ -122,7 +127,7 @@ class DescopeSessionManager {
       return;
     }
     await lifecycle.refreshSessionIfNeeded();
-    storage.saveSession(session);
+    await storage.saveSession(session);
   }
 
   /// Updates the active session's underlying JWTs.

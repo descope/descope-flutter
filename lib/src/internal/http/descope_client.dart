@@ -241,15 +241,15 @@ class DescopeClient extends HttpClient {
   // Others
 
   Future<UserResponse> me(String refreshJwt) {
-    return get('me', UserResponse.decoder, headers: authorization(refreshJwt));
+    return get('auth/me', UserResponse.decoder, headers: authorization(refreshJwt));
   }
 
   Future<JWTServerResponse> refresh(String refreshJwt) {
-    return post('refresh', JWTServerResponse.decoder, headers: authorization(refreshJwt));
+    return post('auth/refresh', JWTServerResponse.decoder, headers: authorization(refreshJwt));
   }
 
   Future<void> logout(String refreshJwt) {
-    return post('logout', emptyResponse, headers: authorization(refreshJwt));
+    return post('auth/logout', emptyResponse, headers: authorization(refreshJwt));
   }
 
   // Internal

@@ -37,7 +37,7 @@ class Flow extends DescopeFlow {
 
     try {
       // invoke a platform method call
-      await _mChannel.invokeMethod('start', {'url': uri.toString()});
+      await _mChannel.invokeMethod('startFlow', {'url': uri.toString()});
       _listenToEventsIfNeeded();
       final completer = Completer<AuthenticationResponse>();
       runner.completer = completer;
