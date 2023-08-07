@@ -16,7 +16,7 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         
         let instance = DescopePlugin()
         
-        eventChannel.setStreamHandler(instance as FlutterStreamHandler & NSObjectProtocol)
+        eventChannel.setStreamHandler(instance)
         registrar.addMethodCallDelegate(instance, channel: methodChannel)
     }
     
@@ -38,7 +38,7 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     // Flows
     
     private func startFlow(call: FlutterMethodCall, result: FlutterResult) {
-        guard let args = call.arguments as? Dictionary<String, Any>, let urlString = args["url"] as? String else { return result(FlutterError(code: "MISSINGARGS", message: "'url' is required for startFlow", details: nil)) }
+        guard let args = call.arguments as? [String: Any], let urlString = args["url"] as? String else { return result(FlutterError(code: "MISSINGARGS", message: "'url' is required for startFlow", details: nil)) }
         startFlow(urlString)
         result(urlString)
     }
@@ -46,19 +46,20 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     // Storage
     
     private func loadItem(call: FlutterMethodCall, result: FlutterResult) {
-        guard let args = call.arguments as? Dictionary<String, Any>, let key = args["key"] as? String else { return result(FlutterError(code: "MISSINARGS", message: "'key' is required for loadItem", details: nil)) }
+        guard let args = call.arguments as? [String: Any], let key = args["key"] as? String else { return result(FlutterError(code: "MISSINARGS", message: "'key' is required for loadItem", details: nil)) }
         guard let data = keychainStore.loadItem(key: key) else { return result(nil) }
-        result(String(bytes: data, encoding: .utf8))
+        let value = String(bytes: data, encoding: .utf8)
+        result(value)
     }
     
     private func saveItem(call: FlutterMethodCall, result: FlutterResult) {
-        guard let args = call.arguments as? Dictionary<String, Any>, let key = args["key"] as? String, let data = args["data"] as? String else { return result(FlutterError(code: "MISSINARGS", message: "'key' and 'data' are required for saveItem", details: nil)) }
-        keychainStore.saveItem(key: key, data: Data(data.utf8))
+        guard let args = call.arguments as? [String: Any], let key = args["key"] as? String, let value = args["data"] as? String else { return result(FlutterError(code: "MISSINARGS", message: "'key' and 'data' are required for saveItem", details: nil)) }
+        keychainStore.saveItem(key: key, data: Data(value.utf8))
         result(key)
     }
     
     private func removeItem(call: FlutterMethodCall, result: FlutterResult) {
-        guard let args = call.arguments as? Dictionary<String, Any>, let key = args["key"] as? String else { return result(FlutterError(code: "MISSINARGS", message: "'key' is required for removeItem", details: nil)) }
+        guard let args = call.arguments as? [String: Any], let key = args["key"] as? String else { return result(FlutterError(code: "MISSINARGS", message: "'key' is required for removeItem", details: nil)) }
         keychainStore.removeItem(key: key)
         result(key)
     }
@@ -86,8 +87,9 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
                     case ASWebAuthenticationSessionError.canceledLogin:
                         self.eventSink?("canceled")
                         return
-                    // case ASWebAuthenticationSessionError.presentationContextInvalid:
-                    // case ASWebAuthenticationSessionError.presentationContextNotProvided:
+                    case ASWebAuthenticationSessionError.presentationContextInvalid, ASWebAuthenticationSessionError.presentationContextNotProvided:
+                        // not handled for now
+                        fallthrough
                     default:
                         self.eventSink?("")
                         return
@@ -105,9 +107,6 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
 private class DefaultContextProvider: NSObject, ASWebAuthenticationPresentationContextProviding {
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
-#if os(macOS)
-        return ASPresentationAnchor()
-#else
         let scene = UIApplication.shared.connectedScenes
             .filter { $0.activationState == .foregroundActive }
             .compactMap { $0 as? UIWindowScene }
@@ -117,7 +116,6 @@ private class DefaultContextProvider: NSObject, ASWebAuthenticationPresentationC
             .first { $0.isKeyWindow }
         
         return keyWindow ?? ASPresentationAnchor()
-#endif
     }
 }
 
@@ -133,15 +131,10 @@ private class KeychainStore {
     }
     
     public func saveItem(key: String, data: Data) {
-        var values: [String: Any] = [
+        let values: [String: Any] = [
             kSecValueData as String: data,
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
         ]
-        
-        #if os(macOS)
-        values[kSecAttrAccess as String] = SecAccessCreateWithOwnerAndACL(getuid(), 0, SecAccessOwnerType(kSecUseOnlyUID), nil, nil)
-        #else
-        values[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
-        #endif
 
         let query = queryForItem(key: key)
         let result = SecItemCopyMatching(query as CFDictionary, nil)
