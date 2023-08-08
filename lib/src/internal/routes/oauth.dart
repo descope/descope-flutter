@@ -10,8 +10,8 @@ class OAuth implements DescopeOAuth {
   OAuth(this.client);
 
   @override
-  Future<String> start({required OAuthProvider provider, String? redirectUrl}) async {
-    return (await client.oauthStart(provider, redirectUrl)).url;
+  Future<String> start({required OAuthProvider provider, String? redirectUrl, SignInOptions? options}) async {
+    return (await client.oauthStart(provider, redirectUrl, options)).url;
   }
 
   @override

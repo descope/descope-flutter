@@ -179,7 +179,7 @@ Map<String, dynamic> getTenants(Map<String, dynamic> claims) {
 // JWT Decoding
 
 Uint8List decodeEncodedFragment(String value) {
-  final length = value.length + 4 - value.length % 4;
+  final length = 4 * ((value.length + 3) /  4).floor();
   final data = const Base64Decoder().convert(value.padRight(length, '='));
   return data;
 }
