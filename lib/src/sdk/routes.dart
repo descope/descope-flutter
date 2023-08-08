@@ -65,8 +65,8 @@ abstract class DescopeOtp {
   /// The OTP code will be sent to the user identified by [loginId]
   /// via a delivery [method] of choice.
   /// - Important: Make sure the delivery information corresponding with
-  ///     the delivery [method] is given either in the optional [details] parameter or as
-  ///     the [loginId] itself, i.e., the email address, phone number, etc.
+  /// the delivery [method] is given either in the optional [details] parameter or as
+  /// the [loginId] itself, i.e., the email address, phone number, etc.
   Future<String> signUp({required DeliveryMethod method, required String loginId, SignUpDetails? details});
 
   /// Authenticates an existing user using an OTP
@@ -80,9 +80,9 @@ abstract class DescopeOtp {
   ///
   /// The OTP code will be sent to the user identified by [loginId]
   /// via a delivery [method] of choice.
-  /// - Important: Make sure the delivery information corresponding with
-  ///     the delivery [method] is given either in the optional [user] parameter or as
-  ///     the [loginId] itself, i.e., the email address, phone number, etc.
+  /// - **Important**: Make sure the delivery information corresponding with
+  /// the delivery [method] is given either in the optional [user] parameter or as
+  /// the [loginId] itself, i.e., the email address, phone number, etc.
   Future<String> signUpOrIn({required DeliveryMethod method, required String loginId});
 
   /// Verifies an OTP [code] sent to the user.
@@ -212,11 +212,11 @@ abstract class DescopeMagicLink {
   /// The magic link will be sent to the user identified by [loginId]
   /// via a delivery [method] of choice.
   /// - Important: Make sure the delivery information corresponding with
-  ///     the delivery [method] is given either in the optional [details] parameter or as
-  ///     the [loginId] itself, i.e., the email address, phone number, etc.
+  /// the delivery [method] is given either in the optional [details] parameter or as
+  /// the [loginId] itself, i.e., the email address, phone number, etc.
   ///
   /// - Important: Make sure a default magic link URI is configured
-  ///     in the Descope console, or provided by this call via [uri].
+  /// in the Descope console, or provided by this call via [uri].
   Future<String> signUp({required DeliveryMethod method, required String loginId, SignUpDetails? details, String? uri});
 
   /// Authenticates an existing user using a magic link.
@@ -224,7 +224,7 @@ abstract class DescopeMagicLink {
   /// The magic link will be sent to the user identified by [loginId]
   /// via a delivery [method] of choice.
   /// - Important: Make sure a default magic link URI is configured
-  ///     in the Descope console, or provided by this call via [uri].
+  /// in the Descope console, or provided by this call via [uri].
   Future<String> signIn({required DeliveryMethod method, required String loginId, String? uri});
 
   /// Authenticates an existing user if one exists, or creates a new user
@@ -233,11 +233,11 @@ abstract class DescopeMagicLink {
   /// The magic link will be sent to the user identified by [loginId]
   /// via a delivery [method] of choice.
   /// - Important: Make sure the delivery information corresponding with
-  ///     the delivery [method] is given either in the optional [user] parameter or as
-  ///     the [loginId] itself, i.e., the email address, phone number, etc.
+  /// the delivery [method] is given either in the optional [user] parameter or as
+  /// the [loginId] itself, i.e., the email address, phone number, etc.
   ///
   /// - Important: Make sure a default magic link URI is configured
-  ///     in the Descope console, or provided by this call via [uri].
+  /// in the Descope console, or provided by this call via [uri].
   Future<String> signUpOrIn({required DeliveryMethod method, required String loginId, String? uri});
 
   /// Updates an existing user by adding an [email] address.
@@ -248,7 +248,7 @@ abstract class DescopeMagicLink {
   /// be passed as a parameter to this function.
   ///
   /// - Important: Make sure a default magic link URI is configured
-  ///     in the Descope console, or provided by this call via [uri].
+  /// in the Descope console, or provided by this call via [uri].
   Future<String> updateEmail({required String email, required String loginId, String? uri, required String refreshJwt});
 
   /// Updates an existing user by adding a [phone] number.
@@ -259,10 +259,10 @@ abstract class DescopeMagicLink {
   /// be passed as a parameter to this function.
   ///
   /// - Important: Make sure the delivery information corresponding with
-  ///     the phone number enabled delivery [method].
+  /// the phone number enabled delivery [method].
   ///
   /// - Important: Make sure a default magic link URI is configured
-  ///     in the Descope console, or provided by this call via [uri].
+  /// in the Descope console, or provided by this call via [uri].
   Future<String> updatePhone({required String phone, required DeliveryMethod method, required String loginId, String? uri, required String refreshJwt});
 
   /// Verifies a magic link [token].
@@ -292,10 +292,10 @@ abstract class DescopeEnchantedLink {
   /// the [EnchantedLinkResponse.pendingRef] value to poll until the authentication is verified.
   ///
   /// - Important: Make sure an email address is provided via
-  ///     the [details] parameter or as the [loginId] itself.
+  /// the [details] parameter or as the [loginId] itself.
   ///
   /// - Important: Make sure a default Enchanted link URI is configured
-  ///     in the Descope console, or provided via [uri] by this call.
+  /// in the Descope console, or provided via [uri] by this call.
   Future<EnchantedLinkResponse> signUp({required String loginId, SignUpDetails? details, String? uri});
 
   /// Authenticates an existing user using an enchanted link, sent via email.
@@ -306,7 +306,7 @@ abstract class DescopeEnchantedLink {
   /// the [EnchantedLinkResponse.pendingRef] value to poll until the authentication is verified.
   ///
   /// - Important: Make sure a default Enchanted link URI is configured
-  ///     in the Descope console, or provided via [uri] by this call.
+  /// in the Descope console, or provided via [uri] by this call.
   Future<EnchantedLinkResponse> signIn({required String loginId, String? uri});
 
   /// Authenticates an existing user if one exists, or create a new user using an
@@ -317,7 +317,7 @@ abstract class DescopeEnchantedLink {
   /// the [EnchantedLinkResponse.pendingRef] value to poll until the authentication is verified.
   ///
   /// - Important: Make sure a default Enchanted link URI is configured
-  ///     in the Descope console, or provided via [uri] by this call.
+  /// in the Descope console, or provided via [uri] by this call.
   Future<EnchantedLinkResponse> signUpOrIn({required String loginId, String? uri});
 
   /// Updates an existing user by adding an email address.
@@ -338,9 +338,9 @@ abstract class DescopeEnchantedLink {
   /// presses the enchanted link in the authentication email.
   ///
   /// - Important: This function doesn't perform any polling or waiting, so calling code
-  ///     should expect to catch any thrown exceptions and
-  ///     handle them appropriately. For most use cases it might be more convenient to
-  ///     use [pollForSession] instead.
+  /// should expect to catch any thrown exceptions and
+  /// handle them appropriately. For most use cases it might be more convenient to
+  /// use [pollForSession] instead.
   Future<AuthenticationResponse> checkForSession({required String pendingRef});
 
   /// Waits until an enchanted link authentication has been verified by the user.
@@ -375,7 +375,7 @@ abstract class DescopeOAuth {
   /// It's recommended to use `flutter_web_auth` to perform the authentication.
   ///
   /// - Important: Make sure a default OAuth redirect URL is configured
-  ///     in the Descope console, or provided by this call via [redirectUrl].
+  /// in the Descope console, or provided by this call via [redirectUrl].
   Future<String> start({required OAuthProvider provider, String? redirectUrl});
 
   /// Completes an OAuth redirect chain.
@@ -400,7 +400,7 @@ abstract class DescopeSso {
   /// It's recommended to use `flutter_web_auth` to perform the authentication.
   ///
   /// - Important: Make sure a SSO is set up correctly and a redirect URL is configured
-  ///     in the Descope console, or provided by this call via [redirectUrl].
+  /// in the Descope console, or provided by this call via [redirectUrl].
   Future<String> start({required String emailOrTenantId, String? redirectUrl});
 
   /// Completes an SSO redirect chain.
