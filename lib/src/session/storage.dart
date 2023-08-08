@@ -27,6 +27,8 @@ abstract class DescopeSessionStorage {
 
 /// The default implementation of the [DescopeSessionStorage].
 ///
+/// By default this class persists the session securely to the keychain on iOS, or
+/// vie `EncryptedSharedPreferences` on Android.
 /// For your convenience, you can implement the [Store] class and
 /// override the [Store.loadItem], [Store.saveItem] and [Store.removeItem] functions,
 /// then pass an instance of that class to the constructor to create a [SessionStorage] object

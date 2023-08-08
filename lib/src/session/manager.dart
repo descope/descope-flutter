@@ -25,7 +25,7 @@ import 'storage.dart';
 ///
 /// If your backend uses a different authorization mechanism you can of course
 /// use the session JWT directly instead of the extension function. You can either
-/// add another extension function on [URLConnection] such as the one above, or you
+/// add another extension function on `http.Request` such as the one above, or you
 /// can do the following.
 ///
 ///     await Descope.sessionManager.refreshSessionIfNeeded();
@@ -71,6 +71,11 @@ class DescopeSessionManager {
 
   DescopeSession? get session => _session;
 
+  /// Load any saved session between app launches
+  ///
+  /// This function should be called once after initializing the Descope SDK
+  /// with your `projectId` and other configurations. It will load any saved
+  /// [DescopeSession] into memory.
   Future<void> load() async {
     _session = await storage.loadSession();
     lifecycle.session = _session;
@@ -82,8 +87,8 @@ class DescopeSessionManager {
   /// host application.
   ///
   /// The parameter is set as the value of the [session] property and is persisted
-  /// so it can be reloaded on the next application launch or
-  /// [DescopeSessionManager] instantiation.
+  /// so it can be reloaded on the next application launch by calling the
+  /// [load] function.
   ///
   /// - **Important:** The default [DescopeSessionStorage] only keeps at most
   ///     one session in the storage for simplicity. If for some reason you
@@ -133,10 +138,9 @@ class DescopeSessionManager {
   /// Updates the active session's underlying JWTs.
   ///
   /// This function accepts a [RefreshResponse] value as a parameter which is returned
-  /// by calls to `Descope.auth.refreshSession`. The manager persists the updated session
-  /// before returning (by default).
+  /// by calls to `Descope.auth.refreshSession`. The manager will persist the updated session.
   ///
-  /// - **Important:** In most circumstances it's best to use `refreshSessionIfNeeded` and let
+  /// - **Important:** In most circumstances it's best to use [refreshSessionIfNeeded] and let
   ///     it update the session unless you need to invoke `Descope.auth.refreshSession`
   ///     manually.
   ///
@@ -154,8 +158,8 @@ class DescopeSessionManager {
   /// Updates the active session's user details.
   ///
   /// This function accepts a [DescopeUser] value as a parameter which is returned by
-  /// calls to `Descope.auth.me`. The manager saves the updated session to the
-  /// storage before returning.
+  /// calls to `Descope.auth.me`. The manager will save the updated session to the
+  /// storage.
   ///
   ///     final userResponse = await Descope.auth.me(session.refreshJwt);
   ///     Descope.sessionManager.updateUser(userResponse);

@@ -76,30 +76,32 @@ class Flow extends DescopeFlow {
     StreamSubscription? subscription;
     subscription = _eChannel.receiveBroadcastStream().listen((event) {
       final str = event as String;
-      final completer = _current?.completer;
-      _current = null;
       switch(str) {
         case "canceled":
-          completer?.completeError(Exception("Flow canceled by user"));
+          _completeWithError("Flow canceled by user");
           break;
         case "":
-          completer?.completeError(Exception("Unexpected error running flow"));
+          _completeWithError("Unexpected error running flow");
           break;
         default:
           try {
             final uri = Uri.parse(str);
             exchange(uri);
           } on Exception {
-            completer?.completeError(Exception("Unexpected URI received from flow"));
+            _completeWithError("Unexpected URI received from flow");
           }
       }
       subscription?.cancel();
     }, onError: (_) {
-      _current?.completer?.completeError(Exception("Authentication failed"));
-      _current = null;
+      _completeWithError("Authentication failed");
       subscription?.cancel();
     });
 
+  }
+
+  void _completeWithError(String errorString) {
+    _current?.completer?.completeError(Exception(errorString));
+    _current = null;
   }
 
   Future<void> _exchange(String authorizationCode, String codeVerifier, Completer<AuthenticationResponse> completer) async {

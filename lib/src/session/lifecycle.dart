@@ -1,9 +1,14 @@
 import '../sdk/routes.dart';
+import 'manager.dart';
 import 'session.dart';
 
+/// This abstract class can be used to customize how a [DescopeSessionManager] object
+/// manages its [DescopeSession] while the application is running.
 abstract class DescopeSessionLifecycle {
+  /// Set by the session manager whenever the current active session changes.
   DescopeSession? session;
 
+  /// Called the session manager to conditionally refresh the active session.
   Future<void> refreshSessionIfNeeded();
 }
 

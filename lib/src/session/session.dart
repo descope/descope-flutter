@@ -26,7 +26,7 @@ import 'token.dart';
 /// and the code examples above are only slightly different. See the documentation
 /// for [DescopeSessionManager] for more details.
 ///
-/// @constructor `DescopeSession` can be constructed either by using [DescopeToken]s,
+/// `DescopeSession` can be constructed either by using [DescopeToken]s,
 /// or by providing an [AuthenticationResponse], or using the JWT strings.
 class DescopeSession {
   DescopeToken _sessionToken;
