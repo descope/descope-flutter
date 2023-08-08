@@ -1,3 +1,5 @@
+/// A package that provides convenient access to the Descope user management and
+/// authentication APIs for Flutter apps.
 library descope_flutter;
 
 import '/src/sdk/config.dart';
@@ -6,13 +8,16 @@ import '/src/sdk/sdk.dart';
 import '/src/session/manager.dart';
 import '/src/session/session.dart';
 
-export '/src/sdk/config.dart';
+export '/src/sdk/config.dart' show DescopeConfig;
 export '/src/sdk/routes.dart';
-export '/src/sdk/sdk.dart';
-export '/src/session/session.dart';
+export '/src/sdk/sdk.dart' show DescopeSdk;
+export '/src/session/lifecycle.dart' show DescopeSessionLifecycle, SessionLifecycle;
+export '/src/session/session.dart' show DescopeSession;
+export '/src/session/storage.dart' show DescopeSessionStorage, SessionStorage, SessionStorageStore;
 export '/src/session/token.dart' show DescopeToken;
 export '/src/types/others.dart';
 export '/src/types/responses.dart';
+export '/src/types/user.dart' show DescopeUser;
 
 /// Provides functions for working with the Descope API.
 ///
@@ -25,7 +30,7 @@ class Descope {
   /// You will most likely want to set this value in your application's initialization code,
   /// and in most cases you only need to set this to work with the `Descope` singleton.
   ///
-  /// - **Note:** This is a shortcut for setting the [Descope.config] property.
+  /// **Note:** This is a shortcut for setting the [Descope.config] property.
   static String _projectId = "";
 
   static String get projectId => _projectId;
@@ -40,9 +45,9 @@ class Descope {
   /// Set this property **instead** of [Descope.projectId] in your application's initialization code
   /// if you require additional configuration.
   ///
-  /// - **Important:** To prevent accidental misuse only one of `config` and `projectId` can
-  ///     be set, and they can only be set once. If this isn't appropriate for your use
-  ///     case you can also use the [DescopeSdk] class directly instead.
+  /// **Important:** To prevent accidental misuse only one of `config` and `projectId` can
+  /// be set, and they can only be set once. If this isn't appropriate for your use
+  /// case you can also use the [DescopeSdk] class directly instead.
   static DescopeConfig _config = DescopeConfig.initial;
 
   static DescopeConfig get config => _config;
@@ -55,11 +60,11 @@ class Descope {
   /// Manages the storage and lifetime of a [DescopeSession].
   ///
   /// You can use this [DescopeSessionManager] object as a shared instance to manage
-  ///  authenticated sessions in your application.
+  /// authenticated sessions in your application.
   ///
-  ///    final authResponse = Descope.otp.verify(DeliveryMethod.Email, "andy@example.com", "123456")
-  ///    val session = DescopeSession(authResponse)
-  ///    Descope.sessionManager.manageSession(session)
+  ///     final authResponse = Descope.otp.verify(DeliveryMethod.Email, "andy@example.com", "123456")
+  ///     val session = DescopeSession(authResponse)
+  ///     Descope.sessionManager.manageSession(session)
   ///
   /// See the documentation for [DescopeSessionManager] for more details.
   static DescopeSessionManager get sessionManager => _sdk.sessionManager;
@@ -96,7 +101,7 @@ class Descope {
   static DescopePassword get password => _sdk.password;
 
   // The underlying `DescopeSdk` object used by the `Descope` singleton.
-  static late final DescopeSdk _sdk = DescopeSdk(config);
+  static final DescopeSdk _sdk = DescopeSdk(config);
 
   // cannot be instantiated
   Descope._();

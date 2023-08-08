@@ -112,13 +112,13 @@ extension UpdateSessionTokens on DescopeSession {
   /// Updates the underlying JWTs with those from the given [RefreshResponse].
   ///
   ///     if (session.sessionToken.isExpired) {
-  ///         final refreshResponse = await Descope.auth.refreshSession(session.refreshJwt);
-  ///         session.updateTokens(refreshResponse);
+  ///       final refreshResponse = await Descope.auth.refreshSession(session.refreshJwt);
+  ///       session.updateTokens(refreshResponse);
   ///     }
   ///
-  /// Important: It's recommended to use a `DescopeSessionManager` to manage sessions,
-  /// in which case you should call `updateTokens` on the manager itself, or
-  /// just call `refreshSessionIfNeeded` to do everything for you.
+  /// Important: It's recommended to use a [DescopeSessionManager] to manage sessions,
+  /// in which case you should call [updateTokens] on the manager itself, or
+  /// just call [refreshSessionIfNeeded] to do everything for you.
   void updateTokens(RefreshResponse refreshResponse) {
     _sessionToken = refreshResponse.sessionToken;
     _refreshToken = refreshResponse.refreshToken ?? _refreshToken;
@@ -129,8 +129,8 @@ extension UpdateSessionTokens on DescopeSession {
   ///     final userResponse = await Descope.auth.me(session.refreshJwt);
   ///     session.updateUser(userResponse);
   ///
-  /// Important: It's recommended to use a `DescopeSessionManager` to manage sessions,
-  /// in which case you should call `updateUser` on the manager itself instead
+  /// Important: It's recommended to use a [DescopeSessionManager] to manage sessions,
+  /// in which case you should call [updateUser] on the manager itself instead
   /// to ensure that the updated user details are saved.
   void updateUser(DescopeUser descopeUser) {
     _user = descopeUser;

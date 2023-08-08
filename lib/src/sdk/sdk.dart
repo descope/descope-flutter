@@ -65,7 +65,7 @@ class DescopeSdk {
   /// the Descope console. The [baseUrl] is an  optional override for the URL of
   /// the Descope server, in case you need to access it through a CNAME record.
   factory DescopeSdk(DescopeConfig config) {
-    var client = DescopeClient(config);
+    final client = DescopeClient(config);
     return DescopeSdk._internal(config, Flow(client), Auth(client), Otp(client), Totp(client), Password(client), MagicLink(client), EnchantedLink(client), OAuth(client), Sso(client));
   }
 

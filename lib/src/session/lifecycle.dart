@@ -14,15 +14,13 @@ abstract class DescopeSessionLifecycle {
 
 /// The default implementation of the [DescopeSessionLifecycle] interface.
 ///
-/// The `SessionLifecycle` class periodically checks if the session needs to be
+/// The [SessionLifecycle] class periodically checks if the session needs to be
 /// refreshed (every 30 seconds by default). The [refreshSessionIfNeeded] function
 /// will refresh the session if it's about to expire (within 60 seconds by default)
 /// or if it's already expired.
-///
-/// [DescopeAuth] used to refresh the session when needed
 class SessionLifecycle implements DescopeSessionLifecycle {
-  var stalenessAllowedInterval = Duration(seconds: 60);
-  var stalenessCheckFrequency = Duration(seconds: 30);
+  var stalenessAllowedInterval = const Duration(seconds: 60);
+  var stalenessCheckFrequency = const Duration(seconds: 30);
 
   DescopeSession? _session;
   final DescopeAuth _auth;

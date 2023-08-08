@@ -35,12 +35,12 @@ abstract class DescopeSessionStorage {
 /// that uses a different backing store.
 class SessionStorage implements DescopeSessionStorage {
   final String _projectId;
-  final Store _store;
+  final SessionStorageStore _store;
   _Value? _lastValue;
 
-  SessionStorage({required String projectId, Store? store})
+  SessionStorage({required String projectId, SessionStorageStore? store})
       : _projectId = projectId,
-        _store = store ?? PlatformStore();
+        _store = store ?? SessionStoragePlatformStore();
 
   @override
   Future<void> saveSession(DescopeSession session) async {
@@ -74,10 +74,10 @@ class SessionStorage implements DescopeSessionStorage {
   }
 }
 
-/// A helper class that takes care of the actual storage of session data.
-/// The default function implementations in this class do nothing or return `null`.
-class Store {
-  const Store();
+/// A helper class that takes care of the actual storage of session data. The default
+/// function implementations in this class do nothing or return `null`.
+class SessionStorageStore {
+  const SessionStorageStore();
 
   Future<void> saveItem({required String key, required String data}) async {}
 
@@ -86,10 +86,10 @@ class Store {
   Future<void> removeItem(String key) async {}
 }
 
-class PlatformStore implements Store {
+class SessionStoragePlatformStore implements SessionStorageStore {
   static const _mChannel = MethodChannel('descope_flutter/methods');
 
-  PlatformStore();
+  SessionStoragePlatformStore();
 
   @override
   Future<String?> loadItem(String key) async {
