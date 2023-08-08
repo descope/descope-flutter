@@ -27,7 +27,7 @@ class Flow extends DescopeFlow {
 
   @override
   Future<AuthenticationResponse> start(String flowUrl, {String? deepLinkUrl}) async {
-    // cancel any previous running flows
+    // cancel any previous still running flows
     _current?.completer?.completeError(Exception("Canceled"));
 
     // prepare a new flow runner
@@ -56,6 +56,7 @@ class Flow extends DescopeFlow {
       throw Exception("No flow pending exchange");
     }
 
+    _current = null;
     final authorizationCode = incomingUri.queryParameters['code'];
     if (authorizationCode == null) {
       final e = Exception('No code parameter on incoming URI');
@@ -63,7 +64,6 @@ class Flow extends DescopeFlow {
       throw e;
     }
 
-    _current = null;
     _exchange(authorizationCode, codeVerifier, completer);
   }
 
@@ -76,26 +76,30 @@ class Flow extends DescopeFlow {
     StreamSubscription? subscription;
     subscription = _eChannel.receiveBroadcastStream().listen((event) {
       final str = event as String;
+      final completer = _current?.completer;
+      _current = null;
       switch(str) {
         case "canceled":
-          _current?.completer?.completeError(Exception("Flow canceled by user"));
+          completer?.completeError(Exception("Flow canceled by user"));
           break;
         case "":
-          _current?.completer?.completeError(Exception("Unexpected error running flow"));
+          completer?.completeError(Exception("Unexpected error running flow"));
           break;
         default:
           try {
             final uri = Uri.parse(str);
             exchange(uri);
           } on Exception {
-            _current?.completer?.completeError(Exception("Unexpected URI received from flow"));
+            completer?.completeError(Exception("Unexpected URI received from flow"));
           }
       }
       subscription?.cancel();
     }, onError: (_) {
       _current?.completer?.completeError(Exception("Authentication failed"));
+      _current = null;
       subscription?.cancel();
     });
+
   }
 
   Future<void> _exchange(String authorizationCode, String codeVerifier, Completer<AuthenticationResponse> completer) async {
