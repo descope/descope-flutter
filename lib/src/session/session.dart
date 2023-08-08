@@ -95,15 +95,15 @@ extension SessionConveniences on DescopeSession {
   /// A map with all the custom claims in the underlying JWT. It includes
   /// any claims whose values aren't already exposed by other accessors or
   /// authorization functions.
-  Map<String, dynamic> get claims => _refreshToken.customClaims;
+  Map<String, dynamic> get claims => _sessionToken.customClaims;
 
   /// Returns the list of permissions granted for the user. Pass `null` for
   /// the [tenant] parameter if the user isn't associated with any tenant.
-  List<String> permissions([String? tenant]) => _refreshToken.getPermissions(tenant: tenant);
+  List<String> permissions([String? tenant]) => _sessionToken.getPermissions(tenant: tenant);
 
   /// Returns the list of roles for the user. Pass `null` for the [tenant]
   /// parameter if the user isn't associated with any tenant.
-  List<String> roles([String? tenant]) => _refreshToken.getRoles(tenant: tenant);
+  List<String> roles([String? tenant]) => _sessionToken.getRoles(tenant: tenant);
 }
 
 // Updating the session manually when not using a `DescopeSessionManager`.
