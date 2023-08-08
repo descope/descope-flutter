@@ -29,7 +29,7 @@ import 'package:descope/descope.dart';
 
 // Where your application state is being created
 Descope.projectId = '<Your-Project-ID>';
-await Descope.sessionManager.load();
+await Descope.sessionManager.loadSession();
 ```
 
 Authenticate the user in your application by starting one of the
@@ -79,15 +79,9 @@ The `DescopeSessionManager` class is used to manage an authenticated
 user session for an application.
 
 The session manager takes care of loading and saving the session as well
-as ensuring that it's refreshed when needed. Make sure you load any saved
-session when your app state is first loaded by calling:
-
-```dart
-await Descope.sessionManager.load();
-```
-
-Once the user completes a sign in flow successfully you should set the
-`DescopeSession` object as the active session of the session manager.
+as ensuring that it's refreshed when needed. When the user completes a sign
+in flow successfully you should set the `DescopeSession` object as the
+active session of the session manager.
 
 ```dart
 final authResponse = await Descope.otp.verify(method: DeliverMethod.Email, loginId: "andy@example.com", code: "123456");
@@ -118,15 +112,32 @@ if (sessionJwt != null) {
 }
 ```
 
-When the application is relaunched the `DescopeSessionManager` loads any
-existing session automatically, so you can check straight away if there's
-an authenticated user.
+When the application is relaunched the `DescopeSessionManager` can load the existing
+session and you can check straight away if there's an authenticated user.
 
 ```dart
-Descope.projectId = "...";
-final session = Descope.sessionManager.session;
-if (session != null) {
-    print("User is logged in: $session");
+await Descope.sessionManager.loadSession();
+```
+
+If you prefer to call `loadSession` in your `main()` function, before the platform's
+`runApp()` function is called, then you'll need to ensure the widget bindings are
+initialized first:
+
+```dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  Descope.projectId = '...';
+  await Descope.sessionManager.loadSession();
+
+  final session = Descope.sessionManager.session;
+  if (session != null) {
+    print("User is logged in: ${session.user}");
+  }
+
+  runApp(
+    ...
+  );
 }
 ```
 
