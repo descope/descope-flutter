@@ -12,7 +12,7 @@ export '/src/sdk/config.dart' show DescopeConfig;
 export '/src/sdk/routes.dart';
 export '/src/sdk/sdk.dart' show DescopeSdk;
 export '/src/session/lifecycle.dart' show DescopeSessionLifecycle, SessionLifecycle;
-export '/src/session/session.dart' show DescopeSession, SessionConveniences, UpdateSessionTokens;
+export '/src/session/session.dart' show DescopeSession;
 export '/src/session/storage.dart' show DescopeSessionStorage, SessionStorage, SessionStorageStore;
 export '/src/session/token.dart' show DescopeToken;
 export '/src/types/others.dart';
