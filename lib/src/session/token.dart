@@ -15,7 +15,7 @@ abstract class DescopeToken {
   /// of the user or access key the JWT was generated for.
   String get id;
 
-  /// The value of the "aud" (audience) claim which is the unique id
+  /// The value of the "iss" (issuer) claim which is the unique id
   /// of the Descope project the JWT was generated for.
   String get projectId;
 

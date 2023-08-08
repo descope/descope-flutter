@@ -85,9 +85,6 @@ class DescopeUser {
     if (identical(this, other)) {
       return true;
     }
-    if (other.runtimeType != runtimeType) {
-      return false;
-    }
     return other is DescopeUser &&
         other.userId == userId &&
         listEquals(other.loginIds, loginIds) &&
