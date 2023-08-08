@@ -5,15 +5,15 @@ import '/src/session/session.dart';
 
 part 'user.g.dart';
 
-/// The `DescopeUser` class represents an existing user in Descope.
+/// The [DescopeUser] class represents an existing user in Descope.
 ///
 /// After a user is signed in with any authentication method the [DescopeSession] object
-/// keeps a `DescopeUser` value in its [DescopeSession.user] property so the user's details are always
+/// keeps a [DescopeUser] value in its [DescopeSession.user] property so the user's details are always
 /// available.
 ///
 /// In the example below we finalize an OTP authentication for the user by verifying the
-/// code. The authentication response has a `DescopeUser` property which can be used
-/// directly or later on when it's kept in the `DescopeSession`.
+/// code. The authentication response has a [DescopeUser] property which can be used
+/// directly or later on when it's kept in the [DescopeSession].
 ///
 ///     final authResponse = await Descope.otp.verify(method: DeliveryMethod.Email, loginId: "andy@example.com", code: "123456");
 ///     print("Finished OTP login for user: ${authResponse.user}");
@@ -23,7 +23,7 @@ part 'user.g.dart';
 ///
 /// The details for a signed in user can be updated manually by calling the `auth.me` API with
 /// the `refreshJwt` from the active [DescopeSession]. If the operation is successful the call
-/// returns a new `DescopeUser` value.
+/// returns a new [DescopeUser] value.
 ///
 ///     final session = Descope.sessionManager.session;
 ///     if (session != null) {
@@ -56,6 +56,7 @@ class DescopeUser {
   final Uri? picture;
 
   /// The user's email address.
+  ///
   /// If this is non-null and the `isVerifiedEmail` flag is `true` then this email address
   /// can be used to do email based authentications such as magic link, OTP, etc.
   final String? email;
@@ -65,6 +66,7 @@ class DescopeUser {
   final bool isVerifiedEmail;
 
   /// The user's phone number.
+  ///
   /// If this is non-null and the `isVerifiedPhone` flag is `true` then this phone number
   /// can be used to do phone based authentications such as OTP.
   final String? phone;
@@ -82,9 +84,6 @@ class DescopeUser {
   bool operator ==(Object other) {
     if (identical(this, other)) {
       return true;
-    }
-    if (other.runtimeType != runtimeType) {
-      return false;
     }
     return other is DescopeUser &&
         other.userId == userId &&

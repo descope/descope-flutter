@@ -7,9 +7,10 @@ import '/src/internal/routes/otp.dart';
 import '/src/internal/routes/password.dart';
 import '/src/internal/routes/sso.dart';
 import '/src/internal/routes/totp.dart';
-import '../session/lifecycle.dart';
-import '../session/manager.dart';
-import '../session/storage.dart';
+import '/src/internal/routes/flow.dart';
+import '/src/session/lifecycle.dart';
+import '/src/session/manager.dart';
+import '/src/session/storage.dart';
 import 'config.dart';
 import 'routes.dart';
 
@@ -17,6 +18,9 @@ import 'routes.dart';
 class DescopeSdk {
   /// The configuration of the [DescopeSdk] instance.
   final DescopeConfig config;
+
+  /// Authenticate using an authentication flow
+  final DescopeFlow flow;
 
   /// General functions
   final DescopeAuth auth;
@@ -50,7 +54,7 @@ class DescopeSdk {
   set sessionManager(DescopeSessionManager manager) => _sessionManager = manager;
 
   DescopeSessionManager _initDefaultManager() {
-    final manager = DescopeSessionManager(SessionStorage(config.projectId), SessionLifecycle(auth));
+    final manager = DescopeSessionManager(SessionStorage(projectId: config.projectId), SessionLifecycle(auth));
     _sessionManager = manager;
     return manager;
   }
@@ -61,9 +65,9 @@ class DescopeSdk {
   /// the Descope console. The [baseUrl] is an  optional override for the URL of
   /// the Descope server, in case you need to access it through a CNAME record.
   factory DescopeSdk(DescopeConfig config) {
-    var client = DescopeClient(config);
-    return DescopeSdk._internal(config, Auth(client), Otp(client), Totp(client), Password(client), MagicLink(client), EnchantedLink(client), OAuth(client), Sso(client));
+    final client = DescopeClient(config);
+    return DescopeSdk._internal(config, Flow(client), Auth(client), Otp(client), Totp(client), Password(client), MagicLink(client), EnchantedLink(client), OAuth(client), Sso(client));
   }
 
-  DescopeSdk._internal(this.config, this.auth, this.otp, this.totp, this.password, this.magicLink, this.enchantedLink, this.oauth, this.sso);
+  DescopeSdk._internal(this.config, this.flow, this.auth, this.otp, this.totp, this.password, this.magicLink, this.enchantedLink, this.oauth, this.sso);
 }

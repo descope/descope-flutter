@@ -26,7 +26,7 @@ import 'token.dart';
 /// and the code examples above are only slightly different. See the documentation
 /// for [DescopeSessionManager] for more details.
 ///
-/// @constructor `DescopeSession` can be constructed either by using [DescopeToken]s,
+/// `DescopeSession` can be constructed either by using [DescopeToken]s,
 /// or by providing an [AuthenticationResponse], or using the JWT strings.
 class DescopeSession {
   DescopeToken _sessionToken;
@@ -61,7 +61,58 @@ class DescopeSession {
   /// The user to whom the [DescopeSession] belongs to.
   DescopeUser get user => _user;
 
-  // Enable correct comparison between sessions
+  // Convenience accessors for getting values from the underlying JWTs
+
+  /// The short lived JWT that is sent with every request that requires authentication.
+  String get sessionJwt => _sessionToken.jwt;
+
+  /// The longer lived JWT that is used to create new session JWTs until it expires.
+  String get refreshJwt => _refreshToken.jwt;
+
+  /// A map with all the custom claims in the underlying JWT. It includes
+  /// any claims whose values aren't already exposed by other accessors or
+  /// authorization functions.
+  Map<String, dynamic> get claims => _sessionToken.customClaims;
+
+  /// Returns the list of permissions granted for the user. Pass `null` for
+  /// the [tenant] parameter if the user isn't associated with any tenant.
+  List<String> permissions([String? tenant]) => _sessionToken.getPermissions(tenant: tenant);
+
+  /// Returns the list of roles for the user. Pass `null` for the [tenant]
+  /// parameter if the user isn't associated with any tenant.
+  List<String> roles([String? tenant]) => _sessionToken.getRoles(tenant: tenant);
+
+  // Updating the session manually when not using a DescopeSessionManager
+
+  /// Updates the underlying JWTs with those from the given [RefreshResponse].
+  ///
+  ///     if (session.sessionToken.isExpired) {
+  ///       final refreshResponse = await Descope.auth.refreshSession(session.refreshJwt);
+  ///       session.updateTokens(refreshResponse);
+  ///     }
+  ///
+  /// Important: It's recommended to use a [DescopeSessionManager] to manage sessions,
+  /// in which case you should call [updateTokens] on the manager itself, or
+  /// just call [refreshSessionIfNeeded] to do everything for you.
+  void updateTokens(RefreshResponse refreshResponse) {
+    _sessionToken = refreshResponse.sessionToken;
+    _refreshToken = refreshResponse.refreshToken ?? _refreshToken;
+  }
+
+  /// Updates the session user's details with those from another [DescopeUser] value.
+  ///
+  ///     final userResponse = await Descope.auth.me(session.refreshJwt);
+  ///     session.updateUser(userResponse);
+  ///
+  /// Important: It's recommended to use a [DescopeSessionManager] to manage sessions,
+  /// in which case you should call [updateUser] on the manager itself instead
+  /// to ensure that the updated user details are saved.
+  void updateUser(DescopeUser descopeUser) {
+    _user = descopeUser;
+  }
+
+  // Ensure correct equality checks between session objects
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) {
@@ -73,7 +124,6 @@ class DescopeSession {
   @override
   int get hashCode => Object.hash(sessionJwt, refreshJwt, user);
 
-  /// A string representation of this [DescopeSession].
   @override
   String toString() {
     var expires = 'expires: Never';
@@ -82,57 +132,5 @@ class DescopeSession {
       expires = '$label: ${_sessionToken.expiresAt}';
     }
     return 'DescopeSession(id: ${_refreshToken.id}, $expires)';
-  }
-}
-
-extension SessionConveniences on DescopeSession {
-  /// The short lived JWT that is sent with every request that requires authentication.
-  String get sessionJwt => _sessionToken.jwt;
-
-  /// The longer lived JWT that is used to create new session JWTs until it expires.
-  String get refreshJwt => _refreshToken.jwt;
-
-  /// A map with all the custom claims in the underlying JWT. It includes
-  /// any claims whose values aren't already exposed by other accessors or
-  /// authorization functions.
-  Map<String, dynamic> get claims => _refreshToken.customClaims;
-
-  /// Returns the list of permissions granted for the user. Pass `null` for
-  /// the [tenant] parameter if the user isn't associated with any tenant.
-  List<String> permissions([String? tenant]) => _refreshToken.getPermissions(tenant: tenant);
-
-  /// Returns the list of roles for the user. Pass `null` for the [tenant]
-  /// parameter if the user isn't associated with any tenant.
-  List<String> roles([String? tenant]) => _refreshToken.getRoles(tenant: tenant);
-}
-
-// Updating the session manually when not using a `DescopeSessionManager`.
-
-extension UpdateSessionTokens on DescopeSession {
-  /// Updates the underlying JWTs with those from the given [RefreshResponse].
-  ///
-  ///     if (session.sessionToken.isExpired) {
-  ///         final refreshResponse = await Descope.auth.refreshSession(session.refreshJwt);
-  ///         session.updateTokens(refreshResponse);
-  ///     }
-  ///
-  /// Important: It's recommended to use a `DescopeSessionManager` to manage sessions,
-  /// in which case you should call `updateTokens` on the manager itself, or
-  /// just call `refreshSessionIfNeeded` to do everything for you.
-  void updateTokens(RefreshResponse refreshResponse) {
-    _sessionToken = refreshResponse.sessionToken;
-    _refreshToken = refreshResponse.refreshToken ?? _refreshToken;
-  }
-
-  /// Updates the session user's details with those from another [DescopeUser] value.
-  ///
-  ///     final userResponse = await Descope.auth.me(session.refreshJwt);
-  ///     session.updateUser(userResponse);
-  ///
-  /// Important: It's recommended to use a `DescopeSessionManager` to manage sessions,
-  /// in which case you should call `updateUser` on the manager itself instead
-  /// to ensure that the updated user details are saved.
-  void updateUser(DescopeUser descopeUser) {
-    _user = descopeUser;
   }
 }

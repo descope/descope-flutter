@@ -25,7 +25,7 @@ import 'storage.dart';
 ///
 /// If your backend uses a different authorization mechanism you can of course
 /// use the session JWT directly instead of the extension function. You can either
-/// add another extension function on [URLConnection] such as the one above, or you
+/// add another extension function on `http.Request` such as the one above, or you
 /// can do the following.
 ///
 ///     await Descope.sessionManager.refreshSessionIfNeeded();
@@ -39,15 +39,15 @@ import 'storage.dart';
 /// The same principals can be used in the various networking libraries available,
 /// if those are used in your application.
 ///
-/// When the application is relaunched the `DescopeSessionManager` loads any
-/// existing session automatically, so you can check straight away if there's
-/// an authenticated user.
+/// When the application is relaunched the `DescopeSessionManager` can load the existing
+/// session and you can check straight away if there's an authenticated user.
 ///
-///     Descope.projectId = "...";
+///     await Descope.sessionManager.loadSession();
 ///     final session = Descope.sessionManager.session;
 ///     if (session != null) {
-///         print("User is logged in: ${session.user}");
+///       print("User is logged in: ${session.user}");
 ///     }
+///     ...
 ///
 /// When the user wants to sign out of the application we revoke the active
 /// session and clear it from the session manager:
@@ -65,11 +65,43 @@ class DescopeSessionManager {
   final DescopeSessionStorage storage;
   final DescopeSessionLifecycle lifecycle;
 
+  /// Creates a new [DescopeSessionManager] object.
+  ///
+  /// This initializer can be used to create a [DescopeSessionManager] instance
+  /// with behaviors that are different from the defaults. You can either extend
+  /// or customize the [SessionStorage] and [SessionLifecycle] classes, or supply
+  /// your own implementation of the respective abstract classes.
   DescopeSessionManager(this.storage, this.lifecycle);
+
+  /// The active [DescopeSession] managed by this object.
+  DescopeSession? get session => _session;
 
   DescopeSession? _session;
 
-  DescopeSession? get session => _session;
+  /// Loads any saved [DescopeSession] from secure storage.
+  ///
+  /// This function should be called once after initializing the Descope SDK
+  /// with your `projectId` and other configurations. It will load any saved
+  /// [DescopeSession] into memory.
+  ///
+  /// This asynchronous function should be called when initializing your application
+  /// state to restore the logged in state of the user.
+  ///
+  /// **Important:** It might be convenient to call this in your `main()` function,
+  /// in which case be sure to call `WidgetsFlutterBinding.ensureInitialized()`
+  /// beforehand:
+  ///
+  ///     void main() async {
+  ///       WidgetsFlutterBinding.ensureInitialized();
+  ///
+  ///       Descope.projectId = '...';
+  ///       await Descope.sessionManager.loadSession();
+  ///       ...
+  ///     }
+  Future<void> loadSession() async {
+    _session = await storage.loadSession();
+    lifecycle.session = _session;
+  }
 
   /// Set an active [DescopeSession] in this manager.
   ///
@@ -77,14 +109,14 @@ class DescopeSessionManager {
   /// host application.
   ///
   /// The parameter is set as the value of the [session] property and is persisted
-  /// so it can be reloaded on the next application launch or
-  /// [DescopeSessionManager] instantiation.
+  /// so it can be reloaded on the next application launch by calling the
+  /// [load] function.
   ///
-  /// - **Important:** The default [DescopeSessionStorage] only keeps at most
-  ///     one session in the storage for simplicity. If for some reason you
-  ///     have multiple [DescopeSessionManager] objects then be aware that
-  ///     unless they use custom `storage` objects they might overwrite
-  ///     each other's saved sessions.
+  /// **Important:** The default [DescopeSessionStorage] only keeps at most
+  /// one session in the storage for simplicity. If for some reason you
+  /// have multiple [DescopeSessionManager] objects then be aware that
+  /// unless they use custom `storage` objects they might overwrite
+  /// each other's saved sessions.
   void manageSession(DescopeSession session) {
     _session = session;
     lifecycle.session = session;
@@ -97,11 +129,11 @@ class DescopeSessionManager {
   /// The `session` property is set to `null` and the session won't be reloaded in
   /// subsequent application launches.
   ///
-  /// - **Important:** The default [DescopeSessionStorage] only keeps at most
-  ///     one session in the storage for simplicity. If for some reason you
-  ///     have multiple [DescopeSessionManager] objects then be aware that
-  ///     unless they use custom `storage` objects they might clear
-  ///     each other's saved sessions.
+  /// **Important:** The default [DescopeSessionStorage] only keeps at most
+  /// one session in the storage for simplicity. If for some reason you
+  /// have multiple [DescopeSessionManager] objects then be aware that
+  /// unless they use custom `storage` objects they might clear
+  /// each other's saved sessions.
   void clearSession() {
     _session = null;
     lifecycle.session = null;
@@ -114,30 +146,28 @@ class DescopeSessionManager {
   /// its session JWT expires within the next 60 seconds. If that's the case then
   /// the session is refreshed and persisted before returning.
   ///
-  /// - **Note:** When using a custom [DescopeSessionManager] object the exact behavior
-  ///     here depends on the `storage` and `lifecycle` objects.
+  /// **Note:** When using a custom [DescopeSessionManager] object the exact behavior
+  /// here depends on the `storage` and `lifecycle` objects.
   Future<void> refreshSessionIfNeeded() async {
     final session = _session;
-    if (session == null) {
-      return;
+    if (session != null) {
+      await lifecycle.refreshSessionIfNeeded();
+      await storage.saveSession(session);
     }
-    await lifecycle.refreshSessionIfNeeded();
-    storage.saveSession(session);
   }
 
   /// Updates the active session's underlying JWTs.
   ///
   /// This function accepts a [RefreshResponse] value as a parameter which is returned
-  /// by calls to `Descope.auth.refreshSession`. The manager persists the updated session
-  /// before returning (by default).
+  /// by calls to `Descope.auth.refreshSession`. The manager will persist the updated session.
   ///
-  /// - **Important:** In most circumstances it's best to use `refreshSessionIfNeeded` and let
-  ///     it update the session unless you need to invoke `Descope.auth.refreshSession`
-  ///     manually.
+  /// **Important:** In most circumstances it's best to use [refreshSessionIfNeeded] and let
+  /// it update the session unless you need to invoke `Descope.auth.refreshSession`
+  /// manually.
   ///
-  /// - **Note:** If the [DescopeSessionManager] object was created with a custom `storage`
-  ///     object then the exact behavior depends on the specific implementation of the
-  ///     `DescopeSessionStorage` interface.
+  /// **Note:** If the [DescopeSessionManager] object was created with a custom `storage`
+  /// object then the exact behavior depends on the specific implementation of the
+  /// `DescopeSessionStorage` interface.
   void updateTokens(RefreshResponse refreshResponse) {
     final session = _session;
     if (session != null) {
@@ -149,8 +179,8 @@ class DescopeSessionManager {
   /// Updates the active session's user details.
   ///
   /// This function accepts a [DescopeUser] value as a parameter which is returned by
-  /// calls to `Descope.auth.me`. The manager saves the updated session to the
-  /// storage before returning.
+  /// calls to `Descope.auth.me`. The manager will save the updated session to the
+  /// storage.
   ///
   ///     final userResponse = await Descope.auth.me(session.refreshJwt);
   ///     Descope.sessionManager.updateUser(userResponse);

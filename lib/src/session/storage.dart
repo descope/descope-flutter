@@ -1,5 +1,7 @@
-import 'package:json_annotation/json_annotation.dart';
 import 'dart:convert';
+
+import 'package:flutter/services.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 import '/src/types/user.dart';
 import 'manager.dart';
@@ -12,32 +14,36 @@ part 'storage.g.dart';
 abstract class DescopeSessionStorage {
   /// Called by the session manager when a new [DescopeSession] is set or an
   /// existing session is updated.
-  void saveSession(DescopeSession session);
+  Future<void> saveSession(DescopeSession session);
 
   /// Called by the session manager when it's initialized to load any
   /// existing [DescopeSession].
-  DescopeSession? loadSession();
+  Future<DescopeSession?> loadSession();
 
   /// Called by the session manager when the [DescopeSessionManager.clearSession] function
   /// is called.
-  void removeSession();
+  Future<void> removeSession();
 }
 
 /// The default implementation of the [DescopeSessionStorage].
 ///
+/// By default this class persists the session securely to the keychain on iOS, or
+/// vie `EncryptedSharedPreferences` on Android.
 /// For your convenience, you can implement the [Store] class and
 /// override the [Store.loadItem], [Store.saveItem] and [Store.removeItem] functions,
 /// then pass an instance of that class to the constructor to create a [SessionStorage] object
 /// that uses a different backing store.
 class SessionStorage implements DescopeSessionStorage {
   final String _projectId;
-  final Store _store;
+  final SessionStorageStore _store;
   _Value? _lastValue;
 
-  SessionStorage(this._projectId, [this._store = const Store()]);
+  SessionStorage({required String projectId, SessionStorageStore? store})
+      : _projectId = projectId,
+        _store = store ?? SessionStoragePlatformStore();
 
   @override
-  void saveSession(DescopeSession session) {
+  Future<void> saveSession(DescopeSession session) async {
     final value = _Value(session.sessionJwt, session.refreshJwt, session.user);
     if (value != _lastValue) {
       final json = jsonEncode(_Value.toJson(value));
@@ -47,8 +53,8 @@ class SessionStorage implements DescopeSessionStorage {
   }
 
   @override
-  DescopeSession? loadSession() {
-    final data = _store.loadItem(_projectId);
+  Future<DescopeSession?> loadSession() async {
+    final data = await _store.loadItem(_projectId);
     if (data != null) {
       try {
         final decoded = jsonDecode(data) as Map<String, dynamic>;
@@ -62,22 +68,52 @@ class SessionStorage implements DescopeSessionStorage {
   }
 
   @override
-  void removeSession() {
+  Future<void> removeSession() async {
     _lastValue = null;
     _store.removeItem(_projectId);
   }
 }
 
-/// A helper class that takes care of the actual storage of session data.
-/// The default function implementations in this class do nothing or return `null`.
-class Store {
-  const Store();
+/// A helper class that takes care of the actual storage of session data. The default
+/// function implementations in this class do nothing or return `null`.
+class SessionStorageStore {
+  const SessionStorageStore();
 
-  void saveItem({required String key, required String data}) {}
+  Future<void> saveItem({required String key, required String data}) async {}
 
-  String? loadItem(String key) => null;
+  Future<String?> loadItem(String key) async => null;
 
-  void removeItem(String key) {}
+  Future<void> removeItem(String key) async {}
+}
+
+class SessionStoragePlatformStore implements SessionStorageStore {
+  static const _mChannel = MethodChannel('descope_flutter/methods');
+
+  SessionStoragePlatformStore();
+
+  @override
+  Future<String?> loadItem(String key) async {
+    final result = await _mChannel.invokeMethod('loadItem', {'key': key});
+    if (result == null) {
+      return null;
+    }
+    try {
+      final serialized = result as String;
+      return serialized;
+    } on Exception {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> removeItem(String key) async {
+    await _mChannel.invokeMethod('removeItem', {'key': key});
+  }
+
+  @override
+  Future<void> saveItem({required String key, required String data}) async {
+    await _mChannel.invokeMethod('saveItem', {'key': key, 'data': data});
+  }
 }
 
 @JsonSerializable()

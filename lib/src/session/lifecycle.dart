@@ -1,23 +1,26 @@
 import '../sdk/routes.dart';
+import 'manager.dart';
 import 'session.dart';
 
+/// This abstract class can be used to customize how a [DescopeSessionManager] object
+/// manages its [DescopeSession] while the application is running.
 abstract class DescopeSessionLifecycle {
+  /// Set by the session manager whenever the current active session changes.
   DescopeSession? session;
 
+  /// Called the session manager to conditionally refresh the active session.
   Future<void> refreshSessionIfNeeded();
 }
 
 /// The default implementation of the [DescopeSessionLifecycle] interface.
 ///
-/// The `SessionLifecycle` class periodically checks if the session needs to be
+/// The [SessionLifecycle] class periodically checks if the session needs to be
 /// refreshed (every 30 seconds by default). The [refreshSessionIfNeeded] function
 /// will refresh the session if it's about to expire (within 60 seconds by default)
 /// or if it's already expired.
-///
-/// [DescopeAuth] used to refresh the session when needed
 class SessionLifecycle implements DescopeSessionLifecycle {
-  var stalenessAllowedInterval = Duration(seconds: 60);
-  var stalenessCheckFrequency = Duration(seconds: 30);
+  var stalenessAllowedInterval = const Duration(seconds: 60);
+  var stalenessCheckFrequency = const Duration(seconds: 30);
 
   DescopeSession? _session;
   final DescopeAuth _auth;

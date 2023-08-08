@@ -10,7 +10,7 @@ class DescopeConfig {
   final String baseUrl;
 
   /// Creates a new `DescopeConfig` object.
-  DescopeConfig(this.projectId, [this.baseUrl = defaultBaseUrl]);
+  DescopeConfig({required this.projectId, this.baseUrl = defaultBaseUrl});
 
-  static DescopeConfig initial = DescopeConfig("");
+  static DescopeConfig initial = DescopeConfig(projectId: "");
 }

@@ -21,6 +21,7 @@ class AuthenticationResponse {
 }
 
 /// Returned from the refreshSession call.
+///
 /// The refresh token might get updated as well with new information on the user that
 /// might have changed.
 class RefreshResponse {

@@ -16,14 +16,16 @@ extension ConvertMaskedAddress on MaskedAddressServerResponse {
   }
 }
 
-extension on UserResponse {
+extension ConvertUserResponse on UserResponse {
   DescopeUser convert() {
+    final emailValue = (email ?? '').isNotEmpty ? email : null;
+    final phoneValue = (phone ?? '').isNotEmpty ? phone : null;
     Uri? uri;
-    final picture = this.picture;
-    if (picture != null) {
-      uri = Uri.parse(picture);
+    final pic = picture;
+    if (pic != null && pic.isNotEmpty) {
+      uri = Uri.parse(pic);
     }
-    return DescopeUser(userId, loginIds, createdTime, name, uri, email, verifiedEmail, phone, verifiedPhone);
+    return DescopeUser(userId, loginIds, createdTime, name, uri, emailValue, verifiedEmail, phoneValue, verifiedPhone);
   }
 }
 
