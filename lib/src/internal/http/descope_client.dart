@@ -20,14 +20,14 @@ class DescopeClient extends HttpClient {
   Future<MaskedAddressServerResponse> otpSignIn(DeliveryMethod method, String loginId, SignInOptions? options) {
     return post('auth/otp/signin/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
-      "loginOptions": options?.toMap(),
+      'loginOptions': options?.toMap(),
     });
   }
 
   Future<MaskedAddressServerResponse> otpSignUpIn(DeliveryMethod method, String loginId, SignInOptions? options) {
     return post('auth/otp/signup-in/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
-      "loginOptions": options?.toMap(),
+      'loginOptions': options?.toMap(),
     });
   }
 
@@ -66,7 +66,7 @@ class DescopeClient extends HttpClient {
     return post('auth/totp/verify', JWTServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
       'code': code,
-      "loginOptions": options?.toMap(),
+      'loginOptions': options?.toMap(),
     });
   }
 
@@ -133,7 +133,7 @@ class DescopeClient extends HttpClient {
     return post('auth/magiclink/signin/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
       'uri': uri,
-      "loginOptions": options?.toMap(),
+      'loginOptions': options?.toMap(),
     });
   }
 
@@ -141,7 +141,7 @@ class DescopeClient extends HttpClient {
     return post('auth/magiclink/signup-in/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
       'uri': uri,
-      "loginOptions": options?.toMap(),
+      'loginOptions': options?.toMap(),
     });
   }
 
@@ -182,7 +182,7 @@ class DescopeClient extends HttpClient {
     return post('auth/enchantedlink/signin/email', EnchantedLinkServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
       'uri': uri,
-      "loginOptions": options?.toMap(),
+      'loginOptions': options?.toMap(),
     });
   }
 
@@ -190,7 +190,7 @@ class DescopeClient extends HttpClient {
     return post('auth/enchantedlink/signup-in/email', EnchantedLinkServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
       'uri': uri,
-      "loginOptions": options?.toMap(),
+      'loginOptions': options?.toMap(),
     });
   }
 
@@ -215,7 +215,7 @@ class DescopeClient extends HttpClient {
       'provider': provider.name,
       'redirectURL': redirectUrl,
     }, body: {
-      "loginOptions": options?.toMap(),
+      'loginOptions': options?.toMap(),
     });
   }
 
@@ -232,7 +232,7 @@ class DescopeClient extends HttpClient {
       'tenant': emailOrTenantId,
       'redirectURL': redirectUrl,
     }, body: {
-      "loginOptions": options?.toMap(),
+      'loginOptions': options?.toMap(),
     });
   }
 
@@ -287,9 +287,9 @@ extension on SignInOptions {
 
   Map<String, dynamic> toMap() {
     return {
-      "stepup": stepupRefreshJwt != null ? true : null,
-      "mfa": mfaRefreshJwt != null ? true : null,
-      "customClaims": customClaims.isNotEmpty ? customClaims : null,
+      'stepup': stepupRefreshJwt != null ? true : null,
+      'mfa': mfaRefreshJwt != null ? true : null,
+      'customClaims': customClaims.isNotEmpty ? customClaims : null,
     };
   }
 }

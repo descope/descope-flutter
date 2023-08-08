@@ -12,7 +12,7 @@ import 'package:flutter/services.dart';
 import '/src/internal/http/descope_client.dart';
 import '/src/sdk/routes.dart';
 
-const _defaultRedirectURL = "descopeauth://flow";
+const _defaultRedirectURL = 'descopeauth://flow';
 
 class Flow extends DescopeFlow {
   static const _mChannel = MethodChannel('descope_flutter/methods');
@@ -28,7 +28,7 @@ class Flow extends DescopeFlow {
   @override
   Future<AuthenticationResponse> start(String flowUrl, {String? deepLinkUrl}) async {
     // cancel any previous still running flows
-    _current?.completer?.completeError(Exception("Canceled"));
+    _current?.completer?.completeError(Exception('Canceled'));
 
     // prepare a new flow runner
     final runner = _FlowRunner(flowUrl, deepLinkUrl);
@@ -53,7 +53,7 @@ class Flow extends DescopeFlow {
     final codeVerifier = runner?.codeVerifier;
     final completer = runner?.completer;
     if (runner == null || codeVerifier == null || completer == null) {
-      throw Exception("No flow pending exchange");
+      throw Exception('No flow pending exchange');
     }
 
     _current = null;
@@ -77,23 +77,23 @@ class Flow extends DescopeFlow {
     subscription = _eChannel.receiveBroadcastStream().listen((event) {
       final str = event as String;
       switch(str) {
-        case "canceled":
-          _completeWithError("Flow canceled by user");
+        case 'canceled':
+          _completeWithError('Flow canceled by user');
           break;
-        case "":
-          _completeWithError("Unexpected error running flow");
+        case '':
+          _completeWithError('Unexpected error running flow');
           break;
         default:
           try {
             final uri = Uri.parse(str);
             exchange(uri);
           } on Exception {
-            _completeWithError("Unexpected URI received from flow");
+            _completeWithError('Unexpected URI received from flow');
           }
       }
       subscription?.cancel();
     }, onError: (_) {
-      _completeWithError("Authentication failed");
+      _completeWithError('Authentication failed');
       subscription?.cancel();
     });
 

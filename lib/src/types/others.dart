@@ -60,7 +60,7 @@ class SignInOptions {
   /// For example, the following code starts an OTP sign in and requests a custom claim
   /// with the authenticated user's full name:
   ///
-  ///     const options = SignInOptions(customClaims: {"name": "{{user.name}}"});
+  ///     const options = SignInOptions(customClaims: {'name': '{{user.name}}'});
   ///     await Descope.otp.signIn(method: DeliveryMethod.email, loginId: email, options: options);
   ///
   /// **Important:** Any custom claims added via this method are considered insecure and will
