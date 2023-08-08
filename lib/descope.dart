@@ -31,7 +31,7 @@ class Descope {
   /// and in most cases you only need to set this to work with the `Descope` singleton.
   ///
   /// **Note:** This is a shortcut for setting the [Descope.config] property.
-  static String _projectId = "";
+  static String _projectId = '';
 
   static String get projectId => _projectId;
 
@@ -53,7 +53,7 @@ class Descope {
   static DescopeConfig get config => _config;
 
   static set config(DescopeConfig config) {
-    assert(config.projectId != "");
+    assert(config.projectId != '');
     _config = config;
   }
 
@@ -62,7 +62,7 @@ class Descope {
   /// You can use this [DescopeSessionManager] object as a shared instance to manage
   /// authenticated sessions in your application.
   ///
-  ///     final authResponse = Descope.otp.verify(DeliveryMethod.Email, "andy@example.com", "123456")
+  ///     final authResponse = Descope.otp.verify(DeliveryMethod.Email, 'andy@example.com', '123456')
   ///     val session = DescopeSession(authResponse)
   ///     Descope.sessionManager.manageSession(session)
   ///

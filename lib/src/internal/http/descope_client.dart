@@ -17,14 +17,18 @@ class DescopeClient extends HttpClient {
     });
   }
 
-  Future<MaskedAddressServerResponse> otpSignIn(DeliveryMethod method, String loginId) {
-    return post('auth/otp/signin/${method.name}', MaskedAddressServerResponse.decoder, body: {
+  Future<MaskedAddressServerResponse> otpSignIn(DeliveryMethod method, String loginId, SignInOptions? options) {
+    return post('auth/otp/signin/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
+      'loginOptions': options?.toMap(),
     });
   }
 
-  Future<MaskedAddressServerResponse> otpSignUpIn(DeliveryMethod method, String loginId) {
-    return post('auth/otp/signup-in/${method.name}', MaskedAddressServerResponse.decoder, body: {'loginId': loginId});
+  Future<MaskedAddressServerResponse> otpSignUpIn(DeliveryMethod method, String loginId, SignInOptions? options) {
+    return post('auth/otp/signup-in/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
+      'loginId': loginId,
+      'loginOptions': options?.toMap(),
+    });
   }
 
   Future<JWTServerResponse> otpVerify(DeliveryMethod method, String loginId, String code) {
@@ -58,10 +62,11 @@ class DescopeClient extends HttpClient {
     });
   }
 
-  Future<JWTServerResponse> totpVerify(String loginId, String code) {
-    return post('auth/totp/verify', JWTServerResponse.decoder, body: {
+  Future<JWTServerResponse> totpVerify(String loginId, String code, SignInOptions? options) {
+    return post('auth/totp/verify', JWTServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
       'code': code,
+      'loginOptions': options?.toMap(),
     });
   }
 
@@ -124,17 +129,19 @@ class DescopeClient extends HttpClient {
     });
   }
 
-  Future<MaskedAddressServerResponse> magicLinkSignIn(DeliveryMethod method, String loginId, String? uri) {
-    return post('auth/magiclink/signin/${method.name}', MaskedAddressServerResponse.decoder, body: {
+  Future<MaskedAddressServerResponse> magicLinkSignIn(DeliveryMethod method, String loginId, String? uri, SignInOptions? options) {
+    return post('auth/magiclink/signin/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
       'uri': uri,
+      'loginOptions': options?.toMap(),
     });
   }
 
-  Future<MaskedAddressServerResponse> magicLinkSignUpOrIn(DeliveryMethod method, String loginId, String? uri) {
-    return post('auth/magiclink/signup-in/${method.name}', MaskedAddressServerResponse.decoder, body: {
+  Future<MaskedAddressServerResponse> magicLinkSignUpOrIn(DeliveryMethod method, String loginId, String? uri, SignInOptions? options) {
+    return post('auth/magiclink/signup-in/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
       'uri': uri,
+      'loginOptions': options?.toMap(),
     });
   }
 
@@ -171,17 +178,19 @@ class DescopeClient extends HttpClient {
     });
   }
 
-  Future<EnchantedLinkServerResponse> enchantedLinkSignIn(String loginId, String? uri) {
-    return post('auth/enchantedlink/signin/email', EnchantedLinkServerResponse.decoder, body: {
+  Future<EnchantedLinkServerResponse> enchantedLinkSignIn(String loginId, String? uri, SignInOptions? options) {
+    return post('auth/enchantedlink/signin/email', EnchantedLinkServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
       'uri': uri,
+      'loginOptions': options?.toMap(),
     });
   }
 
-  Future<EnchantedLinkServerResponse> enchantedLinkSignUpOrIn(String loginId, String? uri) {
-    return post('auth/enchantedlink/signup-in/email', EnchantedLinkServerResponse.decoder, body: {
+  Future<EnchantedLinkServerResponse> enchantedLinkSignUpOrIn(String loginId, String? uri, SignInOptions? options) {
+    return post('auth/enchantedlink/signup-in/email', EnchantedLinkServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
       'uri': uri,
+      'loginOptions': options?.toMap(),
     });
   }
 
@@ -201,10 +210,12 @@ class DescopeClient extends HttpClient {
 
   // OAuth
 
-  Future<OAuthServerResponse> oauthStart(OAuthProvider provider, String? redirectUrl) {
-    return post('auth/oauth/authorize', OAuthServerResponse.decoder, params: {
+  Future<OAuthServerResponse> oauthStart(OAuthProvider provider, String? redirectUrl, SignInOptions? options) {
+    return post('auth/oauth/authorize', OAuthServerResponse.decoder, headers: authorization(options?.refreshJwt), params: {
       'provider': provider.name,
       'redirectURL': redirectUrl,
+    }, body: {
+      'loginOptions': options?.toMap(),
     });
   }
 
@@ -216,10 +227,12 @@ class DescopeClient extends HttpClient {
 
   // SSO
 
-  Future<SsoServerResponse> ssoStart(String emailOrTenantId, String? redirectUrl) {
-    return post('auth/saml/authorize', SsoServerResponse.decoder, params: {
+  Future<SsoServerResponse> ssoStart(String emailOrTenantId, String? redirectUrl, SignInOptions? options) {
+    return post('auth/saml/authorize', SsoServerResponse.decoder, headers: authorization(options?.refreshJwt), params: {
       'tenant': emailOrTenantId,
       'redirectURL': redirectUrl,
+    }, body: {
+      'loginOptions': options?.toMap(),
     });
   }
 
@@ -264,12 +277,22 @@ class DescopeClient extends HttpClient {
         'x-descope-sdk-version': '0.1.0',
       };
 
-  Map<String, String> authorization(String value) {
-    return {'Authorization': 'Bearer ${config.projectId}:$value'};
+  Map<String, String> authorization(String? value) {
+    return value != null ? {'Authorization': 'Bearer ${config.projectId}:$value'} : {};
   }
 }
 
-// Extensions
+extension on SignInOptions {
+  String? get refreshJwt => stepupRefreshJwt ?? mfaRefreshJwt;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'stepup': stepupRefreshJwt != null ? true : null,
+      'mfa': mfaRefreshJwt != null ? true : null,
+      'customClaims': customClaims.isNotEmpty ? customClaims : null,
+    };
+  }
+}
 
 extension on SignUpDetails {
   Map<String, dynamic> toMap() {

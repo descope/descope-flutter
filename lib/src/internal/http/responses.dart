@@ -4,7 +4,7 @@ import 'http_client.dart';
 
 part 'responses.g.dart';
 
-const refreshCookieName = "DSR";
+const refreshCookieName = 'DSR';
 
 @JsonSerializable(createToJson: false)
 class JWTServerResponse {

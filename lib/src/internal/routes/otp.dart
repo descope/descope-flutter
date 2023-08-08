@@ -15,13 +15,13 @@ class Otp implements DescopeOtp {
   }
 
   @override
-  Future<String> signIn({required DeliveryMethod method, required String loginId}) async {
-    return (await client.otpSignIn(method, loginId)).convert(method);
+  Future<String> signIn({required DeliveryMethod method, required String loginId, SignInOptions? options}) async {
+    return (await client.otpSignIn(method, loginId, options)).convert(method);
   }
 
   @override
-  Future<String> signUpOrIn({required DeliveryMethod method, required String loginId}) async {
-    return (await client.otpSignUpIn(method, loginId)).convert(method);
+  Future<String> signUpOrIn({required DeliveryMethod method, required String loginId, SignInOptions? options}) async {
+    return (await client.otpSignUpIn(method, loginId, options)).convert(method);
   }
 
   @override

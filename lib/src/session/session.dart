@@ -8,7 +8,7 @@ import 'token.dart';
 /// a `DescopeSession` object from the [AuthenticationResponse] value returned
 /// by all the authentication APIs.
 ///
-///     final authResponse = await Descope.otp.verify(method: DeliveryMethod.Email, loginId: "andy@example.com", code: "123456");
+///     final authResponse = await Descope.otp.verify(method: DeliveryMethod.Email, loginId: 'andy@example.com', code: '123456');
 ///     final session = DescopeSession.fromAuthenticationResponse(authResponse);
 ///
 /// The session can then be used to authenticate outgoing requests to your backend

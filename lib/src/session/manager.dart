@@ -13,7 +13,7 @@ import 'storage.dart';
 /// Once the user completes a sign in flow successfully you should set the
 /// [DescopeSession] object as the active session of the session manager.
 ///
-///     final authResponse = await Descope.otp.verify(method: DeliverMethod.Email, loginId: "andy@example.com", code: "123456");
+///     final authResponse = await Descope.otp.verify(method: DeliverMethod.Email, loginId: 'andy@example.com', code: '123456');
 ///     final session = DescopeSession.fromAuthenticationResponse(authResponse);
 ///     Descope.sessionManager.manageSession(session);
 ///
@@ -45,7 +45,7 @@ import 'storage.dart';
 ///     await Descope.sessionManager.loadSession();
 ///     final session = Descope.sessionManager.session;
 ///     if (session != null) {
-///       print("User is logged in: ${session.user}");
+///       print('User is logged in: ${session.user}');
 ///     }
 ///     ...
 ///

@@ -12,5 +12,5 @@ class DescopeConfig {
   /// Creates a new `DescopeConfig` object.
   DescopeConfig({required this.projectId, this.baseUrl = defaultBaseUrl});
 
-  static DescopeConfig initial = DescopeConfig(projectId: "");
+  static DescopeConfig initial = DescopeConfig(projectId: '');
 }

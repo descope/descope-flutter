@@ -25,6 +25,6 @@ extension AddAuthorization on http.Request {
   /// Sets the JWT from a [DescopeToken] as the Bearer Token value of
   /// the Authorization header field in the [http.Request].
   void setAuthorizationFromToken(DescopeToken token) {
-    headers['Authorization'] = "Bearer ${token.jwt}";
+    headers['Authorization'] = 'Bearer ${token.jwt}';
   }
 }

@@ -37,14 +37,14 @@ authentication methods. For example, let's use OTP via email:
 
 ```dart
 // sends an OTP code to the given email address
-await Descope.otp.signUp(method: DeliveryMethod.Email, loginId: "andy@example.com");
+await Descope.otp.signUp(method: DeliveryMethod.Email, loginId: 'andy@example.com');
 ```
 
 Finish the authentication by verifying the OTP code the user entered:
 
 ```dart
 // if the user entered the right code the authentication is successful
-final authResponse = await Descope.otp.verify(method: DeliveryMethod.Email, loginId: "andy@example.com", code: code);
+final authResponse = await Descope.otp.verify(method: DeliveryMethod.Email, loginId: 'andy@example.com', code: code);
 
 // we create a DescopeSession object that represents an authenticated user session
 final session = DescopeSession.fromAuthenticationResponse(authResponse);
@@ -84,7 +84,7 @@ in flow successfully you should set the `DescopeSession` object as the
 active session of the session manager.
 
 ```dart
-final authResponse = await Descope.otp.verify(method: DeliverMethod.Email, loginId: "andy@example.com", code: "123456");
+final authResponse = await Descope.otp.verify(method: DeliverMethod.Email, loginId: 'andy@example.com', code: '123456');
 final session = DescopeSession.fromAuthenticationResponse(authResponse);
 Descope.sessionManager.manageSession(session);
 ```
@@ -106,7 +106,7 @@ can do the following.
 await Descope.sessionManager.refreshSessionIfNeeded();
 final sessionJwt = Descope.sessionManager.session?.sessionJwt;
 if (sessionJwt != null) {
-    request.headers["X-Auth-Token"] = sessionJwt;
+    request.headers['X-Auth-Token'] = sessionJwt;
 } else {
     // unauthorized
 }
@@ -132,7 +132,7 @@ void main() async {
 
   final session = Descope.sessionManager.session;
   if (session != null) {
-    print("User is logged in: ${session.user}");
+    print('User is logged in: ${session.user}');
   }
 
   runApp(
@@ -198,7 +198,7 @@ final _router = GoRouter(
             } catch (e) {
               // Handle errors here
             }
-            return "/"; // This route doesn't display anything but returns the root path where the user will be signed in
+            return '/'; // This route doesn't display anything but returns the root path where the user will be signed in
           },
         ),
       ],
@@ -241,7 +241,7 @@ or via [ASWebAuthenticationSession](https://developer.apple.com/documentation/au
 Run the flow by calling the flow start function:
 
 ```dart
-final authResponse = await Descope.flow.start("<URL_FOR_FLOW_IN_SETUP_#1>", deepLinkUrl: "<URL_FOR_APP_LINK_IN_SETUP_#2>");
+final authResponse = await Descope.flow.start('<URL_FOR_FLOW_IN_SETUP_#1>', deepLinkUrl: '<URL_FOR_APP_LINK_IN_SETUP_#2>');
 final session = DescopeSession.fromAuthenticationResponse(authResponse);
 Descope.sessionManager.manageSession(session);
 ```
@@ -271,7 +271,7 @@ final maskedEmail = await Descope.otp.signUp(method: DeliveryMethod.email, login
 The user will receive a code using the selected delivery method. Verify that code using:
 
 ```dart
-final authResponse = await Descope.otp.verify(method: DeliveryMethod.email, loginId: "desmond_c@mail.com", code: "123456");
+final authResponse = await Descope.otp.verify(method: DeliveryMethod.email, loginId: 'desmond_c@mail.com', code: '123456');
 ```
 
 ### Magic Link

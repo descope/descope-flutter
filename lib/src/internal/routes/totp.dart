@@ -21,8 +21,8 @@ class Totp implements DescopeTotp {
   }
 
   @override
-  Future<AuthenticationResponse> verify({required String loginId, required String code}) async {
-    return (await client.totpVerify(loginId, code)).convert();
+  Future<AuthenticationResponse> verify({required String loginId, required String code, SignInOptions? options}) async {
+    return (await client.totpVerify(loginId, code, options)).convert();
   }
 }
 
