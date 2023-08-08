@@ -6,10 +6,10 @@ import '/src/sdk/sdk.dart';
 import '/src/session/manager.dart';
 import '/src/session/session.dart';
 
-export '/src/sdk/config.dart' show DescopeConfig;
+export '/src/sdk/config.dart';
 export '/src/sdk/routes.dart';
-export '/src/sdk/sdk.dart' show DescopeSdk;
-export '/src/session/session.dart' show DescopeSession;
+export '/src/sdk/sdk.dart';
+export '/src/session/session.dart';
 export '/src/session/token.dart' show DescopeToken;
 export '/src/types/others.dart';
 export '/src/types/responses.dart';
