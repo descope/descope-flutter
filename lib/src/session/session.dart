@@ -61,31 +61,8 @@ class DescopeSession {
   /// The user to whom the [DescopeSession] belongs to.
   DescopeUser get user => _user;
 
-  // Enable correct comparison between sessions
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    return other is DescopeSession && other.sessionJwt == sessionJwt && other.refreshJwt == refreshJwt && other.user == user;
-  }
+  // Convenience accessors for getting values from the underlying JWTs
 
-  @override
-  int get hashCode => Object.hash(sessionJwt, refreshJwt, user);
-
-  /// A string representation of this [DescopeSession].
-  @override
-  String toString() {
-    var expires = 'expires: Never';
-    if (_sessionToken.expiresAt != null) {
-      final label = _sessionToken.isExpired ? 'expired' : 'expires';
-      expires = '$label: ${_sessionToken.expiresAt}';
-    }
-    return 'DescopeSession(id: ${_refreshToken.id}, $expires)';
-  }
-}
-
-extension SessionConveniences on DescopeSession {
   /// The short lived JWT that is sent with every request that requires authentication.
   String get sessionJwt => _sessionToken.jwt;
 
@@ -104,11 +81,9 @@ extension SessionConveniences on DescopeSession {
   /// Returns the list of roles for the user. Pass `null` for the [tenant]
   /// parameter if the user isn't associated with any tenant.
   List<String> roles([String? tenant]) => _sessionToken.getRoles(tenant: tenant);
-}
 
-// Updating the session manually when not using a `DescopeSessionManager`.
+  // Updating the session manually when not using a DescopeSessionManager
 
-extension UpdateSessionTokens on DescopeSession {
   /// Updates the underlying JWTs with those from the given [RefreshResponse].
   ///
   ///     if (session.sessionToken.isExpired) {
@@ -134,5 +109,28 @@ extension UpdateSessionTokens on DescopeSession {
   /// to ensure that the updated user details are saved.
   void updateUser(DescopeUser descopeUser) {
     _user = descopeUser;
+  }
+
+  // Ensure correct equality checks between session objects
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other is DescopeSession && other.sessionJwt == sessionJwt && other.refreshJwt == refreshJwt && other.user == user;
+  }
+
+  @override
+  int get hashCode => Object.hash(sessionJwt, refreshJwt, user);
+
+  @override
+  String toString() {
+    var expires = 'expires: Never';
+    if (_sessionToken.expiresAt != null) {
+      final label = _sessionToken.isExpired ? 'expired' : 'expires';
+      expires = '$label: ${_sessionToken.expiresAt}';
+    }
+    return 'DescopeSession(id: ${_refreshToken.id}, $expires)';
   }
 }
