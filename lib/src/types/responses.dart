@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '/descope.dart';
+import '/src/session/token.dart';
 import '/src/types/user.dart';
 
 /// Returned from user authentication calls.
