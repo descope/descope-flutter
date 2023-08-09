@@ -9,7 +9,8 @@ jobs:
   publish:
     name: "Publish to pub.dev"
     permissions:
-      id-token: write # This is required for requesting the JWT
+      id-token: write
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,6 +18,7 @@ jobs:
         with:
           channel: "stable"
           cache: true
+      - run: dart --version
       - run: flutter --version
 
       - name: Publish to pub.dev
