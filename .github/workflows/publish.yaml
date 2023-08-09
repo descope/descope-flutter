@@ -7,17 +7,6 @@ on:
 
 jobs:
   publish:
-    name: "Publish to pub.dev"
     permissions:
-      id-token: write # This is required for requesting the JWT
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: "stable"
-          cache: true
-      - run: flutter --version
-
-      - name: Publish to pub.dev
-        run: flutter pub publish -f
+      id-token: write # Required for authentication using OIDC
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
