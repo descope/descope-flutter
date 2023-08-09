@@ -4,13 +4,13 @@ import 'dart:io' show Platform;
 import 'dart:math';
 
 import 'package:cryptography/cryptography.dart';
-import 'package:descope/src/internal/routes/shared.dart';
-import 'package:descope/src/types/responses.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 
 import '/src/internal/http/descope_client.dart';
+import '/src/internal/routes/shared.dart';
 import '/src/sdk/routes.dart';
+import '/src/types/responses.dart';
 
 const _defaultRedirectURL = 'descopeauth://flow';
 
@@ -76,7 +76,7 @@ class Flow extends DescopeFlow {
     StreamSubscription? subscription;
     subscription = _eChannel.receiveBroadcastStream().listen((event) {
       final str = event as String;
-      switch(str) {
+      switch (str) {
         case 'canceled':
           _completeWithError('Flow canceled by user');
           break;
@@ -96,7 +96,6 @@ class Flow extends DescopeFlow {
       _completeWithError('Authentication failed');
       subscription?.cancel();
     });
-
   }
 
   void _completeWithError(String errorString) {
