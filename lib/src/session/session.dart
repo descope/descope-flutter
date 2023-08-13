@@ -8,7 +8,7 @@ import 'token.dart';
 /// a `DescopeSession` object from the [AuthenticationResponse] value returned
 /// by all the authentication APIs.
 ///
-///     final authResponse = await Descope.otp.verify(method: DeliveryMethod.Email, loginId: 'andy@example.com', code: '123456');
+///     final authResponse = await Descope.otp.verify(method: DeliveryMethod.email, loginId: 'andy@example.com', code: '123456');
 ///     final session = DescopeSession.fromAuthenticationResponse(authResponse);
 ///
 /// The session can then be used to authenticate outgoing requests to your backend
@@ -39,7 +39,10 @@ class DescopeSession {
   ///
   /// Use this initializer to create a [DescopeSession] after the user completes
   /// a sign in or sign up flow in the application.
-  DescopeSession.fromAuthenticationResponse(AuthenticationResponse authenticationResponse) : this(authenticationResponse.sessionToken, authenticationResponse.refreshToken, authenticationResponse.user);
+  DescopeSession.fromAuthenticationResponse(
+      AuthenticationResponse authenticationResponse)
+      : this(authenticationResponse.sessionToken,
+            authenticationResponse.refreshToken, authenticationResponse.user);
 
   /// Creates a new [DescopeSession] object from two JWT strings.
   ///
@@ -76,11 +79,13 @@ class DescopeSession {
 
   /// Returns the list of permissions granted for the user. Pass `null` for
   /// the [tenant] parameter if the user isn't associated with any tenant.
-  List<String> permissions([String? tenant]) => _sessionToken.getPermissions(tenant: tenant);
+  List<String> permissions([String? tenant]) =>
+      _sessionToken.getPermissions(tenant: tenant);
 
   /// Returns the list of roles for the user. Pass `null` for the [tenant]
   /// parameter if the user isn't associated with any tenant.
-  List<String> roles([String? tenant]) => _sessionToken.getRoles(tenant: tenant);
+  List<String> roles([String? tenant]) =>
+      _sessionToken.getRoles(tenant: tenant);
 
   // Updating the session manually when not using a DescopeSessionManager
 
@@ -118,7 +123,10 @@ class DescopeSession {
     if (identical(this, other)) {
       return true;
     }
-    return other is DescopeSession && other.sessionJwt == sessionJwt && other.refreshJwt == refreshJwt && other.user == user;
+    return other is DescopeSession &&
+        other.sessionJwt == sessionJwt &&
+        other.refreshJwt == refreshJwt &&
+        other.user == user;
   }
 
   @override

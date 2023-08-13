@@ -15,7 +15,7 @@ part 'user.g.dart';
 /// code. The authentication response has a [DescopeUser] property which can be used
 /// directly or later on when it's kept in the [DescopeSession].
 ///
-///     final authResponse = await Descope.otp.verify(method: DeliveryMethod.Email, loginId: 'andy@example.com', code: '123456');
+///     final authResponse = await Descope.otp.verify(method: DeliveryMethod.email, loginId: 'andy@example.com', code: '123456');
 ///     print('Finished OTP login for user: ${authResponse.user}');
 ///
 ///     Descope.sessionManager.session = DescopeSession(authResponse);
@@ -75,7 +75,16 @@ class DescopeUser {
   /// for this user. If `phone` is `null` then this is always `false`.
   final bool isVerifiedPhone;
 
-  DescopeUser(this.userId, this.loginIds, this.createdAt, this.name, this.picture, this.email, this.isVerifiedEmail, this.phone, this.isVerifiedPhone);
+  DescopeUser(
+      this.userId,
+      this.loginIds,
+      this.createdAt,
+      this.name,
+      this.picture,
+      this.email,
+      this.isVerifiedEmail,
+      this.phone,
+      this.isVerifiedPhone);
 
   static var fromJson = _$DescopeUserFromJson;
   static var toJson = _$DescopeUserToJson;
@@ -99,6 +108,7 @@ class DescopeUser {
 
   @override
   int get hashCode {
-    return Object.hash(userId, loginIds, createdAt, name, picture, email, isVerifiedEmail, phone, isVerifiedPhone);
+    return Object.hash(userId, loginIds, createdAt, name, picture, email,
+        isVerifiedEmail, phone, isVerifiedPhone);
   }
 }
