@@ -31,13 +31,10 @@ class Descope {
   /// and in most cases you only need to set this to work with the `Descope` singleton.
   ///
   /// **Note:** This is a shortcut for setting the [Descope.config] property.
-  static String _projectId = '';
-
-  static String get projectId => _projectId;
+  static String get projectId => _config.projectId;
 
   static set projectId(String projectId) {
     _config = DescopeConfig(projectId: projectId);
-    _projectId = projectId;
   }
 
   /// The configuration of the `Descope` singleton.
@@ -53,7 +50,7 @@ class Descope {
   static DescopeConfig get config => _config;
 
   static set config(DescopeConfig config) {
-    assert(config.projectId != '');
+    assert(_config.projectId == '');
     _config = config;
   }
 
