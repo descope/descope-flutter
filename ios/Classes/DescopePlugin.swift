@@ -40,11 +40,10 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     
     private func startFlow(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let args = call.arguments as? [String: Any], let urlString = args["url"] as? String else { return result(FlutterError(code: "MISSINGARGS", message: "'url' is required for startFlow", details: nil)) }
-        // TODO: test for an active scene here in a 100 ms loop
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [self] in
+        DispatchQueue.main.async { [self] in
             startFlow(urlString)
-            result(urlString)
         }
+        result(urlString)
     }
     
     // Storage
@@ -81,28 +80,38 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     }
     
     // Internal
-    
+
+    @MainActor
     private func startFlow(_ urlString: String) {
+        startFlow(urlString, attempts: 5)
+    }
+
+    @MainActor
+    private func startFlow(_ urlString: String, attempts: Int) {
+        if attempts > 0, defaultContextProvider.findKeyWindow() == nil {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [self] in
+                startFlow(urlString, attempts: attempts - 1)
+            }
+            return
+        }
+        
         guard let url = URL(string: urlString) else { return }
-        let session = ASWebAuthenticationSession(url: url, callbackURLScheme: redirectScheme) { callbackURL, error in
+        let session = ASWebAuthenticationSession(url: url, callbackURLScheme: redirectScheme) { [self] callbackURL, error in
             if let error {
                 switch error {
                 case ASWebAuthenticationSessionError.canceledLogin:
-                    self.eventSink?("canceled")
-                    self.clearSessions()
+                    respond(with: "canceled")
                     return
                 case ASWebAuthenticationSessionError.presentationContextInvalid,
                     ASWebAuthenticationSessionError.presentationContextNotProvided:
                     // not handled for now
                     fallthrough
                 default:
-                    self.eventSink?("")
-                    self.clearSessions()
+                    respond(with: "")
                     return
                 }
             }
-            self.eventSink?(callbackURL?.absoluteString ?? "")
-            self.clearSessions()
+            respond(with: callbackURL?.absoluteString ?? "")
         }
         session.prefersEphemeralWebBrowserSession = true
         session.presentationContextProvider = defaultContextProvider
@@ -110,7 +119,9 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         session.start()
     }
     
-    private func clearSessions() {
+    @MainActor
+    private func respond(with response: String) {
+        eventSink?(response)
         for session in sessions {
             session.cancel()
         }
@@ -120,16 +131,20 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
 
 private class DefaultContextProvider: NSObject, ASWebAuthenticationPresentationContextProviding {
-    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+    func findKeyWindow() -> UIWindow? {
         let scene = UIApplication.shared.connectedScenes
             .filter { $0.activationState == .foregroundActive }
             .compactMap { $0 as? UIWindowScene }
             .first
         
-        let keyWindow = scene?.windows
+        let window = scene?.windows
             .first { $0.isKeyWindow }
         
-        return keyWindow ?? ASPresentationAnchor()
+        return window
+    }
+    
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        return findKeyWindow() ?? ASPresentationAnchor()
     }
 }
 
