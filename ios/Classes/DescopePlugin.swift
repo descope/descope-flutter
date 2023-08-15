@@ -9,6 +9,7 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     private let defaultContextProvider = DefaultContextProvider()
     private let keychainStore = KeychainStore()
     private var eventSink: FlutterEventSink?
+    private var sessions: [ASWebAuthenticationSession] = []
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let methodChannel = FlutterMethodChannel(name: "descope_flutter/methods", binaryMessenger: registrar.messenger())
@@ -37,10 +38,13 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     
     // Flows
     
-    private func startFlow(call: FlutterMethodCall, result: FlutterResult) {
+    private func startFlow(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let args = call.arguments as? [String: Any], let urlString = args["url"] as? String else { return result(FlutterError(code: "MISSINGARGS", message: "'url' is required for startFlow", details: nil)) }
-        startFlow(urlString)
-        result(urlString)
+        // TODO: test for an active scene here in a 100 ms loop
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [self] in
+            startFlow(urlString)
+            result(urlString)
+        }
     }
     
     // Storage
@@ -79,28 +83,38 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     // Internal
     
     private func startFlow(_ urlString: String) {
-        Task { @MainActor in
-            guard var url = URL(string: urlString) else { return }
-            let session = ASWebAuthenticationSession(url: url, callbackURLScheme: redirectScheme) { callbackURL, error in
-                if let error {
-                    switch error {
-                    case ASWebAuthenticationSessionError.canceledLogin:
-                        self.eventSink?("canceled")
-                        return
-                    case ASWebAuthenticationSessionError.presentationContextInvalid, ASWebAuthenticationSessionError.presentationContextNotProvided:
-                        // not handled for now
-                        fallthrough
-                    default:
-                        self.eventSink?("")
-                        return
-                    }
+        guard let url = URL(string: urlString) else { return }
+        let session = ASWebAuthenticationSession(url: url, callbackURLScheme: redirectScheme) { callbackURL, error in
+            if let error {
+                switch error {
+                case ASWebAuthenticationSessionError.canceledLogin:
+                    self.eventSink?("canceled")
+                    self.clearSessions()
+                    return
+                case ASWebAuthenticationSessionError.presentationContextInvalid,
+                    ASWebAuthenticationSessionError.presentationContextNotProvided:
+                    // not handled for now
+                    fallthrough
+                default:
+                    self.eventSink?("")
+                    self.clearSessions()
+                    return
                 }
-                self.eventSink?(callbackURL?.absoluteString ?? "")
             }
-            session.prefersEphemeralWebBrowserSession = true
-            session.presentationContextProvider = defaultContextProvider
-            session.start()
+            self.eventSink?(callbackURL?.absoluteString ?? "")
+            self.clearSessions()
         }
+        session.prefersEphemeralWebBrowserSession = true
+        session.presentationContextProvider = defaultContextProvider
+        sessions += [session]
+        session.start()
+    }
+    
+    private func clearSessions() {
+        for session in sessions {
+            session.cancel()
+        }
+        sessions = []
     }
 }
 

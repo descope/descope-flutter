@@ -48,6 +48,25 @@ class Flow extends DescopeFlow {
   }
 
   @override
+  Future<void> resume(Uri incomingUri) async {
+    final runner = _current;
+    if (runner == null) {
+      throw Exception('No flow to resume');
+    }
+
+    // For some reason '#' are decoded in this string, need to re-encode
+    // to correctly process query parameters
+    incomingUri = Uri.parse(incomingUri.toString().replaceAll('#', '%23'));
+    var uri = Uri.parse(runner.flowUrl);
+    uri = uri.replace(queryParameters: incomingUri.queryParameters);
+    try {
+      await _mChannel.invokeMethod('startFlow', {'url': uri.toString()});
+    } on PlatformException {
+      throw Exception('Flow resume failed');
+    }
+  }
+
+  @override
   void exchange(Uri incomingUri) {
     final runner = _current;
     final codeVerifier = runner?.codeVerifier;
