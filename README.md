@@ -335,7 +335,7 @@ The user can either `sign up`, `sign in` or `sign up or in`
 ```dart
 // Every user must have a loginID. All other user information is optional
 final maskedEmail = await Descope.otp.signUp(method: DeliveryMethod.email, loginId: 'desmond_c@mail.com',
-    user: User(name: 'Desmond Copeland'));
+    details: SignUpDetails(name: 'Desmond Copeland'));
 ```
 
 The user will receive a code using the selected delivery method. Verify that code using:
@@ -355,10 +355,10 @@ the [Descope Console](https://app.descope.com/settings/authentication/magicLink)
 The user can either `sign up`, `sign in` or `sign up or in`
 
 ```dart
-// If configured globally, the redirect URI is optional. If provided however, it will be used
+// If configured globally, the redirect URL is optional. If provided however, it will be used
 // instead of any global configuration
 await Descope.magicLink.signUp(method: DeliveryMethod.email, loginId: 'desmond_c@mail.com',
-    user: User(name: 'Desmond Copeland'), uri: 'https://your-redirect-address.com/verify');
+    details: SignUpDetails(name: 'Desmond Copeland'), redirectUrl: 'https://your-redirect-address.com/verify');
 ```
 
 To verify a magic link, your redirect page must call the validation function
@@ -389,10 +389,10 @@ the [Descope Console](https://app.descope.com/settings/authentication/enchantedl
 The user can either `sign up`, `sign in` or `sign up or in`
 
 ```dart
-// If configured globally, the redirect URI is optional. If provided however, it will be used
+// If configured globally, the redirect URL is optional. If provided however, it will be used
 // instead of any global configuration
 final enchantedLinkResponse = await Descope.enchantedLink.signUp(loginId: 'desmond_c@mail.com',
-    user: User(name: 'Desmond Copeland'), uri: 'https://your-redirect-address.com/verify');
+    details: SignUpDetails(name: 'Desmond Copeland'), redirectUrl: 'https://your-redirect-address.com/verify');
 ```
 
 Inform the user which link is the correct one, using `enchantedLinkResponse.linkId`.
@@ -479,7 +479,7 @@ Existing users can add TOTP using the `update` function.
 
 ```dart
 // Every user must have a loginID. All other user information is optional
-final totpResponse = await Descope.totp.signUp(loginId: 'desmond@descope.com', user: User(name: 'Desmond Copeland'));
+final totpResponse = await Descope.totp.signUp(loginId: 'desmond@descope.com', details: SignUpDetails(name: 'Desmond Copeland'));
 
 // Use one of the provided options to have the user add their credentials to the authenticator
 // totpResponse.provisioningUrl
@@ -508,7 +508,7 @@ The user can either `sign up` or `sign in`
 ```dart
 // Every user must have a loginID. All other user information is optional
 final authResponse = await Descope.password.signUp(loginId: 'desmond_c@mail.com', password: 'cleartext-password',
-    user: User(name: 'Desmond Copeland'));
+    details: SignUpDetails(name: 'Desmond Copeland'));
 ```
 
 ## Additional Information
