@@ -37,14 +37,14 @@ authentication methods. For example, let's use OTP via email:
 
 ```dart
 // sends an OTP code to the given email address
-await Descope.otp.signUp(method: DeliveryMethod.Email, loginId: 'andy@example.com');
+await Descope.otp.signUp(method: DeliveryMethod.email, loginId: 'andy@example.com');
 ```
 
 Finish the authentication by verifying the OTP code the user entered:
 
 ```dart
 // if the user entered the right code the authentication is successful
-final authResponse = await Descope.otp.verify(method: DeliveryMethod.Email, loginId: 'andy@example.com', code: code);
+final authResponse = await Descope.otp.verify(method: DeliveryMethod.email, loginId: 'andy@example.com', code: code);
 
 // we create a DescopeSession object that represents an authenticated user session
 final session = DescopeSession.fromAuthenticationResponse(authResponse);

@@ -8,6 +8,7 @@ import '/src/sdk/sdk.dart';
 import '/src/session/manager.dart';
 import '/src/session/session.dart';
 
+export '/src/extensions/request.dart';
 export '/src/sdk/config.dart' show DescopeConfig;
 export '/src/sdk/routes.dart';
 export '/src/sdk/sdk.dart' show DescopeSdk;
@@ -59,7 +60,7 @@ class Descope {
   /// You can use this [DescopeSessionManager] object as a shared instance to manage
   /// authenticated sessions in your application.
   ///
-  ///     final authResponse = Descope.otp.verify(DeliveryMethod.Email, 'andy@example.com', '123456')
+  ///     final authResponse = Descope.otp.verify(DeliveryMethod.email, 'andy@example.com', '123456')
   ///     val session = DescopeSession(authResponse)
   ///     Descope.sessionManager.manageSession(session)
   ///
