@@ -13,23 +13,23 @@ class EnchantedLink implements DescopeEnchantedLink {
   EnchantedLink(this.client);
 
   @override
-  Future<EnchantedLinkResponse> signUp({required String loginId, SignUpDetails? details, String? uri}) async {
-    return (await client.enchantedLinkSignUp(loginId, details, uri)).convert();
+  Future<EnchantedLinkResponse> signUp({required String loginId, SignUpDetails? details, String? redirectUrl}) async {
+    return (await client.enchantedLinkSignUp(loginId, details, redirectUrl)).convert();
   }
 
   @override
-  Future<EnchantedLinkResponse> signIn({required String loginId, String? uri, SignInOptions? options}) async {
-    return (await client.enchantedLinkSignIn(loginId, uri, options)).convert();
+  Future<EnchantedLinkResponse> signIn({required String loginId, String? redirectUrl, SignInOptions? options}) async {
+    return (await client.enchantedLinkSignIn(loginId, redirectUrl, options)).convert();
   }
 
   @override
-  Future<EnchantedLinkResponse> signUpOrIn({required String loginId, String? uri, SignInOptions? options}) async {
-    return (await client.enchantedLinkSignUpOrIn(loginId, uri, options)).convert();
+  Future<EnchantedLinkResponse> signUpOrIn({required String loginId, String? redirectUrl, SignInOptions? options}) async {
+    return (await client.enchantedLinkSignUpOrIn(loginId, redirectUrl, options)).convert();
   }
 
   @override
-  Future<EnchantedLinkResponse> updateEmail({required String email, required String loginId, String? uri, required String refreshJwt}) async {
-    return (await client.enchantedLinkUpdateEmail(email, loginId, uri, refreshJwt)).convert();
+  Future<EnchantedLinkResponse> updateEmail({required String email, required String loginId, String? redirectUrl, required String refreshJwt}) async {
+    return (await client.enchantedLinkUpdateEmail(email, loginId, redirectUrl, refreshJwt)).convert();
   }
 
   @override

@@ -11,7 +11,7 @@ class DescopeClient extends HttpClient {
 
   // OTP
 
-  Future<MaskedAddressServerResponse> otpSignUp(DeliveryMethod method, String loginId, [SignUpDetails? details]) {
+  Future<MaskedAddressServerResponse> otpSignUp(DeliveryMethod method, String loginId, SignUpDetails? details) {
     return post('auth/otp/signup/${method.name}', MaskedAddressServerResponse.decoder, body: {
       'loginId': loginId,
       'user': details?.toMap(),
@@ -56,7 +56,7 @@ class DescopeClient extends HttpClient {
 
   // TOTP
 
-  Future<TotpServerResponse> totpSignUp(String loginId, [SignUpDetails? details]) {
+  Future<TotpServerResponse> totpSignUp(String loginId, SignUpDetails? details) {
     return post('auth/totp/signup', TotpServerResponse.decoder, body: {
       'loginId': loginId,
       'user': details?.toMap(),
@@ -79,7 +79,7 @@ class DescopeClient extends HttpClient {
 
   // Password
 
-  Future<JWTServerResponse> passwordSignUp(String loginId, String password, [SignUpDetails? details]) {
+  Future<JWTServerResponse> passwordSignUp(String loginId, String password, SignUpDetails? details) {
     return post('auth/password/signup', JWTServerResponse.decoder, body: {
       'loginId': loginId,
       'password': password,
@@ -122,26 +122,26 @@ class DescopeClient extends HttpClient {
 
   // Magic Link
 
-  Future<MaskedAddressServerResponse> magicLinkSignUp(DeliveryMethod method, String loginId, [SignUpDetails? details, String? uri]) {
+  Future<MaskedAddressServerResponse> magicLinkSignUp(DeliveryMethod method, String loginId, SignUpDetails? details, String? redirectUrl) {
     return post('auth/magiclink/signup/${method.name})', MaskedAddressServerResponse.decoder, body: {
       'loginId': loginId,
       'user': details?.toMap(),
-      'uri': uri,
+      'redirectUrl': redirectUrl,
     });
   }
 
-  Future<MaskedAddressServerResponse> magicLinkSignIn(DeliveryMethod method, String loginId, String? uri, SignInOptions? options) {
+  Future<MaskedAddressServerResponse> magicLinkSignIn(DeliveryMethod method, String loginId, String? redirectUrl, SignInOptions? options) {
     return post('auth/magiclink/signin/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
-      'uri': uri,
+      'redirectUrl': redirectUrl,
       'loginOptions': options?.toMap(),
     });
   }
 
-  Future<MaskedAddressServerResponse> magicLinkSignUpOrIn(DeliveryMethod method, String loginId, String? uri, SignInOptions? options) {
+  Future<MaskedAddressServerResponse> magicLinkSignUpOrIn(DeliveryMethod method, String loginId, String? redirectUrl, SignInOptions? options) {
     return post('auth/magiclink/signup-in/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
-      'uri': uri,
+      'redirectUrl': redirectUrl,
       'loginOptions': options?.toMap(),
     });
   }
@@ -152,54 +152,54 @@ class DescopeClient extends HttpClient {
     });
   }
 
-  Future<MaskedAddressServerResponse> magicLinkUpdateEmail(String email, String loginId, String? uri, String refreshJwt) {
+  Future<MaskedAddressServerResponse> magicLinkUpdateEmail(String email, String loginId, String? redirectUrl, String refreshJwt) {
     return post('auth/magiclink/update/email', MaskedAddressServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
       'email': email,
-      'uri': uri,
+      'redirectUrl': redirectUrl,
     });
   }
 
-  Future<MaskedAddressServerResponse> magicLinkUpdatePhone(String phone, DeliveryMethod method, String loginId, String? uri, String refreshJwt) {
+  Future<MaskedAddressServerResponse> magicLinkUpdatePhone(String phone, DeliveryMethod method, String loginId, String? redirectUrl, String refreshJwt) {
     method.ensurePhoneMethod();
     return post('auth/magiclink/update/phone/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
       'phone': phone,
-      'uri': uri,
+      'redirectUrl': redirectUrl,
     });
   }
 
   // Enchanted Link
 
-  Future<EnchantedLinkServerResponse> enchantedLinkSignUp(String loginId, [SignUpDetails? details, String? uri]) {
+  Future<EnchantedLinkServerResponse> enchantedLinkSignUp(String loginId, SignUpDetails? details, String? redirectUrl) {
     return post('auth/enchantedlink/signup/email', EnchantedLinkServerResponse.decoder, body: {
       'loginId': loginId,
       'user': details?.toMap(),
-      'uri': uri,
+      'redirectUrl': redirectUrl,
     });
   }
 
-  Future<EnchantedLinkServerResponse> enchantedLinkSignIn(String loginId, String? uri, SignInOptions? options) {
+  Future<EnchantedLinkServerResponse> enchantedLinkSignIn(String loginId, String? redirectUrl, SignInOptions? options) {
     return post('auth/enchantedlink/signin/email', EnchantedLinkServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
-      'uri': uri,
+      'redirectUrl': redirectUrl,
       'loginOptions': options?.toMap(),
     });
   }
 
-  Future<EnchantedLinkServerResponse> enchantedLinkSignUpOrIn(String loginId, String? uri, SignInOptions? options) {
+  Future<EnchantedLinkServerResponse> enchantedLinkSignUpOrIn(String loginId, String? redirectUrl, SignInOptions? options) {
     return post('auth/enchantedlink/signup-in/email', EnchantedLinkServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
       'loginId': loginId,
-      'uri': uri,
+      'redirectUrl': redirectUrl,
       'loginOptions': options?.toMap(),
     });
   }
 
-  Future<EnchantedLinkServerResponse> enchantedLinkUpdateEmail(String email, String loginId, String? uri, String refreshJwt) {
+  Future<EnchantedLinkServerResponse> enchantedLinkUpdateEmail(String email, String loginId, String? redirectUrl, String refreshJwt) {
     return post('auth/enchantedlink/update/email', EnchantedLinkServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
       'email': email,
-      'uri': uri,
+      'redirectUrl': redirectUrl,
     });
   }
 
@@ -214,7 +214,7 @@ class DescopeClient extends HttpClient {
   Future<OAuthServerResponse> oauthStart(OAuthProvider provider, String? redirectUrl, SignInOptions? options) {
     return post('auth/oauth/authorize', OAuthServerResponse.decoder, headers: authorization(options?.refreshJwt), params: {
       'provider': provider.name,
-      'redirectURL': redirectUrl,
+      'redirectUrl': redirectUrl,
     }, body: {
       'loginOptions': options?.toMap(),
     });
@@ -231,7 +231,7 @@ class DescopeClient extends HttpClient {
   Future<SsoServerResponse> ssoStart(String emailOrTenantId, String? redirectUrl, SignInOptions? options) {
     return post('auth/saml/authorize', SsoServerResponse.decoder, headers: authorization(options?.refreshJwt), params: {
       'tenant': emailOrTenantId,
-      'redirectURL': redirectUrl,
+      'redirectUrl': redirectUrl,
     }, body: {
       'loginOptions': options?.toMap(),
     });

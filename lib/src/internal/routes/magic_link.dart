@@ -10,28 +10,28 @@ class MagicLink implements DescopeMagicLink {
   MagicLink(this.client);
 
   @override
-  Future<String> signUp({required DeliveryMethod method, required String loginId, SignUpDetails? details, String? uri}) async {
-    return (await client.magicLinkSignUp(method, loginId, details, uri)).convert(method);
+  Future<String> signUp({required DeliveryMethod method, required String loginId, SignUpDetails? details, String? redirectUrl}) async {
+    return (await client.magicLinkSignUp(method, loginId, details, redirectUrl)).convert(method);
   }
 
   @override
-  Future<String> signIn({required DeliveryMethod method, required String loginId, String? uri, SignInOptions? options}) async {
-    return (await client.magicLinkSignIn(method, loginId, uri, options)).convert(method);
+  Future<String> signIn({required DeliveryMethod method, required String loginId, String? redirectUrl, SignInOptions? options}) async {
+    return (await client.magicLinkSignIn(method, loginId, redirectUrl, options)).convert(method);
   }
 
   @override
-  Future<String> signUpOrIn({required DeliveryMethod method, required String loginId, String? uri, SignInOptions? options}) async {
-    return (await client.magicLinkSignUpOrIn(method, loginId, uri, options)).convert(method);
+  Future<String> signUpOrIn({required DeliveryMethod method, required String loginId, String? redirectUrl, SignInOptions? options}) async {
+    return (await client.magicLinkSignUpOrIn(method, loginId, redirectUrl, options)).convert(method);
   }
 
   @override
-  Future<String> updateEmail({required String email, required String loginId, String? uri, required String refreshJwt}) async {
-    return (await client.magicLinkUpdateEmail(email, loginId, uri, refreshJwt)).convert(DeliveryMethod.email);
+  Future<String> updateEmail({required String email, required String loginId, String? redirectUrl, required String refreshJwt}) async {
+    return (await client.magicLinkUpdateEmail(email, loginId, redirectUrl, refreshJwt)).convert(DeliveryMethod.email);
   }
 
   @override
-  Future<String> updatePhone({required String phone, required DeliveryMethod method, required String loginId, String? uri, required String refreshJwt}) async {
-    return (await client.magicLinkUpdatePhone(phone, method, loginId, uri, refreshJwt)).convert(method);
+  Future<String> updatePhone({required String phone, required DeliveryMethod method, required String loginId, String? redirectUrl, required String refreshJwt}) async {
+    return (await client.magicLinkUpdatePhone(phone, method, loginId, redirectUrl, refreshJwt)).convert(method);
   }
 
   @override
