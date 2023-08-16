@@ -8,6 +8,7 @@ import '/src/sdk/sdk.dart';
 import '/src/session/manager.dart';
 import '/src/session/session.dart';
 
+export '/src/extensions/request.dart';
 export '/src/sdk/config.dart' show DescopeConfig;
 export '/src/sdk/routes.dart';
 export '/src/sdk/sdk.dart' show DescopeSdk;
@@ -31,13 +32,10 @@ class Descope {
   /// and in most cases you only need to set this to work with the `Descope` singleton.
   ///
   /// **Note:** This is a shortcut for setting the [Descope.config] property.
-  static String _projectId = '';
-
-  static String get projectId => _projectId;
+  static String get projectId => _config.projectId;
 
   static set projectId(String projectId) {
     _config = DescopeConfig(projectId: projectId);
-    _projectId = projectId;
   }
 
   /// The configuration of the `Descope` singleton.
@@ -53,7 +51,7 @@ class Descope {
   static DescopeConfig get config => _config;
 
   static set config(DescopeConfig config) {
-    assert(config.projectId != '');
+    assert(_config.projectId == '');
     _config = config;
   }
 
@@ -62,7 +60,7 @@ class Descope {
   /// You can use this [DescopeSessionManager] object as a shared instance to manage
   /// authenticated sessions in your application.
   ///
-  ///     final authResponse = Descope.otp.verify(DeliveryMethod.Email, 'andy@example.com', '123456')
+  ///     final authResponse = Descope.otp.verify(DeliveryMethod.email, 'andy@example.com', '123456')
   ///     val session = DescopeSession(authResponse)
   ///     Descope.sessionManager.manageSession(session)
   ///

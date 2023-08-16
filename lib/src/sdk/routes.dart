@@ -45,6 +45,13 @@ abstract class DescopeFlow {
   /// This result URI should then be processed by the [exchange] function.
   Future<AuthenticationResponse> start(String flowUrl, {String? deepLinkUrl});
 
+  /// Resumes an ongoing flow after a redirect back to the app with an [incomingUri].
+  /// This is required for *Magic Link only* at this stage.
+  ///
+  /// **Note:** This requires additional setup on the application side.
+  /// See the README for more details.
+  Future<void> resume(Uri incomingUri);
+
   /// Exchange a URI for an [AuthenticationResponse].
   ///
   /// This method should be called only when targeting Android.

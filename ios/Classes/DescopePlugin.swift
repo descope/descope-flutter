@@ -9,6 +9,7 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     private let defaultContextProvider = DefaultContextProvider()
     private let keychainStore = KeychainStore()
     private var eventSink: FlutterEventSink?
+    private var sessions: [ASWebAuthenticationSession] = []
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let methodChannel = FlutterMethodChannel(name: "descope_flutter/methods", binaryMessenger: registrar.messenger())
@@ -37,9 +38,11 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     
     // Flows
     
-    private func startFlow(call: FlutterMethodCall, result: FlutterResult) {
+    private func startFlow(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let args = call.arguments as? [String: Any], let urlString = args["url"] as? String else { return result(FlutterError(code: "MISSINGARGS", message: "'url' is required for startFlow", details: nil)) }
-        startFlow(urlString)
+        DispatchQueue.main.async { [self] in
+            startFlow(urlString)
+        }
         result(urlString)
     }
     
@@ -77,45 +80,71 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     }
     
     // Internal
-    
+
+    @MainActor
     private func startFlow(_ urlString: String) {
-        Task { @MainActor in
-            guard var url = URL(string: urlString) else { return }
-            let session = ASWebAuthenticationSession(url: url, callbackURLScheme: redirectScheme) { callbackURL, error in
-                if let error {
-                    switch error {
-                    case ASWebAuthenticationSessionError.canceledLogin:
-                        self.eventSink?("canceled")
-                        return
-                    case ASWebAuthenticationSessionError.presentationContextInvalid, ASWebAuthenticationSessionError.presentationContextNotProvided:
-                        // not handled for now
-                        fallthrough
-                    default:
-                        self.eventSink?("")
-                        return
-                    }
-                }
-                self.eventSink?(callbackURL?.absoluteString ?? "")
+        startFlow(urlString, attempts: 5)
+    }
+
+    @MainActor
+    private func startFlow(_ urlString: String, attempts: Int) {
+        if attempts > 0, defaultContextProvider.findKeyWindow() == nil {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [self] in
+                startFlow(urlString, attempts: attempts - 1)
             }
-            session.prefersEphemeralWebBrowserSession = true
-            session.presentationContextProvider = defaultContextProvider
-            session.start()
+            return
         }
+        
+        guard let url = URL(string: urlString) else { return }
+        let session = ASWebAuthenticationSession(url: url, callbackURLScheme: redirectScheme) { [self] callbackURL, error in
+            if let error {
+                switch error {
+                case ASWebAuthenticationSessionError.canceledLogin:
+                    respond(with: "canceled")
+                    return
+                case ASWebAuthenticationSessionError.presentationContextInvalid,
+                    ASWebAuthenticationSessionError.presentationContextNotProvided:
+                    // not handled for now
+                    fallthrough
+                default:
+                    respond(with: "")
+                    return
+                }
+            }
+            respond(with: callbackURL?.absoluteString ?? "")
+        }
+        session.prefersEphemeralWebBrowserSession = true
+        session.presentationContextProvider = defaultContextProvider
+        sessions += [session]
+        session.start()
+    }
+    
+    @MainActor
+    private func respond(with response: String) {
+        eventSink?(response)
+        for session in sessions {
+            session.cancel()
+        }
+        sessions = []
     }
 }
 
 
 private class DefaultContextProvider: NSObject, ASWebAuthenticationPresentationContextProviding {
-    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+    func findKeyWindow() -> UIWindow? {
         let scene = UIApplication.shared.connectedScenes
             .filter { $0.activationState == .foregroundActive }
             .compactMap { $0 as? UIWindowScene }
             .first
         
-        let keyWindow = scene?.windows
+        let window = scene?.windows
             .first { $0.isKeyWindow }
         
-        return keyWindow ?? ASPresentationAnchor()
+        return window
+    }
+    
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        return findKeyWindow() ?? ASPresentationAnchor()
     }
 }
 

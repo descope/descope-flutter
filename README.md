@@ -37,14 +37,14 @@ authentication methods. For example, let's use OTP via email:
 
 ```dart
 // sends an OTP code to the given email address
-await Descope.otp.signUp(method: DeliveryMethod.Email, loginId: 'andy@example.com');
+await Descope.otp.signUp(method: DeliveryMethod.email, loginId: 'andy@example.com');
 ```
 
 Finish the authentication by verifying the OTP code the user entered:
 
 ```dart
 // if the user entered the right code the authentication is successful
-final authResponse = await Descope.otp.verify(method: DeliveryMethod.Email, loginId: 'andy@example.com', code: code);
+final authResponse = await Descope.otp.verify(method: DeliveryMethod.email, loginId: 'andy@example.com', code: code);
 
 // we create a DescopeSession object that represents an authenticated user session
 final session = DescopeSession.fromAuthenticationResponse(authResponse);
@@ -201,6 +201,7 @@ final _router = GoRouter(
             return '/'; // This route doesn't display anything but returns the root path where the user will be signed in
           },
         ),
+        // Magic Link handling will be here. See the documentation below.
       ],
     ),
   ],
@@ -213,11 +214,11 @@ Read more about the flutter specific `meta-data` tag mentioned here in the [offi
 <activity
         android:name=".MainActivity"
         android:exported="true"
-        android:launchMode="singleTop"
+        android:launchMode="singleTask"
         android:theme="@style/LaunchTheme"
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
         android:hardwareAccelerated="true"
-        android:windowSoftInputMode="adjustResize"> <!-- exported, singleTop are enabled by default but required for the deep links to work -->
+        android:windowSoftInputMode="adjustResize"> <!-- exported, singleTop are enabled by default but singleTask is required for the magic links to work -->
         
     <!-- add the following at the end of the activity tag, after anything you have defined currently -->
     
@@ -229,8 +230,60 @@ Read more about the flutter specific `meta-data` tag mentioned here in the [offi
         <!-- replace with your host, the path can change must must be reflected when running the flow -->
         <!-- the path should correspond with the routing path defined above -->
         <data android:scheme="https" android:host="<YOUR_HOST_HERE>" android:path="/auth" />
+        <!-- see magic link setup below for more details -->
+        <data android:scheme="https" android:host="<YOUR_HOST_HERE>" android:path="/magiclink" />
     </intent-filter>
 </activity>
+```
+
+### (OPTIONAL) Setup #3: Support Magic Link Redirects
+
+Supporting Magic Link authentication in flows requires some platform specific setup:
+- On Android: add another path entry to the [App Links](https://developer.android.com/training/app-links#android-app-links).
+  This is essentially another path in the same as the app link from the [previous setup step](#setup-2-enable-app-links),
+  with different handling logic. Refer to the previous section for the manifest setup.
+- On iOS: You'll need to [support associated domains](https://developer.apple.com/documentation/xcode/supporting-associated-domains?language=swift)
+  It is recommended to follow the [Flutter guide to deep linking](https://docs.flutter.dev/cookbook/navigation/set-up-universal-links) for the basic setup.
+
+Regardless of the platform, another path is required to handle magic link redirects specifically. For the sake of this README, let's name
+it `/magiclink`
+
+#### Define a route to handle the App Link or Universal Link sent when a magic link is sent
+_this code example demonstrates how app links or universal links should be handled - you can customize it to fit your app_
+```dart
+final _router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (_, __) => const MyHomePage(title: 'Flutter Demo Home Page'),
+      routes: [
+        GoRoute(
+          path: 'auth',
+          redirect: (context, state) {
+            try {
+              Descope.flow.exchange(state.uri);
+            } catch (e) {
+              // Handle errors here
+            }
+            return '/';
+          },
+        ),
+        // Adding the magic link handling here:
+        GoRoute(
+          path: 'magiclink', // This path needs to correspond to the deep link you configured in your manifest or associated domain - see below
+          redirect: (context, state) async {
+            try {
+              await Descope.flow.resume(state.uri); // Resume the flow after returning from a magic link
+            } catch (e) {
+              // Handle errors here
+            }
+            return '/'; // This route doesn't display anything but returns the root path where the user will be signed in
+          },
+        ),
+      ],
+    ),
+  ],
+);
 ```
 
 ### Run a Flow

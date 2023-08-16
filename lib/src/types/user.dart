@@ -15,7 +15,7 @@ part 'user.g.dart';
 /// code. The authentication response has a [DescopeUser] property which can be used
 /// directly or later on when it's kept in the [DescopeSession].
 ///
-///     final authResponse = await Descope.otp.verify(method: DeliveryMethod.Email, loginId: 'andy@example.com', code: '123456');
+///     final authResponse = await Descope.otp.verify(method: DeliveryMethod.email, loginId: 'andy@example.com', code: '123456');
 ///     print('Finished OTP login for user: ${authResponse.user}');
 ///
 ///     Descope.sessionManager.session = DescopeSession(authResponse);
