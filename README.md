@@ -8,6 +8,7 @@ You can read more on the [Descope Website](https://descope.com).
 
 - [Quickstart](#quickstart)
 - [Session Management](#session-management)
+- [Custom Claims](#custom-claims)
 - [Authentication Flows](#running-flows)
 - Authenticate users using the authentication methods that suit your needs:
   - [OTP](#otp-authentication) (one-time password)
@@ -155,6 +156,22 @@ if (refreshJwt != null) {
 You can customize how the `DescopeSessionManager` behaves by using
 your own `storage` and `lifecycle` objects. See the documentation
 for more details.
+
+## Custom Claims
+
+You can request for a sign in operation to add additional custom claims to the
+user's JWT during authentication.
+
+For example, the following code starts an OTP sign in and requests a custom claim
+with the authenticated user's full name:
+
+```dart
+const options = SignInOptions(customClaims: {'name': '{{user.name}}'});
+await Descope.otp.signIn(method: DeliveryMethod.email, loginId: 'desmond_c@mail.com', options: options);
+```
+
+Note that any custom claims added via this method are considered insecure and will
+be nested under the `nsec` custom claim.
 
 ## Running Flows
 
