@@ -46,8 +46,6 @@ class Descope {
   /// **Important:** To prevent accidental misuse only one of `config` and `projectId` can
   /// be set, and they can only be set once. If this isn't appropriate for your use
   /// case you can also use the [DescopeSdk] class directly instead.
-  static DescopeConfig _config = DescopeConfig.initial;
-
   static DescopeConfig get config => _config;
 
   static set config(DescopeConfig config) {
@@ -61,7 +59,7 @@ class Descope {
   /// authenticated sessions in your application.
   ///
   ///     final authResponse = Descope.otp.verify(DeliveryMethod.email, 'andy@example.com', '123456')
-  ///     val session = DescopeSession(authResponse)
+  ///     final session = DescopeSession(authResponse)
   ///     Descope.sessionManager.manageSession(session)
   ///
   /// See the documentation for [DescopeSessionManager] for more details.
@@ -98,17 +96,12 @@ class Descope {
   /// Authentication with passwords.
   static DescopePassword get password => _sdk.password;
 
-  // The underlying `DescopeSdk` object used by the `Descope` singleton.
+  // The backing field for the config property.
+  static DescopeConfig _config = DescopeConfig.initial;
+
+  // The underlying DescopeSdk object used by the Descope singleton.
   static final DescopeSdk _sdk = DescopeSdk(config);
 
-  // cannot be instantiated
+  // This class cannot be instantiated.
   Descope._();
-}
-
-extension DescopeInfo on Descope {
-  /// The Descope SDK name
-  static String get name => 'DescopeFlutter';
-
-  /// The Descope SDK version
-  static String get version => '0.5.1';
 }

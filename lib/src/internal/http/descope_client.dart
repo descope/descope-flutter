@@ -1,4 +1,5 @@
 import '/src/sdk/config.dart';
+import '/src/sdk/sdk.dart';
 import '/src/types/others.dart';
 import 'http_client.dart';
 import 'responses.dart';
@@ -274,7 +275,7 @@ class DescopeClient extends HttpClient {
   Map<String, String> get defaultHeaders => {
         'Authorization': 'Bearer ${config.projectId}',
         'x-descope-sdk-name': 'flutter',
-        'x-descope-sdk-version': '0.1.0',
+        'x-descope-sdk-version': DescopeSdk.version,
       };
 
   Map<String, String> authorization(String? value) {
