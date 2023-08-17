@@ -1,13 +1,13 @@
 import '/src/internal/http/descope_client.dart';
 import '/src/internal/routes/auth.dart';
 import '/src/internal/routes/enchanted_link.dart';
+import '/src/internal/routes/flow.dart';
 import '/src/internal/routes/magic_link.dart';
 import '/src/internal/routes/oauth.dart';
 import '/src/internal/routes/otp.dart';
 import '/src/internal/routes/password.dart';
 import '/src/internal/routes/sso.dart';
 import '/src/internal/routes/totp.dart';
-import '/src/internal/routes/flow.dart';
 import '/src/session/lifecycle.dart';
 import '/src/session/manager.dart';
 import '/src/session/storage.dart';
@@ -16,6 +16,12 @@ import 'routes.dart';
 
 /// Provides functions for working with the Descope API.
 class DescopeSdk {
+  /// The Descope SDK name
+  static const name = 'DescopeFlutter';
+
+  /// The Descope SDK version
+  static const version = '0.6.0';
+
   /// The configuration of the [DescopeSdk] instance.
   final DescopeConfig config;
 

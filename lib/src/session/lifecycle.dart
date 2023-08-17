@@ -57,7 +57,7 @@ class SessionLifecycle implements DescopeSessionLifecycle {
   bool shouldRefresh(DescopeSession session) {
     final expiresAt = session.sessionToken.expiresAt;
     if (expiresAt != null) {
-      return DateTime.timestamp().add(stalenessAllowedInterval).isAfter(expiresAt);
+      return DateTime.now().add(stalenessAllowedInterval).isAfter(expiresAt);
     }
     return false;
   }

@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -40,7 +42,7 @@ class SessionStorage implements DescopeSessionStorage {
 
   SessionStorage({required String projectId, SessionStorageStore? store})
       : _projectId = projectId,
-        _store = store ?? SessionStoragePlatformStore();
+        _store = store ?? SessionStoragePlatformStore.ifSupported() ?? const SessionStorageStore();
 
   @override
   Future<void> saveSession(DescopeSession session) async {
@@ -90,6 +92,13 @@ class SessionStoragePlatformStore implements SessionStorageStore {
   static const _mChannel = MethodChannel('descope_flutter/methods');
 
   SessionStoragePlatformStore();
+
+  static SessionStoragePlatformStore? ifSupported() {
+    if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
+      return SessionStoragePlatformStore();
+    }
+    return null;
+  }
 
   @override
   Future<String?> loadItem(String key) async {
