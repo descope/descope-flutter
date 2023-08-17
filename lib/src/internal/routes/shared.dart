@@ -1,3 +1,5 @@
+import 'package:descope/src/internal/others/error.dart';
+
 import '/src/session/token.dart';
 import '/src/types/others.dart';
 import '/src/types/responses.dart';
@@ -8,10 +10,10 @@ extension ConvertMaskedAddress on MaskedAddressServerResponse {
   String convert(DeliveryMethod method) {
     switch (method) {
       case DeliveryMethod.email:
-        return maskedEmail != null ? maskedEmail! : throw Exception('Missing masked email');
+        return maskedEmail != null ? maskedEmail! : throw InternalErrors.decodeError.add(message: 'Missing masked email');
       case DeliveryMethod.sms:
       case DeliveryMethod.whatsapp:
-        return maskedPhone != null ? maskedPhone! : throw Exception('Missing masked phone');
+        return maskedPhone != null ? maskedPhone! : throw InternalErrors.decodeError.add(message: 'Missing masked phone');
     }
   }
 }
@@ -33,11 +35,11 @@ extension ConvertJWTResponse on JWTServerResponse {
   AuthenticationResponse convert() {
     final refreshJwt = this.refreshJwt;
     if (refreshJwt == null) {
-      throw Exception('Missing refresh JWT');
+      throw InternalErrors.decodeError.add(message: 'Missing refresh JWT');
     }
     final user = this.user;
     if (user == null) {
-      throw Exception('Missing user details');
+      throw InternalErrors.decodeError.add(message: 'Missing user details');
     }
     return AuthenticationResponse(Token.decode(sessionJwt), Token.decode(refreshJwt), firstSeen, user.convert());
   }

@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:descope/src/internal/others/error.dart';
+
 /// A [DescopeToken] is a utility wrapper around a single JWT value.
 ///
 /// The session and refresh JWTs in a [DescopeSession] are stored as
 /// instances of [DescopeToken]. It's also returned directly when
 /// exchanging an access key for a session JWT.
 abstract class DescopeToken {
-
   /// The underlying JWT value
   String get jwt;
 
@@ -90,14 +91,17 @@ class Token implements DescopeToken {
   Token(this.jwt, this.id, this.projectId, this.expiresAt, this.customClaims, this.allClaims);
 
   factory Token.decode(String jwt) {
-    // TODO handle token error
-    final claims = decodeJWT(jwt);
-    final id = Claim.subject.getTypedValue<String>(claims);
-    final projectId = decoderIssuer(Claim.issuer.getTypedValue<String>(claims));
-    final expiration = Claim.expiration.getTypedValue<int>(claims);
-    final expiresAt = DateTime.fromMillisecondsSinceEpoch(expiration * 1000, isUtc: true);
-    final customClaims = claims.filterPrivateClaims();
-    return Token(jwt, id, projectId, expiresAt, customClaims, claims);
+    try {
+      final claims = decodeJWT(jwt);
+      final id = Claim.subject.getTypedValue<String>(claims);
+      final projectId = decoderIssuer(Claim.issuer.getTypedValue<String>(claims));
+      final expiration = Claim.expiration.getTypedValue<int>(claims);
+      final expiresAt = DateTime.fromMillisecondsSinceEpoch(expiration * 1000, isUtc: true);
+      final customClaims = claims.filterPrivateClaims();
+      return Token(jwt, id, projectId, expiresAt, customClaims, claims);
+    } catch (e) {
+      throw InternalErrors.decodeError.add(cause: e);
+    }
   }
 
   @override
@@ -132,9 +136,14 @@ enum Claim {
   }
 
   T getTypedValue<T>(Map<String, dynamic> claims) {
-    final object = claims[key]; // TODO check missing claim
-    final value = object as T; // TODO check invalid claim
-    return value;
+    final object = claims[key];
+    if (object == null) {
+      throw missingClaim(key);
+    }
+    if (object is T) {
+      return object;
+    }
+    throw invalidClaim(key);
   }
 
   T getTypedTenantValue<T>(Map<String, dynamic> claims, String? tenant) {
@@ -161,15 +170,23 @@ extension on Map<String, dynamic> {
 
 T getTenantValue<T>(Map<String, dynamic> claims, String key, String tenant) {
   final info = getTenant(claims, tenant);
-  final value = info[key] as T; // TODO check invalid type
-  return value;
+  final value = info[key];
+  if (value is T) {
+    return value;
+  }
+  throw invalidTenant(tenant);
 }
 
 Map<String, dynamic> getTenant(Map<String, dynamic> claims, String tenant) {
   final tenants = getTenants(claims);
-  final object = tenants[tenant]; // TODO check if missing
-  final map = object as Map<String, dynamic>; // TODO check invalid tenant
-  return map;
+  final object = tenants[tenant];
+  if (object == null) {
+    throw missingTenant(tenant);
+  }
+  if (object is Map<String, dynamic>) {
+    return object;
+  }
+  throw invalidTenant(tenant);
 }
 
 Map<String, dynamic> getTenants(Map<String, dynamic> claims) {
@@ -179,23 +196,31 @@ Map<String, dynamic> getTenants(Map<String, dynamic> claims) {
 // JWT Decoding
 
 Uint8List decodeEncodedFragment(String value) {
-  final length = 4 * ((value.length + 3) /  4).floor();
-  final data = const Base64Decoder().convert(value.padRight(length, '='));
-  return data;
+  final length = 4 * ((value.length + 3) / 4).floor();
+  try {
+    final data = const Base64Decoder().convert(value.padRight(length, '='));
+    return data;
+  } catch (_) {
+    throw invalidEncoding();
+  }
 }
 
 Map<String, dynamic> decodeFragment(String value) {
   final data = decodeEncodedFragment(value);
-  final string = utf8.decode(data);
-  final json = jsonDecode(string);
-  final map = json as Map<String, dynamic>; // TODO check cast failure
-  return map;
+  try {
+    final string = utf8.decode(data);
+    final json = jsonDecode(string);
+    if (json is Map<String, dynamic>) {
+      return json;
+    }
+  } catch (_) {}
+  throw invalidEncoding();
 }
 
 Map<String, dynamic> decodeJWT(String jwt) {
   final fragments = jwt.split('.');
   if (fragments.length != 3) {
-    throw Exception('Invalid token format');
+    throw invalidFormat();
   }
   return decodeFragment(fragments[1]);
 }
@@ -204,3 +229,19 @@ String decoderIssuer(String issuer) {
   final parts = issuer.split('/');
   return parts.isEmpty ? issuer : parts.last;
 }
+
+// errors
+
+String invalidFormat() => 'Invalid token format';
+
+String invalidEncoding() => 'Invalid token encoding';
+
+String invalidData() => 'Invalid token data';
+
+String missingTenant(String tenant) => "Tenant $tenant not found in token";
+
+String invalidTenant(String tenant) => "Invalid data for tenant $tenant in token";
+
+String missingClaim(String claim) => "Missing $claim claim in token";
+
+String invalidClaim(String claim) => "Invalid $claim claim in token";
