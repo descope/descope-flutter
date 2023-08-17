@@ -215,9 +215,7 @@ class DescopeClient extends HttpClient {
     return post('auth/oauth/authorize', OAuthServerResponse.decoder, headers: authorization(options?.refreshJwt), params: {
       'provider': provider.name,
       'redirectUrl': redirectUrl,
-    }, body: {
-      'loginOptions': options?.toMap(),
-    });
+    }, body: options?.toMap() ?? {});
   }
 
   Future<JWTServerResponse> oauthExchange(String code) {
@@ -232,9 +230,7 @@ class DescopeClient extends HttpClient {
     return post('auth/saml/authorize', SsoServerResponse.decoder, headers: authorization(options?.refreshJwt), params: {
       'tenant': emailOrTenantId,
       'redirectUrl': redirectUrl,
-    }, body: {
-      'loginOptions': options?.toMap(),
-    });
+    }, body: options?.toMap() ?? {});
   }
 
   Future<JWTServerResponse> ssoExchange(String code) {
