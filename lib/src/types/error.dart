@@ -11,14 +11,13 @@
 ///         case DescopeException.wrongOTPCode:
 ///         case DescopeException.invalidRequest:
 ///           showBadCodeAlert();
+///           break;
 ///         case DescopeException.networkError:
 ///           showNetworkErrorRetry();
+///           break;
 ///         default:
 ///           showUnexpectedErrorAlert(with: e);
 ///       }
-///     } catch (e) {
-///       // You can have a general catch-all as well
-///       showUnexpectedErrorAlert(with: e);
 ///     }
 class DescopeException implements Exception {
   // A list of common `DescopeException` values that can be thrown by the Descope SDK.

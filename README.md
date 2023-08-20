@@ -9,6 +9,7 @@ You can read more on the [Descope Website](https://descope.com).
 - [Quickstart](#quickstart)
 - [Session Management](#session-management)
 - [Custom Claims](#custom-claims)
+- [Error handling via DescopeException](#error-handling)
 - [Authentication Flows](#running-flows)
 - Authenticate users using the authentication methods that suit your needs:
   - [OTP](#otp-authentication) (one-time password)
@@ -18,7 +19,6 @@ You can read more on the [Descope Website](https://descope.com).
   - [OAuth](#oauth) (social)
   - [SSO / SAML](#ssosaml)
   - [Passwords](#password-authentication) (unrecommended form of authentication)
-- [Error handling via DescopeException](#error-handling-via-descopeexception)
 
 ## Quickstart
 
@@ -173,6 +173,36 @@ await Descope.otp.signIn(method: DeliveryMethod.email, loginId: 'desmond_c@mail.
 
 Note that any custom claims added via this method are considered insecure and will
 be nested under the `nsec` custom claim.
+
+## Error Handling
+
+All operations in the Descope SDK will throw a `DescopeException` in the event an error occurs.
+There are several ways to catch and handle a `DescopeException` thrown by a Descope SDK
+operation, and you can use whichever one is more appropriate in each specific use case.
+
+```dart
+try {
+  final authResponse = await Descope.otp.verify(method: DeliveryMethod.email, loginId: loginId, code: code);
+  final session = DescopeSession.fromAuthenticationResponse(authResponse);
+  Descope.sessionManager.manageSession(session);
+} on DescopeException catch (e) {
+  switch(e) {
+    case DescopeException.wrongOTPCode:
+    case DescopeException.invalidRequest:
+      showBadCodeAlert();
+      break;
+    case DescopeException.networkError:
+      showNetworkErrorRetry();
+      break;
+    default:
+      showUnexpectedErrorAlert(with: e);
+  }
+}
+```
+
+See the `DescopeException` class for specific error values. Note that not all API errors
+are listed in the SDK yet. Please let us know via a Github issue or pull request if you
+need us to add any entries to make your code simpler.
 
 ## Running Flows
 
@@ -511,35 +541,6 @@ The user can either `sign up` or `sign in`
 final authResponse = await Descope.password.signUp(loginId: 'desmond_c@mail.com', password: 'cleartext-password',
     details: SignUpDetails(name: 'Desmond Copeland'));
 ```
-## Error Handling via `DescopeException`
-
-All of the authentication operations will throw a `DescopeException` in the event an error
-is encountered. There are several ways to catch and handle a `DescopeException` thrown by a Descope SDK
-operation, and you can use whichever one is more appropriate in each specific use case.
-
-```dart
-try {
-  final authResponse = await Descope.otp.verify(method: DeliveryMethod.email, loginId: loginId, code: code);
-  final session = DescopeSession.fromAuthenticationResponse(authResponse);
-} on DescopeException catch (e) {
-  switch(e) {
-    case DescopeException.wrongOTPCode:
-    case DescopeException.invalidRequest:
-      showBadCodeAlert();
-    case DescopeException.networkError:
-      showNetworkErrorRetry();
-    default:
-      showUnexpectedErrorAlert(with: e);
-  }
-} catch (e) {
-  // You can have a general catch-all as well
-  showUnexpectedErrorAlert(with: e);
-}
-```
-
-See the `DescopeException` class for specific error values. Note that not all API errors
-are listed in the SDK yet. Please let us know via a Github issue or pull request if you
-need us to add any entries to make your code simpler.
 
 ## Additional Information
 
