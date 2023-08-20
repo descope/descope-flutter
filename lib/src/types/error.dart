@@ -4,7 +4,7 @@ class DescopeException implements Exception {
   ///
   /// You can catch this kind of error to handle error cases such as the user being
   /// offline or the network request timing out.
-  static const networkError = DescopeException._sdkError(code: 'S010001', desc: 'Network error');
+  static const networkError = DescopeException._sdkError(code: 'F010001', desc: 'Network error');
 
   static const badRequest = DescopeException._apiError(code: 'E011001');
   static const missingArguments = DescopeException._apiError(code: 'E011002');
@@ -15,10 +15,10 @@ class DescopeException implements Exception {
   static const tooManyOTPAttempts = DescopeException._apiError(code: 'E061103');
 
   static const enchantedLinkPending = DescopeException._apiError(code: 'E062503');
-  static const enchantedLinkExpired = DescopeException._sdkError(code: 'S060001', desc: 'Enchanted link expired');
+  static const enchantedLinkExpired = DescopeException._sdkError(code: 'F060001', desc: 'Enchanted link expired');
 
-  static const flowFailed = DescopeException._sdkError(code: 'S100001', desc: 'Flow failed to run');
-  static const flowCancelled = DescopeException._sdkError(code: 'S100002', desc: 'Flow cancelled');
+  static const flowFailed = DescopeException._sdkError(code: 'F100001', desc: 'Flow failed to run');
+  static const flowCancelled = DescopeException._sdkError(code: 'F100002', desc: 'Flow cancelled');
 
   final String code;
   final String desc;

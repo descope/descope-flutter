@@ -1,5 +1,4 @@
-import 'package:descope/src/internal/others/error.dart';
-
+import '/src/internal/others/error.dart';
 import '/src/sdk/config.dart';
 import '/src/sdk/sdk.dart';
 import '/src/types/error.dart';

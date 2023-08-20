@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:descope/src/internal/others/error.dart';
+import '/src/internal/others/error.dart';
 
 /// A [DescopeToken] is a utility wrapper around a single JWT value.
 ///
