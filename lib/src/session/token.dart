@@ -91,17 +91,13 @@ class Token implements DescopeToken {
   Token(this.jwt, this.id, this.projectId, this.expiresAt, this.customClaims, this.allClaims);
 
   factory Token.decode(String jwt) {
-    try {
-      final claims = decodeJWT(jwt);
-      final id = Claim.subject.getTypedValue<String>(claims);
-      final projectId = decoderIssuer(Claim.issuer.getTypedValue<String>(claims));
-      final expiration = Claim.expiration.getTypedValue<int>(claims);
-      final expiresAt = DateTime.fromMillisecondsSinceEpoch(expiration * 1000, isUtc: true);
-      final customClaims = claims.filterPrivateClaims();
-      return Token(jwt, id, projectId, expiresAt, customClaims, claims);
-    } catch (e) {
-      throw InternalErrors.decodeError.add(cause: e);
-    }
+    final claims = decodeJWT(jwt);
+    final id = Claim.subject.getTypedValue<String>(claims);
+    final projectId = decoderIssuer(Claim.issuer.getTypedValue<String>(claims));
+    final expiration = Claim.expiration.getTypedValue<int>(claims);
+    final expiresAt = DateTime.fromMillisecondsSinceEpoch(expiration * 1000, isUtc: true);
+    final customClaims = claims.filterPrivateClaims();
+    return Token(jwt, id, projectId, expiresAt, customClaims, claims);
   }
 
   @override
@@ -138,12 +134,12 @@ enum Claim {
   T getTypedValue<T>(Map<String, dynamic> claims) {
     final object = claims[key];
     if (object == null) {
-      throw missingClaim(key);
+      throw InternalErrors.decodeError.add(message: "Missing $key claim in token");
     }
     if (object is T) {
       return object;
     }
-    throw invalidClaim(key);
+    throw InternalErrors.decodeError.add(message: "Invalid $key claim in token");
   }
 
   T getTypedTenantValue<T>(Map<String, dynamic> claims, String? tenant) {
@@ -174,19 +170,19 @@ T getTenantValue<T>(Map<String, dynamic> claims, String key, String tenant) {
   if (value is T) {
     return value;
   }
-  throw invalidTenant(tenant);
+  throw InternalErrors.decodeError.add(message: invalidTenant(tenant));
 }
 
 Map<String, dynamic> getTenant(Map<String, dynamic> claims, String tenant) {
   final tenants = getTenants(claims);
   final object = tenants[tenant];
   if (object == null) {
-    throw missingTenant(tenant);
+    throw InternalErrors.decodeError.add(message: "Tenant $tenant not found in token");
   }
   if (object is Map<String, dynamic>) {
     return object;
   }
-  throw invalidTenant(tenant);
+  throw InternalErrors.decodeError.add(message: invalidTenant(tenant));
 }
 
 Map<String, dynamic> getTenants(Map<String, dynamic> claims) {
@@ -200,27 +196,34 @@ Uint8List decodeEncodedFragment(String value) {
   try {
     final data = const Base64Decoder().convert(value.padRight(length, '='));
     return data;
-  } catch (_) {
-    throw invalidEncoding();
+  } catch (e) {
+    throw InternalErrors.decodeError.add(message: invalidEncoding(), cause: e);
   }
 }
 
 Map<String, dynamic> decodeFragment(String value) {
   final data = decodeEncodedFragment(value);
+  dynamic cause, json;
   try {
     final string = utf8.decode(data);
-    final json = jsonDecode(string);
+    try {
+      json = jsonDecode(string);
+    } catch (e) {
+      throw InternalErrors.decodeError.add(message: 'Invalid token data', cause: e);
+    }
     if (json is Map<String, dynamic>) {
       return json;
     }
-  } catch (_) {}
-  throw invalidEncoding();
+  } catch (e) {
+    cause = e;
+  }
+  throw InternalErrors.decodeError.add(message: invalidEncoding(), cause: cause);
 }
 
 Map<String, dynamic> decodeJWT(String jwt) {
   final fragments = jwt.split('.');
   if (fragments.length != 3) {
-    throw invalidFormat();
+    throw InternalErrors.decodeError.add(message: 'Invalid token format');
   }
   return decodeFragment(fragments[1]);
 }
@@ -232,16 +235,6 @@ String decoderIssuer(String issuer) {
 
 // errors
 
-String invalidFormat() => 'Invalid token format';
-
 String invalidEncoding() => 'Invalid token encoding';
 
-String invalidData() => 'Invalid token data';
-
-String missingTenant(String tenant) => "Tenant $tenant not found in token";
-
 String invalidTenant(String tenant) => "Invalid data for tenant $tenant in token";
-
-String missingClaim(String claim) => "Missing $claim claim in token";
-
-String invalidClaim(String claim) => "Invalid $claim claim in token";
