@@ -1,3 +1,10 @@
+# 0.7.0
+
+- Added Magic Link support to Flows
+- New `DescopeException` now thrown from all operations
+- Fixed `redirectUrl` parameter
+- Added Logger & Network client for easier debugging
+
 # 0.6.0
 
 - Beta release. 
