@@ -9,7 +9,7 @@ You can read more on the [Descope Website](https://descope.com).
 - [Quickstart](#quickstart)
 - [Session Management](#session-management)
 - [Custom Claims](#custom-claims)
-- [Error handling via DescopeException](#error-handling)
+- [Error handling](#error-handling)
 - [Authentication Flows](#running-flows)
 - Authenticate users using the authentication methods that suit your needs:
   - [OTP](#otp-authentication) (one-time password)
