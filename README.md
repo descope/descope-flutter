@@ -176,9 +176,9 @@ be nested under the `nsec` custom claim.
 
 ## Error Handling
 
-All operations in the Descope SDK will throw a `DescopeException` in the event an error occurs.
-There are several ways to catch and handle a `DescopeException` thrown by a Descope SDK
-operation, and you can use whichever one is more appropriate in each specific use case.
+All authentication operations throw a `DescopeException` in case of a failure. There are several
+ways to catch and handle a `DescopeException`, and you can use whichever one is more
+appropriate in each specific use case.
 
 ```dart
 try {
