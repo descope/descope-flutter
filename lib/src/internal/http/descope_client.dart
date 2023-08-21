@@ -1,5 +1,7 @@
+import '/src/internal/others/error.dart';
 import '/src/sdk/config.dart';
 import '/src/sdk/sdk.dart';
+import '/src/types/error.dart';
 import '/src/types/others.dart';
 import 'http_client.dart';
 import 'responses.dart';
@@ -212,10 +214,13 @@ class DescopeClient extends HttpClient {
   // OAuth
 
   Future<OAuthServerResponse> oauthStart(OAuthProvider provider, String? redirectUrl, SignInOptions? options) {
-    return post('auth/oauth/authorize', OAuthServerResponse.decoder, headers: authorization(options?.refreshJwt), params: {
-      'provider': provider.name,
-      'redirectUrl': redirectUrl,
-    }, body: options?.toMap() ?? {});
+    return post('auth/oauth/authorize', OAuthServerResponse.decoder,
+        headers: authorization(options?.refreshJwt),
+        params: {
+          'provider': provider.name,
+          'redirectUrl': redirectUrl,
+        },
+        body: options?.toMap() ?? {});
   }
 
   Future<JWTServerResponse> oauthExchange(String code) {
@@ -227,10 +232,13 @@ class DescopeClient extends HttpClient {
   // SSO
 
   Future<SsoServerResponse> ssoStart(String emailOrTenantId, String? redirectUrl, SignInOptions? options) {
-    return post('auth/saml/authorize', SsoServerResponse.decoder, headers: authorization(options?.refreshJwt), params: {
-      'tenant': emailOrTenantId,
-      'redirectUrl': redirectUrl,
-    }, body: options?.toMap() ?? {});
+    return post('auth/saml/authorize', SsoServerResponse.decoder,
+        headers: authorization(options?.refreshJwt),
+        params: {
+          'tenant': emailOrTenantId,
+          'redirectUrl': redirectUrl,
+        },
+        body: options?.toMap() ?? {});
   }
 
   Future<JWTServerResponse> ssoExchange(String code) {
@@ -304,7 +312,7 @@ extension on SignUpDetails {
 extension on DeliveryMethod {
   ensurePhoneMethod() {
     if (this != DeliveryMethod.sms && this != DeliveryMethod.whatsapp) {
-      throw Exception('Update phone can be done using SMS or WhatsApp only');
+      throw DescopeException.invalidArguments.add(message: 'Update phone can be done using SMS or WhatsApp only');
     }
   }
 }
