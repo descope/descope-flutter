@@ -9,7 +9,7 @@ import 'responses.dart';
 class DescopeClient extends HttpClient {
   final DescopeConfig config;
 
-  DescopeClient(this.config) : super(config.baseUrl);
+  DescopeClient(this.config) : super(config.baseUrl, config.logger, config.networkClient);
 
   // OTP
 
