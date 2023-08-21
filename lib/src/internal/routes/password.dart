@@ -26,8 +26,8 @@ class Password implements DescopePassword {
   }
 
   @override
-  Future<void> replace({required String loginId, required String oldPassword, required String newPassword}) {
-    return client.passwordReplace(loginId, oldPassword, newPassword);
+  Future<AuthenticationResponse> replace({required String loginId, required String oldPassword, required String newPassword}) async {
+    return (client.passwordReplace(loginId, oldPassword, newPassword)).convert();
   }
 
   @override

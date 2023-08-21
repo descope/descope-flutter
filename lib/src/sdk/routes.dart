@@ -183,7 +183,8 @@ abstract class DescopePassword {
   /// Updates the user identified by [loginId] and [oldPassword] with [newPassword].
   /// [newPassword] must conform to the password policy defined in the
   /// password settings in the Descope console
-  Future<void> replace({required String loginId, required String oldPassword, required String newPassword});
+	/// Returns an [AuthenticationResponse] upon successful authentication.
+  Future<AuthenticationResponse> replace({required String loginId, required String oldPassword, required String newPassword});
 
   /// Sends a password reset email to the user.
   ///
