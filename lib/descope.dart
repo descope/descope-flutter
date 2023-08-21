@@ -19,6 +19,7 @@ export '/src/session/token.dart' show DescopeToken;
 export '/src/types/others.dart';
 export '/src/types/responses.dart';
 export '/src/types/user.dart' show DescopeUser;
+export '/src/types/error.dart';
 
 /// Provides functions for working with the Descope API.
 ///

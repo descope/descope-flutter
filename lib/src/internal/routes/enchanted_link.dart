@@ -1,8 +1,9 @@
+import '/src/internal/http/descope_client.dart';
+import '/src/internal/http/responses.dart';
 import '/src/sdk/routes.dart';
+import '/src/types/error.dart';
 import '/src/types/others.dart';
 import '/src/types/responses.dart';
-import '../http/descope_client.dart';
-import '../http/responses.dart';
 import 'shared.dart';
 
 const defaultPollDuration = Duration(minutes: 2);
@@ -49,7 +50,7 @@ class EnchantedLink implements DescopeEnchantedLink {
         Future.delayed(const Duration(seconds: 1));
       }
     } while (DateTime.now().difference(start) <= (timeout ?? defaultPollDuration));
-    throw Exception('polling timed out');
+    throw DescopeException.enchantedLinkExpired;
   }
 }
 

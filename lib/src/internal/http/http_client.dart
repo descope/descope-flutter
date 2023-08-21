@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '/src/internal/others/error.dart';
+
 typedef ResponseDecoder<T> = T Function(Map<String, dynamic> json, Map<String, String> headers);
 
 ResponseDecoder<void> emptyResponse = (json, headers) => {};
@@ -22,7 +24,12 @@ class HttpClient {
   }
 
   Future<T> post<T>(String route, ResponseDecoder<T> decoder, {Map<String, String> headers = const {}, Map<String, String?> params = const {}, Map<String, dynamic> body = const {}}) async {
-    final json = jsonEncode(body.compacted());
+    String json;
+    try {
+      json = jsonEncode(body.compacted());
+    } catch (e) {
+      throw InternalErrors.encodeError.add(cause: e);
+    }
     final request = makeRequest(route, 'POST', headers, params.compacted(), json);
     return call(request, decoder);
   }
@@ -66,14 +73,15 @@ class HttpClient {
 
   Future<http.Response> sendRequest(http.Request request) async {
     final stream = await _client.send(request);
-    return http.Response.fromStream(stream);
+    try {
+      return http.Response.fromStream(stream);
+    } catch (e) {
+      throw InternalErrors.httpError.add(desc: invalidResponse);
+    }
   }
 
   String parseResponse(http.Response response) {
-    if (response.statusCode < 200 || response.statusCode > 299) {
-      // TODO parse error body
-      throw Exception('Server request failed with status code ${response.statusCode}');
-    }
+    throwErrorIfNeeded(response.statusCode);
     return response.body;
   }
 
@@ -97,5 +105,37 @@ extension CompactMap<T> on Map<String, T?> {
       }
     });
     return result;
+  }
+}
+
+// Errors
+
+const String invalidResponse = 'The server returned an unexpected response';
+
+void throwErrorIfNeeded(int statusCode) {
+  final desc = errorDescriptionFromCode(statusCode);
+  if (desc != null) {
+    throw InternalErrors.httpError.add(desc: desc);
+  }
+}
+
+String? errorDescriptionFromCode(int statusCode) {
+  if (statusCode >= 200 && statusCode <= 299) {
+    return null;
+  }
+  switch (statusCode) {
+    case 400:
+      return 'The request was invalid';
+    case 401:
+      return 'The request was unauthorized';
+    case 403:
+      return 'The request was forbidden';
+    case 404:
+      return 'The resource was not found';
+    case 500:
+    case 503:
+      return "The server failed with status code $statusCode";
+    default:
+      return statusCode >= 500 ? 'The server was unreachable' : "The server returned status code $statusCode";
   }
 }

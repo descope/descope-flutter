@@ -8,8 +8,10 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 
 import '/src/internal/http/descope_client.dart';
+import '/src/internal/others/error.dart';
 import '/src/internal/routes/shared.dart';
 import '/src/sdk/routes.dart';
+import '/src/types/error.dart';
 import '/src/types/responses.dart';
 
 const _defaultRedirectURL = 'descopeauth://flow';
@@ -28,7 +30,7 @@ class Flow extends DescopeFlow {
   @override
   Future<AuthenticationResponse> start(String flowUrl, {String? deepLinkUrl}) async {
     // cancel any previous still running flows
-    _current?.completer?.completeError(Exception('Canceled'));
+    _current?.completer?.completeError(DescopeException.flowCancelled);
 
     // prepare a new flow runner
     final runner = _FlowRunner(flowUrl, deepLinkUrl);
@@ -43,7 +45,7 @@ class Flow extends DescopeFlow {
       runner.completer = completer;
       return completer.future;
     } on PlatformException {
-      throw Exception('Flow launch failed');
+      throw DescopeException.flowFailed.add(message: 'Flow launch failed');
     }
   }
 
@@ -51,7 +53,7 @@ class Flow extends DescopeFlow {
   Future<void> resume(Uri incomingUri) async {
     final runner = _current;
     if (runner == null) {
-      throw Exception('No flow to resume');
+      throw DescopeException.flowFailed.add(message: 'No flow to resume');
     }
 
     // For some reason '#' are decoded in this string, need to re-encode
@@ -62,7 +64,7 @@ class Flow extends DescopeFlow {
     try {
       await _mChannel.invokeMethod('startFlow', {'url': uri.toString()});
     } on PlatformException {
-      throw Exception('Flow resume failed');
+      throw DescopeException.flowFailed.add(message: 'Flow resume failed');
     }
   }
 
@@ -72,13 +74,13 @@ class Flow extends DescopeFlow {
     final codeVerifier = runner?.codeVerifier;
     final completer = runner?.completer;
     if (runner == null || codeVerifier == null || completer == null) {
-      throw Exception('No flow pending exchange');
+      throw DescopeException.flowFailed.add(message: 'No flow pending exchange');
     }
 
     _current = null;
     final authorizationCode = incomingUri.queryParameters['code'];
     if (authorizationCode == null) {
-      final e = Exception('No code parameter on incoming URI');
+      final e = DescopeException.flowFailed.add(message: 'No code parameter on incoming URI');
       completer.completeError(e);
       throw e;
     }
@@ -97,28 +99,28 @@ class Flow extends DescopeFlow {
       final str = event as String;
       switch (str) {
         case 'canceled':
-          _completeWithError('Flow canceled by user');
+          _completeWithError(DescopeException.flowCancelled.add(message: 'Flow canceled by user'));
           break;
         case '':
-          _completeWithError('Unexpected error running flow');
+          _completeWithError(DescopeException.flowFailed.add(message: 'Unexpected error running flow'));
           break;
         default:
           try {
             final uri = Uri.parse(str);
             exchange(uri);
           } on Exception {
-            _completeWithError('Unexpected URI received from flow');
+            _completeWithError(DescopeException.flowFailed.add(message: 'Unexpected URI received from flow'));
           }
       }
       subscription?.cancel();
     }, onError: (_) {
-      _completeWithError('Authentication failed');
+      _completeWithError(DescopeException.flowFailed.add(message: 'Authentication failed'));
       subscription?.cancel();
     });
   }
 
-  void _completeWithError(String errorString) {
-    _current?.completer?.completeError(Exception(errorString));
+  void _completeWithError(DescopeException exception) {
+    _current?.completer?.completeError(exception);
     _current = null;
   }
 
@@ -147,8 +149,8 @@ class Flow extends DescopeFlow {
       uri = uri.replace(queryParameters: params);
       runner.codeVerifier = codeVerifier;
       return uri;
-    } on Exception {
-      throw Exception('Invalid flow url');
+    } on Exception catch (e) {
+      throw DescopeException.flowFailed.add(message: 'Invalid flow URL', cause: e);
     }
   }
 
