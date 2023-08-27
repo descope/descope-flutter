@@ -41,18 +41,22 @@ class DescopeClient extends HttpClient {
     });
   }
 
-  Future<MaskedAddressServerResponse> otpUpdateEmail(String email, String loginId, String refreshJwt) {
+  Future<MaskedAddressServerResponse> otpUpdateEmail(String email, String loginId, String refreshJwt, UpdateOptions? options) {
     return post('auth/otp/update/email', MaskedAddressServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
       'email': email,
+      'addToLoginIDs': options?.addToLoginIds,
+      'onMergeUseExisting': options?.onMergeUseExisting,
     });
   }
 
-  Future<MaskedAddressServerResponse> otpUpdatePhone(String phone, DeliveryMethod method, String loginId, String refreshJwt) {
+  Future<MaskedAddressServerResponse> otpUpdatePhone(String phone, DeliveryMethod method, String loginId, String refreshJwt, UpdateOptions? options) {
     method.ensurePhoneMethod();
     return post('auth/otp/update/phone/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
       'phone': phone,
+      'addToLoginIDs': options?.addToLoginIds,
+      'onMergeUseExisting': options?.onMergeUseExisting,
     });
   }
 
@@ -154,20 +158,24 @@ class DescopeClient extends HttpClient {
     });
   }
 
-  Future<MaskedAddressServerResponse> magicLinkUpdateEmail(String email, String loginId, String? redirectUrl, String refreshJwt) {
+  Future<MaskedAddressServerResponse> magicLinkUpdateEmail(String email, String loginId, String? redirectUrl, String refreshJwt, UpdateOptions? options) {
     return post('auth/magiclink/update/email', MaskedAddressServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
       'email': email,
       'redirectUrl': redirectUrl,
+      'addToLoginIDs': options?.addToLoginIds,
+      'onMergeUseExisting': options?.onMergeUseExisting,
     });
   }
 
-  Future<MaskedAddressServerResponse> magicLinkUpdatePhone(String phone, DeliveryMethod method, String loginId, String? redirectUrl, String refreshJwt) {
+  Future<MaskedAddressServerResponse> magicLinkUpdatePhone(String phone, DeliveryMethod method, String loginId, String? redirectUrl, String refreshJwt, UpdateOptions? options) {
     method.ensurePhoneMethod();
     return post('auth/magiclink/update/phone/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
       'phone': phone,
       'redirectUrl': redirectUrl,
+      'addToLoginIDs': options?.addToLoginIds,
+      'onMergeUseExisting': options?.onMergeUseExisting,
     });
   }
 
@@ -197,11 +205,13 @@ class DescopeClient extends HttpClient {
     });
   }
 
-  Future<EnchantedLinkServerResponse> enchantedLinkUpdateEmail(String email, String loginId, String? redirectUrl, String refreshJwt) {
+  Future<EnchantedLinkServerResponse> enchantedLinkUpdateEmail(String email, String loginId, String? redirectUrl, String refreshJwt, UpdateOptions? options) {
     return post('auth/enchantedlink/update/email', EnchantedLinkServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
       'email': email,
       'redirectUrl': redirectUrl,
+      'addToLoginIDs': options?.addToLoginIds,
+      'onMergeUseExisting': options?.onMergeUseExisting,
     });
   }
 

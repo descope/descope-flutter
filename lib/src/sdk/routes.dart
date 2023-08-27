@@ -103,20 +103,30 @@ abstract class DescopeOtp {
   /// Updates an existing user by adding an email address.
   ///
   /// The [email] will be updated for the user identified by [loginId]
-  /// after it is verified via OTP. In order to do this,
-  /// the user must have an active [DescopeSession] whose [refreshJwt] should
-  /// be passed as a parameter to this function.
-  Future<String> updateEmail({required String email, required String loginId, required String refreshJwt});
+  /// after it is verified via OTP. In order to do this, the user must
+  /// have an active [DescopeSession] whose [refreshJwt] should be
+  /// passed as a parameter to this function.
+  ///
+  /// You can optionally pass the [options] parameter to add the new email address
+  /// as a `loginId` for the updated user, and to determine how to resolve conflicts
+  /// if another user already exists with the same `loginId`. See the documentation
+  /// for `UpdateOptions` for more details.
+  Future<String> updateEmail({required String email, required String loginId, required String refreshJwt, UpdateOptions? options});
 
   /// Updates an existing user by adding a phone number.
   ///
   /// The [phone] number will be updated for the user identified by [loginId]
-  /// after it is verified via OTP. In order to do this,
-  /// the user must have an active [DescopeSession] whose [refreshJwt] should
-  /// be passed as a parameter to this function.
+  /// after it is verified via OTP. In order to do this, the user must
+  /// have an active [DescopeSession] whose [refreshJwt] should be
+  /// passed as a parameter to this function.
+  ///
+  /// You can optionally pass the [options] parameter to add the new phone number
+  /// as a `loginId` for the updated user, and to determine how to resolve conflicts
+  /// if another user already exists with the same `loginId`. See the documentation
+  /// for `UpdateOptions` for more details.
   ///
   /// **Important:** Make sure delivery [method] is appropriate for using a phone number.
-  Future<String> updatePhone({required String phone, required DeliveryMethod method, required String loginId, required String refreshJwt});
+  Future<String> updatePhone({required String phone, required DeliveryMethod method, required String loginId, required String refreshJwt, UpdateOptions? options});
 }
 
 /// Authenticate users using Timed One-time Passwords (TOTP) codes.
@@ -259,9 +269,14 @@ abstract class DescopeMagicLink {
   /// the user must have an active [DescopeSession] whose [refreshJwt] should
   /// be passed as a parameter to this function.
   ///
+  /// You can optionally pass the [options] parameter to add the new email address
+  /// as a `loginId` for the existing user, and to determine how to resolve conflicts
+  /// if another user already exists with the same `loginId`. See the documentation
+  /// for `UpdateOptions` for more details.
+  ///
   /// **Important:** Make sure a default magic link URL is configured
   /// in the Descope console, or provided by this call via [redirectUrl].
-  Future<String> updateEmail({required String email, required String loginId, String? redirectUrl, required String refreshJwt});
+  Future<String> updateEmail({required String email, required String loginId, String? redirectUrl, required String refreshJwt, UpdateOptions? options});
 
   /// Updates an existing user by adding a [phone] number.
   ///
@@ -270,12 +285,17 @@ abstract class DescopeMagicLink {
   /// the user must have an active [DescopeSession] whose [refreshJwt] should
   /// be passed as a parameter to this function.
   ///
+  /// You can optionally pass the [options] parameter to add the new phone number
+  /// as a `loginId` for the existing user, and to determine how to resolve conflicts
+  /// if another user already exists with the same `loginId`. See the documentation
+  /// for `UpdateOptions` for more details.
+  ///
   /// **Important:** Make sure the delivery information corresponding with
   /// the phone number enabled delivery [method].
   ///
   /// **Important:** Make sure a default magic link URL is configured
   /// in the Descope console, or provided by this call via [redirectUrl].
-  Future<String> updatePhone({required String phone, required DeliveryMethod method, required String loginId, String? redirectUrl, required String refreshJwt});
+  Future<String> updatePhone({required String phone, required DeliveryMethod method, required String loginId, String? redirectUrl, required String refreshJwt, UpdateOptions? options});
 
   /// Verifies a magic link [token].
   ///
@@ -341,7 +361,12 @@ abstract class DescopeEnchantedLink {
   /// The caller should use the returned [EnchantedLinkResponse.linkId] to show the
   /// user which link they need to press in the enchanted link email, and then use
   /// the [EnchantedLinkResponse.pendingRef] value to poll until the authentication is verified.
-  Future<EnchantedLinkResponse> updateEmail({required String email, required String loginId, String? redirectUrl, required String refreshJwt});
+  ///
+  /// You can optionally pass the [options] parameter to add the new email address
+  /// as a `loginId` for the existing user, and to determine how to resolve conflicts
+  /// if another user already exists with the same `loginId`. See the documentation
+  /// for `UpdateOptions` for more details.
+  Future<EnchantedLinkResponse> updateEmail({required String email, required String loginId, String? redirectUrl, required String refreshJwt, UpdateOptions? options});
 
   /// Checks if an enchanted link authentication has been verified by the user.
   ///
