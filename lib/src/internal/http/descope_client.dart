@@ -45,8 +45,8 @@ class DescopeClient extends HttpClient {
     return post('auth/otp/update/email', MaskedAddressServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
       'email': email,
-      "addToLoginIDs": options?.addToLoginIds,
-      "onMergeUseExisting": options?.onMergeUseExisting,
+      'addToLoginIDs': options?.addToLoginIds,
+      'onMergeUseExisting': options?.onMergeUseExisting,
     });
   }
 
@@ -55,8 +55,8 @@ class DescopeClient extends HttpClient {
     return post('auth/otp/update/phone/${method.name}', MaskedAddressServerResponse.decoder, headers: authorization(refreshJwt), body: {
       'loginId': loginId,
       'phone': phone,
-      "addToLoginIDs": options?.addToLoginIds,
-      "onMergeUseExisting": options?.onMergeUseExisting,
+      'addToLoginIDs': options?.addToLoginIds,
+      'onMergeUseExisting': options?.onMergeUseExisting,
     });
   }
 
@@ -163,8 +163,8 @@ class DescopeClient extends HttpClient {
       'loginId': loginId,
       'email': email,
       'redirectUrl': redirectUrl,
-      "addToLoginIDs": options?.addToLoginIds,
-      "onMergeUseExisting": options?.onMergeUseExisting,
+      'addToLoginIDs': options?.addToLoginIds,
+      'onMergeUseExisting': options?.onMergeUseExisting,
     });
   }
 
@@ -174,8 +174,8 @@ class DescopeClient extends HttpClient {
       'loginId': loginId,
       'phone': phone,
       'redirectUrl': redirectUrl,
-      "addToLoginIDs": options?.addToLoginIds,
-      "onMergeUseExisting": options?.onMergeUseExisting,
+      'addToLoginIDs': options?.addToLoginIds,
+      'onMergeUseExisting': options?.onMergeUseExisting,
     });
   }
 
@@ -210,8 +210,8 @@ class DescopeClient extends HttpClient {
       'loginId': loginId,
       'email': email,
       'redirectUrl': redirectUrl,
-      "addToLoginIDs": options?.addToLoginIds,
-      "onMergeUseExisting": options?.onMergeUseExisting,
+      'addToLoginIDs': options?.addToLoginIds,
+      'onMergeUseExisting': options?.onMergeUseExisting,
     });
   }
 
