@@ -47,7 +47,7 @@ android {
     }
 
     dependencies {
-        api "androidx.browser:browser:1.5.0"
+        api "androidx.browser:browser:1.6.0"
         api "androidx.security:security-crypto:1.0.0"
     }
 
