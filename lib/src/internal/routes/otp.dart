@@ -30,12 +30,12 @@ class Otp implements DescopeOtp {
   }
 
   @override
-  Future<String> updateEmail({required String email, required String loginId, required String refreshJwt}) async {
-    return (await client.otpUpdateEmail(email, loginId, refreshJwt)).convert(DeliveryMethod.email);
+  Future<String> updateEmail({required String email, required String loginId, required String refreshJwt, UpdateOptions? options}) async {
+    return (await client.otpUpdateEmail(email, loginId, refreshJwt, options)).convert(DeliveryMethod.email);
   }
 
   @override
-  Future<String> updatePhone({required String phone, required DeliveryMethod method, required String loginId, required String refreshJwt}) async {
-    return (await client.otpUpdatePhone(phone, method, loginId, refreshJwt)).convert(method);
+  Future<String> updatePhone({required String phone, required DeliveryMethod method, required String loginId, required String refreshJwt, UpdateOptions? options}) async {
+    return (await client.otpUpdatePhone(phone, method, loginId, refreshJwt, options)).convert(method);
   }
 }

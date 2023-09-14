@@ -29,8 +29,8 @@ class EnchantedLink implements DescopeEnchantedLink {
   }
 
   @override
-  Future<EnchantedLinkResponse> updateEmail({required String email, required String loginId, String? redirectUrl, required String refreshJwt}) async {
-    return (await client.enchantedLinkUpdateEmail(email, loginId, redirectUrl, refreshJwt)).convert();
+  Future<EnchantedLinkResponse> updateEmail({required String email, required String loginId, String? redirectUrl, required String refreshJwt, UpdateOptions? options}) async {
+    return (await client.enchantedLinkUpdateEmail(email, loginId, redirectUrl, refreshJwt, options)).convert();
   }
 
   @override

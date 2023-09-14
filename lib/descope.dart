@@ -9,7 +9,7 @@ import '/src/session/manager.dart';
 import '/src/session/session.dart';
 
 export '/src/extensions/request.dart';
-export '/src/sdk/config.dart' show DescopeConfig;
+export '/src/sdk/config.dart' show DescopeConfig, DescopeLogger, DescopeNetworkClient;
 export '/src/sdk/routes.dart';
 export '/src/sdk/sdk.dart' show DescopeSdk;
 export '/src/session/lifecycle.dart' show DescopeSessionLifecycle, SessionLifecycle;

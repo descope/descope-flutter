@@ -1,8 +1,11 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '/src/internal/others/error.dart';
+import '/src/sdk/config.dart';
+import '/src/types/error.dart';
 
 typedef ResponseDecoder<T> = T Function(Map<String, dynamic> json, Map<String, String> headers);
 
@@ -10,11 +13,10 @@ ResponseDecoder<void> emptyResponse = (json, headers) => {};
 
 class HttpClient {
   final String baseURL;
-  final _client = http.Client();
+  final DescopeLogger? logger;
+  final DescopeNetworkClient networkClient;
 
-  HttpClient(this.baseURL) {
-    attachFinalizer();
-  }
+  HttpClient(this.baseURL, this.logger, DescopeNetworkClient? client) : networkClient = client ?? _DefaultNetworkClient();
 
   // Convenience functions
 
@@ -27,6 +29,9 @@ class HttpClient {
     String json;
     try {
       json = jsonEncode(body.compacted());
+      if (kDebugMode) {
+        logger?.log(level: DescopeLogger.debug, message: "Preparing request body", values: [json]);
+      }
     } catch (e) {
       throw InternalErrors.encodeError.add(cause: e);
     }
@@ -43,10 +48,23 @@ class HttpClient {
   // Internal
 
   Future<T> call<T>(http.Request request, ResponseDecoder<T> decoder) async {
-    final response = await sendRequest(request);
-    final data = parseResponse(response);
-    final json = jsonDecode(data) as Map<String, dynamic>;
-    return decoder(json, response.headers);
+    logger?.log(level: DescopeLogger.info, message: "Starting network call", values: [request.url]);
+    final response = await networkClient.sendRequest(request);
+    if (kDebugMode) {
+      logger?.log(level: DescopeLogger.debug, message: "Received response body", values: [request.url, response.body]);
+    }
+    try {
+      final data = parseResponse(response);
+      final json = jsonDecode(data) as Map<String, dynamic>;
+      return decoder(json, response.headers);
+    } catch (e) {
+      if (e == DescopeException.networkError) {
+        logger?.log(level: DescopeLogger.info, message: "Network called failed with http error", values: [request.url, e]);
+      } else {
+        logger?.log(level: DescopeLogger.info, message: "Network called failed with server error", values: [request.url, e]);
+      }
+      rethrow;
+    }
   }
 
   http.Request makeRequest(String route, String method, Map<String, String> headers, Map<String, String> params, String? body) {
@@ -71,26 +89,9 @@ class HttpClient {
     return url;
   }
 
-  Future<http.Response> sendRequest(http.Request request) async {
-    final stream = await _client.send(request);
-    try {
-      return http.Response.fromStream(stream);
-    } catch (e) {
-      throw InternalErrors.httpError.add(desc: invalidResponse);
-    }
-  }
-
   String parseResponse(http.Response response) {
     throwErrorIfNeeded(response.statusCode);
     return response.body;
-  }
-
-  // Cleanup
-
-  static final Finalizer<http.Client> _finalizer = Finalizer((client) => client.close()); // TODO test cleanup
-
-  void attachFinalizer() {
-    _finalizer.attach(this, _client);
   }
 }
 
@@ -137,5 +138,33 @@ String? errorDescriptionFromCode(int statusCode) {
       return "The server failed with status code $statusCode";
     default:
       return statusCode >= 500 ? 'The server was unreachable' : "The server returned status code $statusCode";
+  }
+}
+
+// Default Network Client
+
+class _DefaultNetworkClient extends DescopeNetworkClient {
+  final _client = http.Client();
+
+  _DefaultNetworkClient() {
+    attachFinalizer();
+  }
+
+  @override
+  Future<http.Response> sendRequest(http.Request request) async {
+    final stream = await _client.send(request);
+    try {
+      return http.Response.fromStream(stream);
+    } catch (e) {
+      throw InternalErrors.httpError.add(desc: invalidResponse);
+    }
+  }
+
+  // Cleanup
+
+  static final Finalizer<http.Client> _finalizer = Finalizer((client) => client.close()); // TODO test cleanup
+
+  void attachFinalizer() {
+    _finalizer.attach(this, _client);
   }
 }
