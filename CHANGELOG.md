@@ -1,3 +1,7 @@
+# 0.7.1
+
+- Add support for custom OAuth providers
+
 # 0.7.0
 
 - Added Magic Link support to Flows
