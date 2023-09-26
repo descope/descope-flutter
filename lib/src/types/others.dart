@@ -6,13 +6,19 @@ enum DeliveryMethod {
 }
 
 /// The provider to use in an OAuth flow.
-enum OAuthProvider {
-  facebook,
-  github,
-  google,
-  microsoft,
-  gitlab,
-  apple,
+class OAuthProvider {
+  static final OAuthProvider facebook = OAuthProvider.named("facebook");
+  static final OAuthProvider github = OAuthProvider.named("github");
+  static final OAuthProvider google = OAuthProvider.named("google");
+  static final OAuthProvider microsoft = OAuthProvider.named("microsoft");
+  static final OAuthProvider gitlab = OAuthProvider.named("gitlab");
+  static final OAuthProvider apple = OAuthProvider.named("apple");
+  static final OAuthProvider slack = OAuthProvider.named("slack");
+  static final OAuthProvider discord = OAuthProvider.named("discord");
+
+  final String name;
+
+  OAuthProvider.named(this.name);
 }
 
 /// Used to provide additional details about a user in sign up calls.

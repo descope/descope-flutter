@@ -407,6 +407,12 @@ abstract class DescopeEnchantedLink {
 abstract class DescopeOAuth {
   /// Starts an OAuth redirect chain to authenticate a user.
   ///
+  ///     // use one of the built in constants for the OAuth provider
+  ///     final authUrl = await Descope.oauth.start(provider: OAuthProvider.google);
+  ///
+  ///     // or pass a string with the name of a custom provider
+  ///     final authUrl = await Descope.oauth.start(provider: OAuthProvider.named("myprovider"));
+  ///
   /// This function returns a URL to redirect to in order to
   /// authenticate the user against the chosen [provider].
   ///
