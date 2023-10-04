@@ -16,6 +16,6 @@ class Sso implements DescopeSso {
 
   @override
   Future<AuthenticationResponse> exchange({required String code}) async {
-    return (await client.oauthExchange(code)).convert();
+    return (await client.oauthExchange(code)).toAuthenticationResponse();
   }
 }

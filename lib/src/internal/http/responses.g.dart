@@ -8,7 +8,7 @@ part of 'responses.dart';
 
 JWTServerResponse _$JWTServerResponseFromJson(Map<String, dynamic> json) =>
     JWTServerResponse(
-      json['sessionJwt'] as String,
+      json['sessionJwt'] as String?,
       json['refreshJwt'] as String?,
       json['user'] == null
           ? null
