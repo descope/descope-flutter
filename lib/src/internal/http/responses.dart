@@ -140,7 +140,7 @@ ResponseDecoder<T> _parseHeaders<T>(T Function(Map<String, dynamic>) fromJson, v
   };
 }
 
-final _cookiesPattern = RegExp(r'\s*,\s*');
+final _cookiesPattern = RegExp(r',(?!\s)');
 
 Map<String, String> _cookiesFromHeaders(Map<String, String> headers) {
   final header = headers['set-cookie'] ?? "";
