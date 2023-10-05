@@ -1,14 +1,16 @@
-import 'dart:typed_data';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'http_client.dart';
 
 part 'responses.g.dart';
 
+const sessionCookieName = 'DS';
 const refreshCookieName = 'DSR';
 
 @JsonSerializable(createToJson: false)
 class JWTServerResponse {
-  String sessionJwt;
+  String? sessionJwt;
   String? refreshJwt;
   UserResponse? user;
   bool firstSeen;
@@ -16,7 +18,17 @@ class JWTServerResponse {
   JWTServerResponse(this.sessionJwt, this.refreshJwt, this.user, this.firstSeen);
   static var fromJson = _$JWTServerResponseFromJson;
   static var decoder = _parseHeaders(fromJson, (response, headers) {
-    response.refreshJwt = headers[refreshCookieName] ?? response.refreshJwt;
+    final cookies = _cookiesFromHeaders(headers);
+
+    final sessionJwt = cookies[sessionCookieName];
+    if (sessionJwt != null && sessionJwt.isNotEmpty) {
+      response.sessionJwt = sessionJwt;
+    }
+
+    final refreshJwt = cookies[refreshCookieName];
+    if (refreshJwt != null && refreshJwt.isNotEmpty) {
+      response.refreshJwt = refreshJwt;
+    }
   });
 }
 
@@ -126,4 +138,19 @@ ResponseDecoder<T> _parseHeaders<T>(T Function(Map<String, dynamic>) fromJson, v
     parser(response, headers);
     return response;
   };
+}
+
+final _cookiesPattern = RegExp(r',(?!\s)');
+
+Map<String, String> _cookiesFromHeaders(Map<String, String> headers) {
+  final header = headers['set-cookie'] ?? "";
+  var cookies = <String, String>{};
+  if (!kIsWeb && header.isNotEmpty) {
+    final values = header.split(_cookiesPattern);
+    for (final value in values) {
+      final cookie = Cookie.fromSetCookieValue(value);
+      cookies[cookie.name] = cookie.value;
+    }
+  }
+  return cookies;
 }

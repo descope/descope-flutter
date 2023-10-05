@@ -26,7 +26,7 @@ class Otp implements DescopeOtp {
 
   @override
   Future<AuthenticationResponse> verify({required DeliveryMethod method, required String loginId, required String code}) async {
-    return (await client.otpVerify(method, loginId, code)).convert();
+    return (await client.otpVerify(method, loginId, code)).toAuthenticationResponse();
   }
 
   @override
