@@ -1,3 +1,7 @@
+# 0.7.2
+
+- Fix issue with parsing cookie headers
+
 # 0.7.1
 
 - Add support for custom OAuth providers
