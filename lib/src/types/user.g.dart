@@ -16,6 +16,7 @@ DescopeUser _$DescopeUserFromJson(Map<String, dynamic> json) => DescopeUser(
       json['isVerifiedEmail'] as bool,
       json['phone'] as String?,
       json['isVerifiedPhone'] as bool,
+      json['customAttributes'] == null ? <String, dynamic>{} : json['customAttributes'] as Map<String, dynamic>,
     );
 
 Map<String, dynamic> _$DescopeUserToJson(DescopeUser instance) =>
@@ -29,4 +30,5 @@ Map<String, dynamic> _$DescopeUserToJson(DescopeUser instance) =>
       'isVerifiedEmail': instance.isVerifiedEmail,
       'phone': instance.phone,
       'isVerifiedPhone': instance.isVerifiedPhone,
+      'customAttributes': instance.customAttributes,
     };

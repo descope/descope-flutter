@@ -21,6 +21,7 @@ extension ConvertUserResponse on UserResponse {
   DescopeUser convert() {
     final emailValue = (email ?? '').isNotEmpty ? email : null;
     final phoneValue = (phone ?? '').isNotEmpty ? phone : null;
+    final caValue = customAttributes ?? <String, dynamic>{};
 
     Uri? uri;
     final pic = picture;
@@ -28,7 +29,7 @@ extension ConvertUserResponse on UserResponse {
       uri = Uri.parse(pic);
     }
 
-    return DescopeUser(userId, loginIds, createdTime, name, uri, emailValue, verifiedEmail, phoneValue, verifiedPhone);
+    return DescopeUser(userId, loginIds, createdTime, name, uri, emailValue, verifiedEmail, phoneValue, verifiedPhone, caValue);
   }
 }
 
