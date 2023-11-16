@@ -43,8 +43,9 @@ class UserResponse {
   String? phone;
   bool verifiedPhone;
   int createdTime;
+  Map<String, dynamic>? customAttributes;
 
-  UserResponse(this.userId, this.loginIds, this.name, this.picture, this.email, this.verifiedEmail, this.phone, this.verifiedPhone, this.createdTime);
+  UserResponse(this.userId, this.loginIds, this.name, this.picture, this.email, this.verifiedEmail, this.phone, this.verifiedPhone, this.createdTime, this.customAttributes);
   static var fromJson = _$UserResponseFromJson;
   static var decoder = _ignoreHeaders(fromJson);
 }
