@@ -125,7 +125,7 @@ class Flow extends DescopeFlow {
   }
 
   Future<void> _exchange(String authorizationCode, String codeVerifier, Completer<AuthenticationResponse> completer) async {
-    final authResponse = (await client.flowExchange(authorizationCode, codeVerifier)).convert();
+    final authResponse = (await client.flowExchange(authorizationCode, codeVerifier)).toAuthenticationResponse();
     completer.complete(authResponse);
   }
 

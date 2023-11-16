@@ -35,7 +35,7 @@ class EnchantedLink implements DescopeEnchantedLink {
 
   @override
   Future<AuthenticationResponse> checkForSession({required String pendingRef}) async {
-    return (await client.enchantedLinkPendingSession(pendingRef)).convert();
+    return (await client.enchantedLinkPendingSession(pendingRef)).toAuthenticationResponse();
   }
 
   @override

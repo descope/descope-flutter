@@ -36,6 +36,6 @@ class MagicLink implements DescopeMagicLink {
 
   @override
   Future<AuthenticationResponse> verify({required String token}) async {
-    return (await client.magicLinkVerify(token)).convert();
+    return (await client.magicLinkVerify(token)).toAuthenticationResponse();
   }
 }
