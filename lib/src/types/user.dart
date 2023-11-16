@@ -75,7 +75,11 @@ class DescopeUser {
   /// for this user. If `phone` is `null` then this is always `false`.
   final bool isVerifiedPhone;
 
-  DescopeUser(this.userId, this.loginIds, this.createdAt, this.name, this.picture, this.email, this.isVerifiedEmail, this.phone, this.isVerifiedPhone);
+  /// A mapping of any custom attributes associated with this user.
+  /// User custom attributes are managed via the Descope console.
+  final Map<String, dynamic> customAttributes;
+
+  DescopeUser(this.userId, this.loginIds, this.createdAt, this.name, this.picture, this.email, this.isVerifiedEmail, this.phone, this.isVerifiedPhone, this.customAttributes);
 
   static var fromJson = _$DescopeUserFromJson;
   static var toJson = _$DescopeUserToJson;
