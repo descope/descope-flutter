@@ -182,7 +182,7 @@ private fun createEncryptedStore(context: Context, projectId: String): Store {
       context.deleteSharedPreferences(projectId)
       return EncryptedStorage(context, projectId)
     } catch (e: Exception) {
-      // Unable to initialize encrypted storage
+      // unable to initialize encrypted storage
       return Store.none
     }
   }
