@@ -79,7 +79,16 @@ class DescopeUser {
   /// User custom attributes are managed via the Descope console.
   final Map<String, dynamic> customAttributes;
 
-  DescopeUser(this.userId, this.loginIds, this.createdAt, this.name, this.picture, this.email, this.isVerifiedEmail, this.phone, this.isVerifiedPhone, this.customAttributes);
+  /// Optional user's given name.
+  final String? givenName;
+
+  /// Optional user's middle name.
+  final String? middleName;
+
+  /// Optional user's family name.
+  final String? familyName;
+
+  DescopeUser(this.userId, this.loginIds, this.createdAt, this.name, this.picture, this.email, this.isVerifiedEmail, this.phone, this.isVerifiedPhone, this.customAttributes, this.givenName, this.middleName, this.familyName);
 
   static var fromJson = _$DescopeUserFromJson;
   static var toJson = _$DescopeUserToJson;
@@ -98,11 +107,14 @@ class DescopeUser {
         other.email == email &&
         other.isVerifiedEmail == isVerifiedEmail &&
         other.phone == phone &&
-        other.isVerifiedPhone == isVerifiedPhone;
+        other.isVerifiedPhone == isVerifiedPhone &&
+        other.givenName == givenName &&
+        other.middleName == middleName &&
+        other.familyName == familyName;
   }
 
   @override
   int get hashCode {
-    return Object.hash(userId, loginIds, createdAt, name, picture, email, isVerifiedEmail, phone, isVerifiedPhone);
+    return Object.hash(userId, loginIds, createdAt, name, picture, email, isVerifiedEmail, phone, isVerifiedPhone, givenName, middleName, familyName);
   }
 }
