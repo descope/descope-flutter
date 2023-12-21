@@ -18,7 +18,7 @@ import io.flutter.plugin.common.MethodChannel.Result
 class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   private var channel : MethodChannel? = null
   private var context: Context? = null
-  private lateinit var storage: EncryptedStorage
+  private lateinit var storage: Store
 
   // MethodCallHandler
   override fun onMethodCall(call: MethodCall, result: Result) {
@@ -47,7 +47,7 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
 
   // Session Management
 
-  private fun initStorageIfNeeded(call: MethodCall, result: Result): Boolean {
+  private fun initStorageIfNeeded(call: MethodCall, key: String, result: Result): Boolean {
     if (this::storage.isInitialized) return false
 
     val context = this.context
@@ -56,28 +56,28 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
       return true
     }
 
-    storage = EncryptedStorage(context)
+    storage = createEncryptedStore(context, key)
     return false
   }
 
   private fun loadItem(call: MethodCall, result: Result) {
-    if (initStorageIfNeeded(call, result)) return
     val key = keyFromCall(call, result) ?: return
+    if (initStorageIfNeeded(call, key, result)) return
     val value = storage.loadItem(key)
     result.success(value)
   }
 
   private fun saveItem(call: MethodCall, result: Result) {
-    if (initStorageIfNeeded(call, result)) return
     val key = keyFromCall(call, result) ?: return
+    if (initStorageIfNeeded(call, key, result)) return
     val data = dataFromCall(call, result) ?: return
     storage.saveItem(key, data)
     result.success(key)
   }
 
   private fun removeItem(call: MethodCall, result: Result) {
-    if (initStorageIfNeeded(call, result)) return
     val key = keyFromCall(call, result) ?: return
+    if (initStorageIfNeeded(call, key, result)) return
     storage.removeItem(key)
     result.success(key)
   }
@@ -134,23 +134,56 @@ private fun launchUri(context: Context, uri: Uri) {
   customTabsIntent.launchUrl(context, uri)
 }
 
-private class EncryptedStorage(context: Context) {
+private class EncryptedStorage(context: Context, name: String): Store {
   private val masterKey = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
   private val sharedPreferences = EncryptedSharedPreferences.create(
-    "com.descope.flutter",
+    name,
     masterKey,
     context,
     EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
   )
 
-  fun loadItem(key: String): String? = sharedPreferences.getString(key, null)
+  override fun loadItem(key: String): String? = sharedPreferences.getString(key, null)
 
-  fun saveItem(key: String, data: String) = sharedPreferences.edit()
+  override fun saveItem(key: String, data: String) = sharedPreferences.edit()
     .putString(key, data)
     .apply()
 
-  fun removeItem(key: String) = sharedPreferences.edit()
+  override fun removeItem(key: String) = sharedPreferences.edit()
     .remove(key)
     .apply()
+}
+
+/**
+ * A helper interface that takes care of the actual storage of session data.
+ *
+ * The default function implementations in this interface do nothing or return `null`.
+ */
+interface Store {
+  fun saveItem(key: String, data: String) {}
+
+  fun loadItem(key: String): String? = null
+
+  fun removeItem(key: String) {}
+
+  companion object {
+    /** A store that does nothing */
+    val none = object : Store {}
+  }
+}
+
+private fun createEncryptedStore(context: Context, projectId: String): Store {
+  try {
+    return EncryptedStorage(context, projectId)
+  } catch (e: Exception) {
+    try {
+      // encrypted storage key unusable
+      context.deleteSharedPreferences(projectId)
+      return EncryptedStorage(context, projectId)
+    } catch (e: Exception) {
+      // Unable to initialize encrypted storage
+      return Store.none
+    }
+  }
 }
