@@ -26,8 +26,11 @@ class SignUpDetails {
   final String? name;
   final String? email;
   final String? phone;
+  final String? givenName;
+  final String? middleName;
+  final String? familyName;
 
-  SignUpDetails({this.name, this.email, this.phone});
+  SignUpDetails({this.name, this.email, this.phone, this.givenName, this.middleName, this.familyName});
 }
 
 /// Used to require additional behaviors when authenticating a user.

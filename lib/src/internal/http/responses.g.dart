@@ -27,6 +27,9 @@ UserResponse _$UserResponseFromJson(Map<String, dynamic> json) => UserResponse(
       json['verifiedPhone'] as bool,
       json['createdTime'] as int,
       json['customAttributes'] as Map<String, dynamic>?,
+      json['givenName'] as String?,
+      json['middleName'] as String?,
+      json['familyName'] as String?,
     );
 
 MaskedAddressServerResponse _$MaskedAddressServerResponseFromJson(

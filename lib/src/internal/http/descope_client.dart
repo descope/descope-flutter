@@ -315,6 +315,9 @@ extension on SignUpDetails {
       'email': email,
       'phone': phone,
       'name': name,
+      'givenName': givenName,
+      'middleName': middleName,
+      'familyName': familyName,
     };
   }
 }
