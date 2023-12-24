@@ -49,6 +49,9 @@ android {
     dependencies {
         api "androidx.browser:browser:1.7.0"
         api "androidx.security:security-crypto:1.0.0"
+        api "androidx.credentials:credentials:1.2.0"
+        api "androidx.credentials:credentials-play-services-auth:1.2.0"
+        api "com.google.android.libraries.identity.googleid:googleid:1.1.0"
     }
 
     testOptions {

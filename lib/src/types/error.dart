@@ -42,6 +42,9 @@ class DescopeException implements Exception {
   static const flowFailed = DescopeException._sdkError(code: 'F100001', desc: 'Flow failed to run');
   static const flowCancelled = DescopeException._sdkError(code: 'F100002', desc: 'Flow cancelled');
 
+  static const oauthNativeFailed = DescopeException._sdkError(code: 'F120001', desc: 'OAuth authentication failed');
+  static const oauthNativeCancelled = DescopeException._sdkError(code: 'F120002', desc: 'OAuth authentication cancelled');
+
   /// A string of 7 characters that represents a specific Descope error.
   ///
   /// For example, the value of [code] is `"E011003"` when an API request fails validation.
@@ -89,4 +92,14 @@ class DescopeException implements Exception {
 
   @override
   int get hashCode => Object.hash(code, desc);
+
+  @override
+  String toString() {
+    var str = 'code: $code, description: $desc';
+    final message = this.message;
+    if (message != null && message.isNotEmpty) {
+      str += ', message: $message';
+    }
+    return 'DescopeException($str)';
+  }
 }

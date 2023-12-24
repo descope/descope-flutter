@@ -69,6 +69,15 @@ OAuthServerResponse _$OAuthServerResponseFromJson(Map<String, dynamic> json) =>
       json['url'] as String,
     );
 
+OAuthNativeStartServerResponse _$OAuthNativeStartServerResponseFromJson(
+        Map<String, dynamic> json) =>
+    OAuthNativeStartServerResponse(
+      json['clientId'] as String,
+      json['stateId'] as String,
+      json['nonce'] as String,
+      json['implicit'] as bool,
+    );
+
 SsoServerResponse _$SsoServerResponseFromJson(Map<String, dynamic> json) =>
     SsoServerResponse(
       json['url'] as String,

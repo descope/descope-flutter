@@ -109,6 +109,18 @@ class OAuthServerResponse {
 }
 
 @JsonSerializable(createToJson: false)
+class OAuthNativeStartServerResponse {
+  final String clientId;
+  final String stateId;
+  final String nonce;
+  final bool implicit;
+
+  OAuthNativeStartServerResponse(this.clientId, this.stateId, this.nonce, this.implicit);
+  static var fromJson = _$OAuthNativeStartServerResponseFromJson;
+  static var decoder = _ignoreHeaders(fromJson);
+}
+
+@JsonSerializable(createToJson: false)
 class SsoServerResponse {
   final String url;
 

@@ -5,6 +5,17 @@ import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
+import androidx.credentials.CredentialManager
+import androidx.credentials.CredentialManagerCallback
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import org.json.JSONObject
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -24,6 +35,7 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   override fun onMethodCall(call: MethodCall, result: Result) {
     when (call.method) {
       "startFlow" -> startFlow(call, result)
+      "oauthNative" -> oauthNative(call, result)
       "loadItem" -> loadItem(call, result)
       "saveItem" -> saveItem(call, result)
       "removeItem" -> removeItem(call, result)
@@ -33,26 +45,85 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
 
   // Flows
 
-  private fun startFlow(call: MethodCall, result: Result) {
-    val context = this.context ?: return result.error("NULLCONTEXT", "Context is null", null)
-    val url = call.argument<String>("url") ?: return result.error("MISSINGARGS", "'url' is required for startFlow", null)
+  private fun startFlow(call: MethodCall, res: Result) {
+    val context = this.context ?: return res.error("NULLCONTEXT", "Context is null", null)
+    val url = call.argument<String>("url") ?: return res.error("MISSINGARGS", "'url' is required for startFlow", null)
     try {
       val uri = Uri.parse(url)
       launchUri(context, uri)
-      result.success(url)
+      res.success(url)
     } catch (ignored: Exception) {
-      result.error("INVALIDARGS", "url argument is invalid", null)
+      res.error("INVALIDARGS", "url argument is invalid", null)
     }
   }
 
-  // Session Management
+  // OAuth
 
-  private fun initStorageIfNeeded(call: MethodCall, key: String, result: Result): Boolean {
+  private fun oauthNative(call: MethodCall, res: Result) {
+    val context = this.context ?: return res.error("NULLCONTEXT", "Context is null", null)
+    val clientId = call.argument<String>("clientId") ?: return res.error("MISSINGARGS", "'clientId' is required for oauthNative", null)
+    val nonce = call.argument<String>("nonce") ?: return res.error("MISSINGARGS", "'nonce' is required for oauthNative", null)
+    val implicit = call.argument<Boolean>("implicit") ?: return res.error("MISSINGARGS", "'implicit' is required for oauthNative", null)
+
+    if (!implicit) {
+      return res.error("FAILED", "OAuth provider grant type must be set to implicit", null)
+    }
+
+    val option = GetGoogleIdOption.Builder().run {
+      setFilterByAuthorizedAccounts(false)
+      setServerClientId(clientId)
+      setNonce(nonce)
+      build()
+    }
+
+    val request = GetCredentialRequest.Builder().run {
+      addCredentialOption(option)
+      build()
+    }
+
+    val callback = object : CredentialManagerCallback<GetCredentialResponse, GetCredentialException> {
+      override fun onResult(result: GetCredentialResponse) {
+        val credential = result.credential
+        if (credential !is CustomCredential) {
+          return res.error("FAILED", "Unexpected OAuth credential subclass", null)
+        }
+        if (credential.type != GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+          return res.error("FAILED", "Unexpected OAuth credential type", null)
+        }
+
+        val idTokenCred = try {
+          GoogleIdTokenCredential.createFrom(credential.data)
+        } catch (e: GoogleIdTokenParsingException) {
+          return res.error("FAILED", "Invalid OAuth credential", null)
+        }
+
+        val values = mapOf("identityToken" to idTokenCred.idToken)
+        val json = JSONObject(values).toString()
+        res.success(json)
+      }
+
+      override fun onError(e: GetCredentialException) {
+        if (e is GetCredentialCancellationException) {
+          res.error("CANCELLED", "OAuth authentication cancelled", null)
+        } else {
+          res.error("FAILED", e.errorMessage?.toString(), null)
+        }
+      }
+    }
+
+    val credentialManager = CredentialManager.create(context)
+    credentialManager.getCredentialAsync(context, request, null, Runnable::run, callback)
+  }
+
+  // Storage
+
+  @Suppress("UNUSED_PARAMETER")
+  private fun initStorageIfNeeded(call: MethodCall, key: String, res: Result): Boolean {
     if (this::storage.isInitialized) return false
 
     val context = this.context
     if (context == null) {
-      result.error("NULLCONTEXT", "Context is null", null)
+      res.error("NULLCONTEXT", "Context is null", null)
       return true
     }
 
@@ -60,36 +131,36 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
     return false
   }
 
-  private fun loadItem(call: MethodCall, result: Result) {
-    val key = keyFromCall(call, result) ?: return
-    if (initStorageIfNeeded(call, key, result)) return
+  private fun loadItem(call: MethodCall, res: Result) {
+    val key = keyFromCall(call, res) ?: return
+    if (initStorageIfNeeded(call, key, res)) return
     val value = storage.loadItem(key)
-    result.success(value)
+    res.success(value)
   }
 
-  private fun saveItem(call: MethodCall, result: Result) {
-    val key = keyFromCall(call, result) ?: return
-    if (initStorageIfNeeded(call, key, result)) return
-    val data = dataFromCall(call, result) ?: return
+  private fun saveItem(call: MethodCall, res: Result) {
+    val key = keyFromCall(call, res) ?: return
+    if (initStorageIfNeeded(call, key, res)) return
+    val data = dataFromCall(call, res) ?: return
     storage.saveItem(key, data)
-    result.success(key)
+    res.success(key)
   }
 
-  private fun removeItem(call: MethodCall, result: Result) {
-    val key = keyFromCall(call, result) ?: return
-    if (initStorageIfNeeded(call, key, result)) return
+  private fun removeItem(call: MethodCall, res: Result) {
+    val key = keyFromCall(call, res) ?: return
+    if (initStorageIfNeeded(call, key, res)) return
     storage.removeItem(key)
-    result.success(key)
+    res.success(key)
   }
 
-  private fun keyFromCall(call: MethodCall, result: Result) = stringFromCall("key", call, result)
+  private fun keyFromCall(call: MethodCall, res: Result) = stringFromCall("key", call, res)
 
-  private fun dataFromCall(call: MethodCall, result: Result) = stringFromCall("data", call, result)
+  private fun dataFromCall(call: MethodCall, res: Result) = stringFromCall("data", call, res)
 
-  private fun stringFromCall(key: String, call: MethodCall, result: Result): String? {
+  private fun stringFromCall(key: String, call: MethodCall, res: Result): String? {
     val data = call.argument<String>(key)
     if (data == null) {
-      result.error("MISSINGARGS", "'$key' argument is required", null)
+      res.error("MISSINGARGS", "'$key' argument is required", null)
     }
     return data
   }
@@ -109,7 +180,7 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   // ActivityAware
 
   override fun onAttachedToActivity(activityPluginBinding: ActivityPluginBinding) {
-    context = activityPluginBinding.getActivity()
+    context = activityPluginBinding.activity
   }
 
   override fun onDetachedFromActivityForConfigChanges() {
@@ -117,7 +188,7 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   }
 
   override fun onReattachedToActivityForConfigChanges(activityPluginBinding: ActivityPluginBinding) {
-    context = activityPluginBinding.getActivity()
+    context = activityPluginBinding.activity
   }
 
   override fun onDetachedFromActivity() {
