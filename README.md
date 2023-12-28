@@ -478,7 +478,7 @@ more details.
 void loginWithOAuth() async {
   AuthenticationResponse response;
   if (!kIsWeb && Platform.isIOS) {
-    // created a custom Apple provider using the app bundle identifier  as the Client ID
+    // created a custom Apple provider using the app bundle identifier as the Client ID
     response = await Descope.oauth.native(provider: OAuthProvider.named("ios"));
   } else if (!kIsWeb && Platform.isAndroid) {
     // created a custom Google provider for implicit authentication
