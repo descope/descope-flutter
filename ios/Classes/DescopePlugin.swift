@@ -25,6 +25,8 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         switch call.method {
         case "startFlow":
             startFlow(call: call, result: result)
+        case "oauthNative":
+            oauthNative(call: call, result: result)
         case "loadItem":
             loadItem(call: call, result: result)
         case "saveItem":
@@ -46,6 +48,43 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         result(urlString)
     }
     
+    // OAuth
+
+    private func oauthNative(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let args = call.arguments as? [String: Any] else { return result(FlutterError(code: "MISSINGARGS", message: "Unexpected empty arguments in oauthNative", details: nil)) }
+        guard let clientId = args["clientId"] as? String else { return result(FlutterError(code: "MISSINGARGS", message: "'clientId' is required for oauthNative", details: nil)) }
+        guard let nonce = args["nonce"] as? String else { return result(FlutterError(code: "MISSINGARGS", message: "'nonce' is required for oauthNative", details: nil)) }
+        guard let implicit = args["implicit"] as? Bool else { return result(FlutterError(code: "MISSINGARGS", message: "'implicit' is required for oauthNative", details: nil)) }
+
+        if clientId != Bundle.main.bundleIdentifier {
+            return result(FlutterError(code: "FAILED", message: "OAuth provider clientId doesn't match bundle identifier", details: nil))
+        }
+
+        Task { @MainActor in
+            do {
+                let authorization = try await performAuthorization(nonce: nonce)
+                let (authorizationCode, identityToken, user) = try parseCredential(authorization.credential, implicit: implicit)
+
+                let values = [
+                    "authorizationCode": authorizationCode,
+                    "identityToken": identityToken,
+                    "user": user,
+                ]
+
+                let json = try JSONSerialization.data(withJSONObject: values, options: [])
+                guard let response = String(bytes: json, encoding: .utf8) else { return result(FlutterError(code: "FAILED", message: "Response encoding failed", details: nil)) }
+
+                return result(response)
+            } catch OAuthNativeError.cancelled {
+                return result(FlutterError(code: "CANCELLED", message: "OAuth authentication cancelled", details: nil))
+            } catch OAuthNativeError.failed(let reason) {
+                return result(FlutterError(code: "FAILED", message: reason, details: nil))
+            } catch {
+                return result(FlutterError(code: "FAILED", message: "OAuth authentication failed", details: nil))
+            }
+        }
+    }
+
     // Storage
     
     private func loadItem(call: FlutterMethodCall, result: FlutterResult) {
@@ -79,7 +118,7 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         return nil
     }
     
-    // Internal
+    // Internal Flows
 
     @MainActor
     private func startFlow(_ urlString: String) {
@@ -127,24 +166,115 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         }
         sessions = []
     }
+
+    // Internal OAuth
+
+    enum OAuthNativeError: Error {
+        case cancelled
+        case failed(String)
+    }
+
+    @MainActor
+    private func performAuthorization(nonce: String) async throws -> ASAuthorization {
+        let provider = ASAuthorizationAppleIDProvider()
+        let request = provider.createRequest()
+        request.requestedScopes = [.fullName, .email]
+        request.nonce = nonce
+
+        let authDelegate = AuthorizationDelegate()
+        let authController = ASAuthorizationController(authorizationRequests: [ request ] )
+        authController.delegate = authDelegate
+        authController.presentationContextProvider = defaultContextProvider
+        authController.performRequests()
+
+        let result = await withCheckedContinuation { continuation in
+            authDelegate.completion = { result in
+                continuation.resume(returning: result)
+            }
+        }
+
+        switch result {
+        case .failure(ASAuthorizationError.canceled):
+            throw OAuthNativeError.cancelled
+        case .failure(ASAuthorizationError.unknown):
+            throw OAuthNativeError.cancelled
+        case .failure(let error):
+            throw OAuthNativeError.failed("\(error)")
+        case .success(let authorization):
+            return authorization
+        }
+    }
+
+    private func parseCredential(_ credential: ASAuthorizationCredential, implicit: Bool) throws -> (authorizationCode: String?, identityToken: String?, user: String?) {
+        guard let credential = credential as? ASAuthorizationAppleIDCredential else { throw OAuthNativeError.failed("Invalid Apple credential type") }
+
+        var authorizationCode: String?
+        if !implicit, let data = credential.authorizationCode, let value = String(bytes: data, encoding: .utf8) {
+            authorizationCode = value
+        }
+
+        var identityToken: String?
+        if implicit, let data = credential.identityToken, let value = String(bytes: data, encoding: .utf8) {
+            identityToken = value
+        }
+
+        var user: String?
+        if let names = credential.fullName, names.givenName != nil || names.middleName != nil || names.familyName != nil {
+            var name: [String: Any] = [:]
+            if let givenName = names.givenName {
+                name["firstName"] = givenName
+            }
+            if let middleName = names.middleName {
+                name["middleName"] = middleName
+            }
+            if let familyName = names.familyName {
+                name["lastName"] = familyName
+            }
+            let object = ["name": name]
+            if let data = try? JSONSerialization.data(withJSONObject: object), let value = String(bytes: data, encoding: .utf8) {
+                user = value
+            }
+        }
+
+        return (authorizationCode, identityToken, user)
+    }
 }
 
+typealias AuthorizationDelegateCompletion = (Result<ASAuthorization, Error>) -> Void
 
-private class DefaultContextProvider: NSObject, ASWebAuthenticationPresentationContextProviding {
+class AuthorizationDelegate: NSObject, ASAuthorizationControllerDelegate {
+    var completion: AuthorizationDelegateCompletion?
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        completion?(.success(authorization))
+        completion = nil
+    }
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        completion?(.failure(error))
+        completion = nil
+    }
+}
+
+private class DefaultContextProvider: NSObject, ASWebAuthenticationPresentationContextProviding, ASAuthorizationControllerPresentationContextProviding {
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        return findKeyWindow() ?? ASPresentationAnchor()
+    }
+
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return findKeyWindow() ?? ASPresentationAnchor()
+    }
+
     func findKeyWindow() -> UIWindow? {
         let scene = UIApplication.shared.connectedScenes
             .filter { $0.activationState == .foregroundActive }
             .compactMap { $0 as? UIWindowScene }
             .first
-        
-        let window = scene?.windows
+
+        let keyWindow = scene?.windows
             .first { $0.isKeyWindow }
-        
-        return window
-    }
-    
-    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
-        return findKeyWindow() ?? ASPresentationAnchor()
+
+        return keyWindow
     }
 }
 

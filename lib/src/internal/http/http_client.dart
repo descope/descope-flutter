@@ -30,7 +30,7 @@ class HttpClient {
     try {
       json = jsonEncode(body.compacted());
       if (kDebugMode) {
-        logger?.log(level: DescopeLogger.debug, message: "Preparing request body", values: [json]);
+        logger?.log(level: DescopeLogger.debug, message: 'Preparing request body', values: [json]);
       }
     } catch (e) {
       throw InternalErrors.encodeError.add(cause: e);
@@ -48,10 +48,10 @@ class HttpClient {
   // Internal
 
   Future<T> call<T>(http.Request request, ResponseDecoder<T> decoder) async {
-    logger?.log(level: DescopeLogger.info, message: "Starting network call", values: [request.url]);
+    logger?.log(level: DescopeLogger.info, message: 'Starting network call', values: [request.url]);
     final response = await networkClient.sendRequest(request);
     if (kDebugMode) {
-      logger?.log(level: DescopeLogger.debug, message: "Received response body", values: [request.url, response.body]);
+      logger?.log(level: DescopeLogger.debug, message: 'Received response body', values: [request.url, response.body]);
     }
     try {
       final data = parseResponse(response);
@@ -59,9 +59,9 @@ class HttpClient {
       return decoder(json, response.headers);
     } catch (e) {
       if (e == DescopeException.networkError) {
-        logger?.log(level: DescopeLogger.info, message: "Network called failed with http error", values: [request.url, e]);
+        logger?.log(level: DescopeLogger.info, message: 'Network called failed with http error', values: [request.url, e]);
       } else {
-        logger?.log(level: DescopeLogger.info, message: "Network called failed with server error", values: [request.url, e]);
+        logger?.log(level: DescopeLogger.info, message: 'Network called failed with server error', values: [request.url, e]);
       }
       rethrow;
     }

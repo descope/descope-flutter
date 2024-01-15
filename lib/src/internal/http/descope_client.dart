@@ -223,19 +223,33 @@ class DescopeClient extends HttpClient {
 
   // OAuth
 
-  Future<OAuthServerResponse> oauthStart(OAuthProvider provider, String? redirectUrl, SignInOptions? options) {
-    return post('auth/oauth/authorize', OAuthServerResponse.decoder,
-        headers: authorization(options?.refreshJwt),
-        params: {
-          'provider': provider.name,
-          'redirectUrl': redirectUrl,
-        },
-        body: options?.toMap() ?? {});
+  Future<OAuthServerResponse> oauthWebStart(OAuthProvider provider, String? redirectUrl, SignInOptions? options) {
+    return post('auth/oauth/authorize', OAuthServerResponse.decoder, headers: authorization(options?.refreshJwt), params: {
+      'provider': provider.name,
+      'redirectUrl': redirectUrl,
+    }, body: options?.toMap() ?? {});
   }
 
-  Future<JWTServerResponse> oauthExchange(String code) {
+  Future<JWTServerResponse> oauthWebExchange(String code) {
     return post('auth/oauth/exchange', JWTServerResponse.decoder, body: {
       'code': code,
+    });
+  }
+
+  Future<OAuthNativeStartServerResponse> oauthNativeStart(OAuthProvider provider, SignInOptions? options) {
+    return post('auth/oauth/native/start', OAuthNativeStartServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
+      'provider': provider.name,
+      'loginOptions': options?.toMap(),
+    });
+  }
+
+  Future<JWTServerResponse> oauthNativeFinish(OAuthProvider provider, String stateId, String? user, String? authorizationCode, String? identityToken) {
+    return post('auth/oauth/native/finish', JWTServerResponse.decoder, body: {
+      'provider': provider.name,
+      'stateId': stateId,
+      'user': user,
+      'code': authorizationCode,
+      'idToken': identityToken,
     });
   }
 
@@ -315,6 +329,9 @@ extension on SignUpDetails {
       'email': email,
       'phone': phone,
       'name': name,
+      'givenName': givenName,
+      'middleName': middleName,
+      'familyName': familyName,
     };
   }
 }

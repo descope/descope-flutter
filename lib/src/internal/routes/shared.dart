@@ -29,7 +29,7 @@ extension ConvertUserResponse on UserResponse {
       uri = Uri.parse(pic);
     }
 
-    return DescopeUser(userId, loginIds, createdTime, name, uri, emailValue, verifiedEmail, phoneValue, verifiedPhone, caValue);
+    return DescopeUser(userId, loginIds, createdTime, name, uri, emailValue, verifiedEmail, phoneValue, verifiedPhone, caValue, givenName, middleName, familyName);
   }
 }
 

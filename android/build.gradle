@@ -2,14 +2,14 @@ group 'com.descope.flutter'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.9.10'
+    ext.kotlin_version = '1.9.22'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.2'
+        classpath 'com.android.tools.build:gradle:8.2.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -47,8 +47,11 @@ android {
     }
 
     dependencies {
-        api "androidx.browser:browser:1.6.0"
+        api "androidx.browser:browser:1.7.0"
         api "androidx.security:security-crypto:1.0.0"
+        api "androidx.credentials:credentials:1.2.0"
+        api "androidx.credentials:credentials-play-services-auth:1.2.0"
+        api "com.google.android.libraries.identity.googleid:googleid:1.1.0"
     }
 
     testOptions {

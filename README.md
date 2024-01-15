@@ -467,6 +467,30 @@ final code = Uri.parse(result).queryParameters['code'];
 final authResponse = await Descope.oauth.exchange(code: code!);
 ```
 
+When running in iOS or Android, you can leverage the [Sign in with Apple](https://developer.apple.com/sign-in-with-apple)
+and [Sign in with Google](https://developer.android.com/training/sign-in/credential-manager)
+features to show a native authentication view that allows the user to login using the account
+they are already logged into on their device. Note that your application will need some
+configuration to support native authentication. See the function documentation for
+more details.
+
+```dart
+void loginWithOAuth() async {
+  AuthenticationResponse response;
+  if (!kIsWeb && Platform.isIOS) {
+    // created a custom Apple provider using the app bundle identifier as the Client ID
+    response = await Descope.oauth.native(provider: OAuthProvider.named("ios"));
+  } else if (!kIsWeb && Platform.isAndroid) {
+    // created a custom Google provider for implicit authentication
+    response = await Descope.oauth.native(provider: OAuthProvider.named("android"));
+  } else {
+    // regular web OAuth
+  }
+  final session = DescopeSession.fromAuthenticationResponse(response)
+  // ...
+}
+```
+
 ### SSO/SAML
 
 Users can authenticate to a specific tenant using SAML or Single Sign On.

@@ -44,8 +44,11 @@ class UserResponse {
   bool verifiedPhone;
   int createdTime;
   Map<String, dynamic>? customAttributes;
+  String? givenName;
+  String? middleName;
+  String? familyName;
 
-  UserResponse(this.userId, this.loginIds, this.name, this.picture, this.email, this.verifiedEmail, this.phone, this.verifiedPhone, this.createdTime, this.customAttributes);
+  UserResponse(this.userId, this.loginIds, this.name, this.picture, this.email, this.verifiedEmail, this.phone, this.verifiedPhone, this.createdTime, this.customAttributes, this.givenName, this.middleName, this.familyName);
   static var fromJson = _$UserResponseFromJson;
   static var decoder = _ignoreHeaders(fromJson);
 }
@@ -59,7 +62,6 @@ class MaskedAddressServerResponse {
   static var fromJson = _$MaskedAddressServerResponseFromJson;
   static var decoder = _ignoreHeaders(fromJson);
 }
-
 
 @JsonSerializable(createToJson: false)
 class PasswordPolicyServerResponse {
@@ -103,6 +105,18 @@ class OAuthServerResponse {
 
   OAuthServerResponse(this.url);
   static var fromJson = _$OAuthServerResponseFromJson;
+  static var decoder = _ignoreHeaders(fromJson);
+}
+
+@JsonSerializable(createToJson: false)
+class OAuthNativeStartServerResponse {
+  final String clientId;
+  final String stateId;
+  final String nonce;
+  final bool implicit;
+
+  OAuthNativeStartServerResponse(this.clientId, this.stateId, this.nonce, this.implicit);
+  static var fromJson = _$OAuthNativeStartServerResponseFromJson;
   static var decoder = _ignoreHeaders(fromJson);
 }
 
