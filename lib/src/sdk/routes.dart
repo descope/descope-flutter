@@ -487,3 +487,10 @@ abstract class DescopeSso {
   /// parameter for an [AuthenticationResponse].
   Future<AuthenticationResponse> exchange({required String code});
 }
+
+abstract class DescopePasskey {
+  Future<AuthenticationResponse> signUp({required String loginId, SignUpDetails? details});
+  Future<AuthenticationResponse> signIn({required String loginId, SignInOptions? options});
+  Future<AuthenticationResponse> signUpOrIn({required String loginId, SignInOptions? options});
+  Future<void> add({required String loginId, required String refreshJwt});
+}

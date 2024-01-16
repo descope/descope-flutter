@@ -271,6 +271,60 @@ class DescopeClient extends HttpClient {
     });
   }
 
+  // Passkeys
+
+  Future<PasskeyStartServerResponse> passkeySignUpStart(String loginId, SignUpDetails? details, String origin) {
+    return post('auth/webauthn/signup/start', PasskeyStartServerResponse.decoder, body: {
+      'loginId': loginId,
+      'user': details?.toMap(),
+      'origin': origin,
+    });
+  }
+
+  Future<JWTServerResponse> passkeySignUpFinish(String transactionId, String response) {
+    return post('auth/webauthn/signup/finish', JWTServerResponse.decoder, body: {
+      'transactionId': transactionId,
+      'response': response,
+    });
+  }
+
+  Future<PasskeyStartServerResponse> passkeySignInStart(String loginId, String origin, SignInOptions? options) {
+    return post('auth/webauthn/signin/start', PasskeyStartServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
+      'loginId': loginId,
+      'origin': origin,
+      'loginOptions': options?.toMap(),
+    });
+  }
+
+  Future<JWTServerResponse> passkeySignInFinish(String transactionId, String response) {
+    return post('auth/webauthn/signin/finish', JWTServerResponse.decoder, body: {
+      'transactionId': transactionId,
+      'response': response,
+    });
+  }
+
+  Future<PasskeyStartServerResponse> passkeySignUpInStart(String loginId, String origin, SignInOptions? options) {
+    return post('auth/webauthn/signup-in/start', PasskeyStartServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
+      'loginId': loginId,
+      'origin': origin,
+      'loginOptions': options?.toMap(),
+    });
+  }
+
+  Future<PasskeyStartServerResponse> passkeyAddStart(String loginId, String origin, String refreshJwt) {
+    return post('auth/webauthn/update/start', PasskeyStartServerResponse.decoder, headers: authorization(refreshJwt), body: {
+      'loginId': loginId,
+      'origin': origin,
+    });
+  }
+
+  Future<void> passkeyAddFinish(String transactionId, String response) {
+    return post('auth/webauthn/update/finish', emptyResponse, body: {
+      'transactionId': transactionId,
+      'response': response,
+    });
+  }
+
   // Flows
 
   Future<JWTServerResponse> flowExchange(String authorizationCode, String codeVerifier) {

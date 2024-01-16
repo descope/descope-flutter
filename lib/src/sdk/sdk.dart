@@ -5,6 +5,7 @@ import '/src/internal/routes/flow.dart';
 import '/src/internal/routes/magic_link.dart';
 import '/src/internal/routes/oauth.dart';
 import '/src/internal/routes/otp.dart';
+import '/src/internal/routes/passkey.dart';
 import '/src/internal/routes/password.dart';
 import '/src/internal/routes/sso.dart';
 import '/src/internal/routes/totp.dart';
@@ -49,6 +50,9 @@ class DescopeSdk {
   /// Authentication with SSO
   final DescopeSso sso;
 
+  /// Authentication with passkeys
+  final DescopePasskey passkey;
+
   /// Authentication with passwords
   final DescopePassword password;
 
@@ -72,8 +76,8 @@ class DescopeSdk {
   /// the Descope server, in case you need to access it through a CNAME record.
   factory DescopeSdk(DescopeConfig config) {
     final client = DescopeClient(config);
-    return DescopeSdk._internal(config, Flow(client), Auth(client), Otp(client), Totp(client), Password(client), MagicLink(client), EnchantedLink(client), OAuth(client), Sso(client));
+    return DescopeSdk._internal(config, Flow(client), Auth(client), Otp(client), Totp(client), MagicLink(client), EnchantedLink(client), OAuth(client), Sso(client), Passkey(client), Password(client));
   }
 
-  DescopeSdk._internal(this.config, this.flow, this.auth, this.otp, this.totp, this.password, this.magicLink, this.enchantedLink, this.oauth, this.sso);
+  DescopeSdk._internal(this.config, this.flow, this.auth, this.otp, this.totp, this.magicLink, this.enchantedLink, this.oauth, this.sso, this.passkey, this.password);
 }
