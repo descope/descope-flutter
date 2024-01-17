@@ -488,9 +488,60 @@ abstract class DescopeSso {
   Future<AuthenticationResponse> exchange({required String code});
 }
 
+/// Authenticate users using passkeys.
+///
+/// The authentication operations in this class are all async functions that
+/// perform network requests before and after displaying the modal authentication view.
+/// It is thus recommended to switch the user interface to a loading state before calling
+/// this function, otherwise the user might accidentally interact with the app when the
+/// authentication view is not being displayed.
+///
+/// #### Important: Before authentication via passkeys is possible, some set up is required.
+/// - For Android, please follow the [Add support for Digital Asset Links](https://developer.android.com/training/sign-in/passkeys#add-support-dal)
+/// setup, as described in the official Google docs.
+/// - For iOS, go through Apple's [Supporting passkeys](https://developer.apple.com/documentation/authenticationservices/public-private_key_authentication/supporting_passkeys/)
+/// guide, in particular be sure to have an associated domain configured for your app
+/// with the `webcredentials` service type, whose value matches the top level domain
+/// you configured in the Descope console earlier.
 abstract class DescopePasskey {
+  /// Authenticates a new user by creating a new passkey.
+  ///
+  /// This function creates a new user identified by [loginId] and
+  /// the optional information provided on via the [details] object.
+  /// If will only return an [AuthenticationResponse] successfully after the user
+  /// creates a new passkey using their device.
   Future<AuthenticationResponse> signUp({required String loginId, SignUpDetails? details});
+
+  /// Authenticates an existing user by prompting for an existing passkey.
+  ///
+  /// You can optionally pass the [options] parameter to add the new email address
+  /// as a `loginId` for the existing user, and to determine how to resolve conflicts
+  /// if another user already exists with the same `loginId`. See the documentation
+  /// for `UpdateOptions` for more details.
+  ///
+  /// This function will only return an [AuthenticationResponse] successfully after the user
+  /// identified by [loginId] uses their existing passkey on their device.
   Future<AuthenticationResponse> signIn({required String loginId, SignInOptions? options});
+
+  /// Authenticates an existing user if one exists or creates a new one.
+  ///
+  /// A new passkey will be created if the user identified by [loginId] doesn't already exist,
+  /// otherwise a passkey must be available on their device to authenticate with.
+  ///
+  /// You can optionally pass the [options] parameter to add the new email address
+  /// as a `loginId` for the existing user, and to determine how to resolve conflicts
+  /// if another user already exists with the same `loginId`. See the documentation
+  /// for `UpdateOptions` for more details. The options will be used only if the user already
+  /// exists.
+  ///
+  /// This function will only return an [AuthenticationResponse] successfully after the user
+  /// identified by [loginId] uses their existing passkey on their device or creates a new
+  /// one, if the user is being created.
   Future<AuthenticationResponse> signUpOrIn({required String loginId, SignInOptions? options});
+
+  /// Updates an existing user by adding a new passkey as an authentication method.
+  ///
+  /// The user identified by [loginId] must have an active [DescopeSession] whose [refreshJwt] should
+  /// be passed as a parameter to this function.
   Future<void> add({required String loginId, required String refreshJwt});
 }
