@@ -496,7 +496,7 @@ abstract class DescopeSso {
 /// these functions, otherwise the user might accidentally interact with the app when the
 /// authentication view is not being displayed.
 ///
-/// #### Important: Before authentication via passkeys is possible, some set up is required.
+/// #### Important: Some set up is required before authentication with passkeys is possible.
 /// - For Android, please follow the [Add support for Digital Asset Links](https://developer.android.com/training/sign-in/passkeys#add-support-dal)
 /// setup, as described in the official Google docs.
 /// - For iOS, go through Apple's [Supporting passkeys](https://developer.apple.com/documentation/authenticationservices/public-private_key_authentication/supporting_passkeys/)
