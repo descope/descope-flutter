@@ -493,7 +493,7 @@ abstract class DescopeSso {
 /// The authentication operations in this class are all async functions that
 /// perform network requests before and after displaying the modal authentication view.
 /// It is thus recommended to switch the user interface to a loading state before calling
-/// this function, otherwise the user might accidentally interact with the app when the
+/// these functions, otherwise the user might accidentally interact with the app when the
 /// authentication view is not being displayed.
 ///
 /// #### Important: Before authentication via passkeys is possible, some set up is required.
