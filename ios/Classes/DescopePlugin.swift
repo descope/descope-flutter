@@ -27,6 +27,12 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             startFlow(call: call, result: result)
         case "oauthNative":
             oauthNative(call: call, result: result)
+        case "passkeyOrigin":
+            result("") // No need for passkey origin on iOS
+        case "passkeyCreate":
+            createPasskey(call: call, result: result)
+        case "passkeyAuthenticate":
+            usePasskey(call: call, result: result)
         case "loadItem":
             loadItem(call: call, result: result)
         case "saveItem":
@@ -84,7 +90,248 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             }
         }
     }
+    
+    // Passkeys
+    
+    private func createPasskey(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard #available(iOS 15, *) else { return result(FlutterError(code: "OSVERSION", message: "Passkeys require iOS 15 and above", details: nil)) }
+        guard let args = call.arguments as? [String: Any] else { return result(FlutterError(code: "MISSINGARGS", message: "Unexpected empty arguments in passkeyCreate", details: nil)) }
+        guard let options = args["options"] as? String else { return result(FlutterError(code: "MISSINGARGS", message: "'options' is required for passkeyCreate", details: nil)) }
+        Task { @MainActor in
+            do {
+                let response = try await performRegister(options: options)
+                result(response)
+            } catch PasskeyError.cancelled {
+                return result(FlutterError(code: "CANCELLED", message: "Passkey authentication cancelled", details: nil))
+            } catch PasskeyError.failed(let reason) {
+                return result(FlutterError(code: "FAILED", message: reason, details: nil))
+            } catch {
+                return result(FlutterError(code: "FAILED", message: "Passkey authentication failed", details: nil))
+            }
+        }
+    }
+    
+    private func usePasskey(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard #available(iOS 15, *) else { return result(FlutterError(code: "OSVERSION", message: "Passkeys require iOS 15 and above", details: nil)) }
+        guard let args = call.arguments as? [String: Any] else { return result(FlutterError(code: "MISSINGARGS", message: "Unexpected empty arguments in passkeyAuthenticate", details: nil)) }
+        guard let options = args["options"] as? String else { return result(FlutterError(code: "MISSINGARGS", message: "'options' is required for passkeyAuthenticate", details: nil)) }
+        Task { @MainActor in
+            do {
+                let response = try await performAssertion(options: options)
+                result(response)
+            } catch PasskeyError.cancelled {
+                return result(FlutterError(code: "CANCELLED", message: "Passkey authentication cancelled", details: nil))
+            } catch PasskeyError.failed(let reason) {
+                return result(FlutterError(code: "FAILED", message: reason, details: nil))
+            } catch {
+                return result(FlutterError(code: "FAILED", message: "Passkey authentication failed", details: nil))
+            }
+        }
+    }
+    
+    // Internal Passkeys
+    
+    enum PasskeyError: Error {
+        case cancelled
+        case failed(String)
+    }
+    
+    @available(iOS 15.0, *)
+    private func performRegister(options: String) async throws -> String {
+        let registerOptions = try RegisterOptions(from: options)
+        
+        let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: registerOptions.rpId)
+        
+        let registerRequest = publicKeyCredentialProvider.createCredentialRegistrationRequest(challenge: registerOptions.challenge, name: registerOptions.user.name, userID: registerOptions.user.id)
+        registerRequest.displayName = registerOptions.user.displayName
+        registerRequest.userVerificationPreference = .required
+        
+        let authorization = try await performAuthorization(request: registerRequest)
+        let response = try RegisterFinish.encodedResponse(from: authorization.credential)
+        
+        return response
+    }
+    
+    @available(iOS 15.0, *)
+    private func performAssertion(options: String) async throws -> String {
+        let assertionOptions = try AssertionOptions(from: options)
+        
+        let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: assertionOptions.rpId)
+        
+        let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: assertionOptions.challenge)
+        assertionRequest.allowedCredentials = assertionOptions.allowCredentials.map { ASAuthorizationPlatformPublicKeyCredentialDescriptor(credentialID: $0) }
+        assertionRequest.userVerificationPreference = .required
+        
+        let authorization = try await performAuthorization(request: assertionRequest)
+        let response = try AssertionFinish.encodedResponse(from: authorization.credential)
+        
+        return response
+    }
+    
+    private func performAuthorization(request: ASAuthorizationRequest) async throws -> ASAuthorization {
+        let authDelegate = AuthorizationDelegate()
+        
+        let authController = ASAuthorizationController(authorizationRequests: [ request ] )
+        authController.delegate = authDelegate
+        authController.performRequests()
 
+        // now that we have a reference to the ASAuthorizationController object we setup
+        // a cancellation handler to be invoked if the async task is cancelled
+        let cancellation = { @MainActor [weak authController] in
+            guard #available(iOS 16.0, macOS 13, *) else { return }
+            authController?.cancel()
+        }
+
+        // we pass a completion handler to the delegate object we can use an async/await code
+        // style even though we're waiting for a regular callback. The onCancel closure ensures
+        // that we handle task cancellation properly by dismissing the authentication view.
+        let result = await withTaskCancellationHandler {
+            return await withCheckedContinuation { continuation in
+                authDelegate.completion = { result in
+                    continuation.resume(returning: result)
+                }
+            }
+        } onCancel: {
+            Task { @MainActor in
+                cancellation()
+            }
+        }
+
+        switch result {
+        case .failure(ASAuthorizationError.canceled):
+            throw PasskeyError.cancelled
+        case .failure(let error as NSError) where error.domain == "WKErrorDomain" && error.code == 31:
+            throw PasskeyError.cancelled
+        case .failure(let error):
+            throw PasskeyError.failed(error.localizedDescription)
+        case .success(let authorization):
+            return authorization
+        }
+    }
+    
+    private struct RegisterOptions {
+        var challenge: Data
+        var rpId: String
+        var user: (id: Data, name: String, displayName: String?)
+        
+        init(from options: String) throws {
+            guard let root = try? JSONDecoder().decode(Root.self, from: Data(options.utf8)) else { throw PasskeyError.failed("Invalid passkey register options") }
+            guard let challengeData = Data(base64URLEncoded: root.publicKey.challenge) else { throw PasskeyError.failed("Invalid passkey challenge") }
+            challenge = challengeData
+            rpId = root.publicKey.rp.id
+            user = (id: Data(root.publicKey.user.id.utf8), name: root.publicKey.user.name, displayName: root.publicKey.user.displayName)
+        }
+        
+        private struct Root: Codable {
+            var publicKey: PublicKey
+        }
+
+        private struct PublicKey: Codable {
+            var challenge: String
+            var rp: RelyingParty
+            var user: User
+        }
+        
+        private struct User: Codable {
+            var id: String
+            var name: String
+            var displayName: String?
+        }
+        
+        private struct RelyingParty: Codable {
+            var id: String
+        }
+    }
+
+    private struct AssertionOptions {
+        var challenge: Data
+        var rpId: String
+        var allowCredentials: [Data]
+        
+        init(from options: String) throws {
+            guard let root = try? JSONDecoder().decode(Root.self, from: Data(options.utf8)) else { throw PasskeyError.failed("Invalid passkey assertion options") }
+            guard let challengeData = Data(base64URLEncoded: root.publicKey.challenge) else { throw PasskeyError.failed("Invalid passkey challenge") }
+            challenge = challengeData
+            rpId = root.publicKey.rpId
+            allowCredentials = try root.publicKey.allowCredentials.map {
+                guard let credentialId = Data(base64URLEncoded: $0.id) else { throw PasskeyError.failed("Invalid credential id") }
+                return credentialId
+            }
+        }
+        
+        private struct Root: Codable {
+            var publicKey: PublicKey
+        }
+
+        private struct PublicKey: Codable {
+            var challenge: String
+            var rpId: String
+            var allowCredentials: [Credential] = []
+        }
+        
+        struct Credential: Codable {
+            var id: String
+        }
+    }
+
+    private struct RegisterFinish: Codable {
+        var id: String
+        var rawId: String
+        var response: Response
+        var type: String = "public-key"
+        
+        struct Response: Codable {
+            var attestationObject: String
+            var clientDataJSON: String
+        }
+        
+        @available(iOS 15.0, *)
+        static func encodedResponse(from credential: ASAuthorizationCredential) throws -> String {
+            guard let registration = credential as? ASAuthorizationPlatformPublicKeyCredentialRegistration else { throw PasskeyError.failed("Invalid register credential type") }
+            
+            let credentialId = registration.credentialID.base64URLEncodedString()
+            guard let attestationObject = registration.rawAttestationObject?.base64URLEncodedString() else { throw PasskeyError.failed( "Missing credential attestation object") }
+            let clientDataJSON = registration.rawClientDataJSON.base64URLEncodedString()
+            
+            let response = Response(attestationObject: attestationObject, clientDataJSON: clientDataJSON)
+            let object = RegisterFinish(id: credentialId, rawId: credentialId, response: response)
+            
+            guard let encodedObject = try? JSONEncoder().encode(object), let encoded = String(bytes: encodedObject, encoding: .utf8) else { throw PasskeyError.failed("Invalid register finish object") }
+            return encoded
+        }
+    }
+
+    private struct AssertionFinish: Codable {
+        var id: String
+        var rawId: String
+        var response: Response
+        var type: String = "public-key"
+        
+        struct Response: Codable {
+            var authenticatorData: String
+            var clientDataJSON: String
+            var signature: String
+            var userHandle: String
+        }
+        
+        @available(iOS 15.0, *)
+        static func encodedResponse(from credential: ASAuthorizationCredential) throws -> String {
+            guard let assertion = credential as? ASAuthorizationPlatformPublicKeyCredentialAssertion else { throw PasskeyError.failed("Invalid assertion credential type") }
+            
+            let credentialId = assertion.credentialID.base64URLEncodedString()
+            let authenticatorData = assertion.rawAuthenticatorData.base64URLEncodedString()
+            let clientDataJSON = assertion.rawClientDataJSON.base64URLEncodedString()
+            guard let userHandle = String(bytes: assertion.userID, encoding: .utf8) else { throw PasskeyError.failed("Invalid user handle") }
+            let signature = assertion.signature.base64URLEncodedString()
+            
+            let response = Response(authenticatorData: authenticatorData, clientDataJSON: clientDataJSON, signature: signature, userHandle: userHandle)
+            let object = AssertionFinish(id: credentialId, rawId: credentialId, response: response)
+            
+            guard let encodedObject = try? JSONEncoder().encode(object), let encoded = String(bytes: encodedObject, encoding: .utf8) else { throw PasskeyError.failed("Invalid assertion finish object") }
+            return encoded
+        }
+    }
+    
     // Storage
     
     private func loadItem(call: FlutterMethodCall, result: FlutterResult) {
@@ -317,5 +564,24 @@ private class KeychainStore {
             kSecAttrLabel as String: "DescopeSession",
             kSecAttrAccount as String: key,
         ]
+    }
+}
+
+extension Data {
+    init?(base64URLEncoded base64URLString: String, options: Base64DecodingOptions = []) {
+        var str = base64URLString
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        if str.count % 4 > 0 {
+            str.append(String(repeating: "=", count: 4 - str.count % 4))
+        }
+        self.init(base64Encoded: str, options: options)
+    }
+    
+    func base64URLEncodedString(options: Base64EncodingOptions = []) -> String {
+        return base64EncodedString(options: options)
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
     }
 }

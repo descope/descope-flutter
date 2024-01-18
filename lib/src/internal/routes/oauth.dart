@@ -1,7 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '/src/internal/http/descope_client.dart';
@@ -31,9 +29,8 @@ class OAuth implements DescopeOAuth {
 
   @override
   Future<AuthenticationResponse> native({required OAuthProvider provider, SignInOptions? options}) async {
-    if (kIsWeb || (!Platform.isIOS && !Platform.isAndroid)) {
-      throw DescopeException.oauthNativeFailed.add(message: 'OAuth native is not supported on this platform');
-    }
+    ensureMobilePlatform(DescopeException.oauthNativeFailed);
+
     final startResponse = await client.oauthNativeStart(provider, options);
     final nativeResponse = await callNative(startResponse.clientId, startResponse.nonce, startResponse.implicit);
 

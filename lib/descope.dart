@@ -94,6 +94,9 @@ class Descope {
   /// Authentication with SSO.
   static DescopeSso get sso => _sdk.sso;
 
+  /// Authentication with passkeys.
+  static DescopePasskey get passkey => _sdk.passkey;
+
   /// Authentication with passwords.
   static DescopePassword get password => _sdk.password;
 

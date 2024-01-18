@@ -18,7 +18,8 @@ You can read more on the [Descope Website](https://descope.com).
   - [Enchanted Link](#enchanted-link)
   - [OAuth](#oauth) (social)
   - [SSO / SAML](#ssosaml)
-  - [Passwords](#password-authentication) (unrecommended form of authentication)
+  - [Passkeys](#passkeys)
+  - [Passwords](#password-authentication)
 
 ## Quickstart
 
@@ -520,6 +521,36 @@ final result = await FlutterWebAuth.authenticate(url: authUrl, callbackUrlScheme
 final code = Uri.parse(result).queryParameters['code'];
 // Exchange code for an authentication response
 final authResponse = await Descope.sso.exchange(code: code!);
+```
+
+### Passkeys
+
+Users can authenticate by creating or using a [passkey](https://fidoalliance.org/passkeys/).
+Configure your Passkey/WebAuthn settings on the [Descope console](https://app.descope.com/settings/authentication/webauthn).
+Make sure it is enabled and that the top level domain is configured correctly.
+
+After that, for iOS go through Apple's [Supporting passkeys](https://developer.apple.com/documentation/authenticationservices/public-private_key_authentication/supporting_passkeys/)
+guide, in particular be sure to have an associated domain configured for your app
+with the `webcredentials` service type, whose value matches the top level domain
+you configured in the Descope console earlier. 
+For Android, please follow the [Add support for Digital Asset Links](https://developer.android.com/training/sign-in/passkeys#add-support-dal)
+setup, as described in the official Google docs.
+
+```dart
+try {
+    showLoading(true);
+    final authResponse = await Descope.passkey.signUpOrIn(loginId: loginId);
+    final session = DescopeSession.fromAuthenticationResponse(authResponse);
+    Descope.sessionManager.manageSession(session);
+    showHomeScreen() 
+} on DescopeException catch (e) {
+    if (e == DescopeException.passkeyCancelled) {
+      showLoading(false)
+      print("Authentication cancelled")
+    } else {
+      showError(error)
+    }
+}
 ```
 
 ### TOTP Authentication
