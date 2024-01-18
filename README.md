@@ -19,7 +19,7 @@ You can read more on the [Descope Website](https://descope.com).
   - [OAuth](#oauth) (social)
   - [SSO / SAML](#ssosaml)
   - [Passkeys](#passkeys)
-  - [Passwords](#password-authentication) (unrecommended form of authentication)
+  - [Passwords](#password-authentication)
 
 ## Quickstart
 
