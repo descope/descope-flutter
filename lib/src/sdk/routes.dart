@@ -514,11 +514,6 @@ abstract class DescopePasskey {
 
   /// Authenticates an existing user by prompting for an existing passkey.
   ///
-  /// You can optionally pass the [options] parameter to add the new email address
-  /// as a `loginId` for the existing user, and to determine how to resolve conflicts
-  /// if another user already exists with the same `loginId`. See the documentation
-  /// for `UpdateOptions` for more details.
-  ///
   /// This function will only return an [AuthenticationResponse] successfully after the user
   /// identified by [loginId] uses their existing passkey on their device.
   Future<AuthenticationResponse> signIn({required String loginId, SignInOptions? options});
@@ -527,12 +522,6 @@ abstract class DescopePasskey {
   ///
   /// A new passkey will be created if the user identified by [loginId] doesn't already exist,
   /// otherwise a passkey must be available on their device to authenticate with.
-  ///
-  /// You can optionally pass the [options] parameter to add the new email address
-  /// as a `loginId` for the existing user, and to determine how to resolve conflicts
-  /// if another user already exists with the same `loginId`. See the documentation
-  /// for `UpdateOptions` for more details. The options will be used only if the user already
-  /// exists.
   ///
   /// This function will only return an [AuthenticationResponse] successfully after the user
   /// identified by [loginId] uses their existing passkey on their device or creates a new
