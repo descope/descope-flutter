@@ -507,7 +507,7 @@ abstract class DescopePasskey {
   /// Authenticates a new user by creating a new passkey.
   ///
   /// This function creates a new user identified by [loginId] and
-  /// the optional information provided on via the [details] object.
+  /// the optional information provided via the [details] object.
   /// If will only return an [AuthenticationResponse] successfully after the user
   /// creates a new passkey using their device.
   Future<AuthenticationResponse> signUp({required String loginId, SignUpDetails? details});
