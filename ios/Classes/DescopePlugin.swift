@@ -134,7 +134,6 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     enum PasskeyError: Error {
         case cancelled
         case failed(String)
-        case decodeError(String)
     }
     
     @available(iOS 15.0, *)
@@ -216,8 +215,8 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         var user: (id: Data, name: String, displayName: String?)
         
         init(from options: String) throws {
-            guard let root = try? JSONDecoder().decode(Root.self, from: Data(options.utf8)) else { throw PasskeyError.decodeError("Invalid passkey register options") }
-            guard let challengeData = Data(base64URLEncoded: root.publicKey.challenge) else { throw PasskeyError.decodeError("Invalid passkey challenge") }
+            guard let root = try? JSONDecoder().decode(Root.self, from: Data(options.utf8)) else { throw PasskeyError.failed("Invalid passkey register options") }
+            guard let challengeData = Data(base64URLEncoded: root.publicKey.challenge) else { throw PasskeyError.failed("Invalid passkey challenge") }
             challenge = challengeData
             rpId = root.publicKey.rp.id
             user = (id: Data(root.publicKey.user.id.utf8), name: root.publicKey.user.name, displayName: root.publicKey.user.displayName)
@@ -250,12 +249,12 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         var allowCredentials: [Data]
         
         init(from options: String) throws {
-            guard let root = try? JSONDecoder().decode(Root.self, from: Data(options.utf8)) else { throw PasskeyError.decodeError("Invalid passkey assertion options") }
-            guard let challengeData = Data(base64URLEncoded: root.publicKey.challenge) else { throw PasskeyError.decodeError("Invalid passkey challenge") }
+            guard let root = try? JSONDecoder().decode(Root.self, from: Data(options.utf8)) else { throw PasskeyError.failed("Invalid passkey assertion options") }
+            guard let challengeData = Data(base64URLEncoded: root.publicKey.challenge) else { throw PasskeyError.failed("Invalid passkey challenge") }
             challenge = challengeData
             rpId = root.publicKey.rpId
             allowCredentials = try root.publicKey.allowCredentials.map {
-                guard let credentialId = Data(base64URLEncoded: $0.id) else { throw PasskeyError.decodeError("Invalid credential id") }
+                guard let credentialId = Data(base64URLEncoded: $0.id) else { throw PasskeyError.failed("Invalid credential id") }
                 return credentialId
             }
         }
