@@ -3,16 +3,13 @@ import 'package:http/http.dart' as http;
 
 import '/src/sdk/sdk.dart';
 
-/// The default base URL for the Descope API.
-const defaultBaseUrl = 'https://api.descope.com';
-
 /// The configuration of the Descope SDK.
 class DescopeConfig {
   /// The id of the Descope project.
   final String projectId;
 
-  /// The base URL of the Descope server.
-  final String baseUrl;
+  /// An optional override for the base URL of the Descope server.
+  final String? baseUrl;
 
   /// An optional object to handle logging in the Descope SDK.
   ///
@@ -38,7 +35,7 @@ class DescopeConfig {
   final DescopeNetworkClient? networkClient;
 
   /// Creates a new `DescopeConfig` object.
-  DescopeConfig({required this.projectId, this.baseUrl = defaultBaseUrl, this.logger, this.networkClient});
+  DescopeConfig({required this.projectId, this.baseUrl, this.logger, this.networkClient});
 
   static DescopeConfig initial = DescopeConfig(projectId: '');
 }
