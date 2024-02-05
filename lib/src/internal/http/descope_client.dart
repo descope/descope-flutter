@@ -9,7 +9,7 @@ import 'responses.dart';
 class DescopeClient extends HttpClient {
   final DescopeConfig config;
 
-  DescopeClient(this.config) : super(config.baseUrl, config.logger, config.networkClient);
+  DescopeClient(this.config) : super(config.baseUrl ?? baseUrlForProjectId(config.projectId), config.logger, config.networkClient);
 
   // OTP
 
@@ -362,6 +362,17 @@ class DescopeClient extends HttpClient {
 
   Map<String, String> authorization(String? value) {
     return value != null ? {'Authorization': 'Bearer ${config.projectId}:$value'} : {};
+  }
+}
+
+String baseUrlForProjectId(String projectId) {
+  const prefix = "https://api";
+  const suffix = "descope.com";
+  if (projectId.length >= 32) {
+    final region = projectId.substring(1, 5);
+    return "$prefix.$region.$suffix";
+  } else {
+    return "$prefix.$suffix";
   }
 }
 
