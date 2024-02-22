@@ -1,3 +1,9 @@
+# 0.8.0
+
+- Add custom attributes and multiple names to DescopeUser objects
+- Add support for native Sign in with Apple/Google authentication
+- Add support for authentication with Passkeys
+
 # 0.7.2
 
 - Fix issue with parsing cookie headers
