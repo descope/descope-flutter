@@ -1,3 +1,7 @@
+# 0.8.1
+
+- Remove OAuth `clientId` validation in iOS plugin
+
 # 0.8.0
 
 - Add custom attributes and multiple names to DescopeUser objects
