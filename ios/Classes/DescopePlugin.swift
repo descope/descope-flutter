@@ -58,13 +58,8 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
     private func oauthNative(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let args = call.arguments as? [String: Any] else { return result(FlutterError(code: "MISSINGARGS", message: "Unexpected empty arguments in oauthNative", details: nil)) }
-        guard let clientId = args["clientId"] as? String else { return result(FlutterError(code: "MISSINGARGS", message: "'clientId' is required for oauthNative", details: nil)) }
         guard let nonce = args["nonce"] as? String else { return result(FlutterError(code: "MISSINGARGS", message: "'nonce' is required for oauthNative", details: nil)) }
         guard let implicit = args["implicit"] as? Bool else { return result(FlutterError(code: "MISSINGARGS", message: "'implicit' is required for oauthNative", details: nil)) }
-
-        if clientId != Bundle.main.bundleIdentifier {
-            return result(FlutterError(code: "FAILED", message: "OAuth provider clientId doesn't match bundle identifier", details: nil))
-        }
 
         Task { @MainActor in
             do {
