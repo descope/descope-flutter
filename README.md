@@ -33,7 +33,7 @@ import 'package:descope/descope.dart';
 // Where your application state is being created
 Descope.setup('<Your-Project-ID>');
 
-// Optionally, you can configure your SDK to your needs
+// Optionally, you can configure the SDK to your needs
 Descope.setup('<Your-Project-Id>', (config) {
   // set a custom base URL (needs to be set up in the Descope console)
   config.baseUrl = 'https://my.app.com';
