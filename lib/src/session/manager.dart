@@ -94,7 +94,7 @@ class DescopeSessionManager {
   ///     void main() async {
   ///       WidgetsFlutterBinding.ensureInitialized();
   ///
-  ///       Descope.projectId = '...';
+  ///       Descope.setup('...');
   ///       await Descope.sessionManager.loadSession();
   ///       ...
   ///     }

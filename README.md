@@ -31,7 +31,19 @@ the Descope Console.
 import 'package:descope/descope.dart';
 
 // Where your application state is being created
-Descope.projectId = '<Your-Project-ID>';
+Descope.setup('<Your-Project-ID>');
+
+// Optionally, you can configure the SDK to your needs
+Descope.setup('<Your-Project-Id>', (config) {
+  // set a custom base URL (needs to be set up in the Descope console)
+  config.baseUrl = 'https://my.app.com';
+  // enable the logger
+  if (kDebugMode) {
+    config.logger = DescopeLogger();
+  }
+});
+
+// Load any available sessions
 await Descope.sessionManager.loadSession();
 ```
 
@@ -130,7 +142,7 @@ initialized first:
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  Descope.projectId = '...';
+  Descope.setup('...');
   await Descope.sessionManager.loadSession();
 
   final session = Descope.sessionManager.session;
