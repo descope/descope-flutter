@@ -1,9 +1,14 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+
+import '/src/internal/http/responses.dart';
 import '/src/internal/others/error.dart';
 import '/src/session/token.dart';
+import '/src/types/error.dart';
 import '/src/types/others.dart';
 import '/src/types/responses.dart';
 import '/src/types/user.dart';
-import '../http/responses.dart';
 
 extension ConvertMaskedAddress on MaskedAddressServerResponse {
   String convert(DeliveryMethod method) {
@@ -66,5 +71,11 @@ extension ConvertJWTResponse on JWTServerResponse {
     }
     
     return RefreshResponse(Token.decode(sessionJwt), refreshToken);
+  }
+}
+
+void ensureMobilePlatform(DescopeException descopeException) {
+  if (kIsWeb || (!Platform.isIOS && !Platform.isAndroid)) {
+    throw descopeException.add(message: 'Feature not supported on this platform');
   }
 }

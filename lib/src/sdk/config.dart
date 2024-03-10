@@ -3,16 +3,14 @@ import 'package:http/http.dart' as http;
 
 import '/src/sdk/sdk.dart';
 
-/// The default base URL for the Descope API.
-const defaultBaseUrl = 'https://api.descope.com';
-
 /// The configuration of the Descope SDK.
 class DescopeConfig {
   /// The id of the Descope project.
-  final String projectId;
+  String projectId;
 
-  /// The base URL of the Descope server.
-  final String baseUrl;
+  /// An optional override for the base URL of the Descope server,
+  /// in case you need to access it through a CNAME record.
+  String? baseUrl;
 
   /// An optional object to handle logging in the Descope SDK.
   ///
@@ -25,7 +23,7 @@ class DescopeConfig {
   /// If your application uses some logging framework or third party service you can forward
   /// the Descope SDK log messages to it by creating a new subclass of [DescopeLogger] and
   /// overriding the [DescopeLogger.output] method.
-  final DescopeLogger? logger;
+  DescopeLogger? logger;
 
   /// An optional object to override how HTTP requests are performed.
   ///
@@ -35,12 +33,10 @@ class DescopeConfig {
   /// This property can be useful to test code that uses the Descope SDK without any
   /// network requests actually taking place. In most other cases there shouldn't be
   /// any need to use it.
-  final DescopeNetworkClient? networkClient;
+  DescopeNetworkClient? networkClient;
 
   /// Creates a new `DescopeConfig` object.
-  DescopeConfig({required this.projectId, this.baseUrl = defaultBaseUrl, this.logger, this.networkClient});
-
-  static DescopeConfig initial = DescopeConfig(projectId: '');
+  DescopeConfig({required this.projectId, this.baseUrl, this.logger, this.networkClient});
 }
 
 /// The [DescopeLogger] class can be used to customize logging functionality in the Descope SDK.

@@ -129,6 +129,17 @@ class SsoServerResponse {
   static var decoder = _ignoreHeaders(fromJson);
 }
 
+@JsonSerializable(createToJson: false)
+class PasskeyStartServerResponse {
+  final String transactionId;
+  final String options;
+  final bool create;
+
+  PasskeyStartServerResponse(this.transactionId, this.options, this.create);
+  static var fromJson = _$PasskeyStartServerResponseFromJson;
+  static var decoder = _ignoreHeaders(fromJson);
+}
+
 class Uint8ListConverter implements JsonConverter<Uint8List, List<int>> {
   const Uint8ListConverter();
 

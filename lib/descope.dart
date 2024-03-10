@@ -26,32 +26,20 @@ export '/src/types/error.dart';
 /// This singleton object is provided as a convenience that should be suitable for most
 /// app architectures. If you prefer a different approach you can also create an instance
 /// of the [DescopeSdk] class instead.
+///
+/// - **Important**: Make sure to call the [setup] function when initializing your application.
 class Descope {
-  /// The projectId of your Descope project.
+  /// The setup of the `Descope` singleton.
   ///
-  /// You will most likely want to set this value in your application's initialization code,
-  /// and in most cases you only need to set this to work with the `Descope` singleton.
+  /// Call this function when initializing you application.
   ///
-  /// **Note:** This is a shortcut for setting the [Descope.config] property.
-  static String get projectId => _config.projectId;
-
-  static set projectId(String projectId) {
-    _config = DescopeConfig(projectId: projectId);
-  }
-
-  /// The configuration of the `Descope` singleton.
+  /// **This function must be called before the [Descope] object can be used**
   ///
-  /// Set this property **instead** of [Descope.projectId] in your application's initialization code
-  /// if you require additional configuration.
-  ///
-  /// **Important:** To prevent accidental misuse only one of `config` and `projectId` can
-  /// be set, and they can only be set once. If this isn't appropriate for your use
-  /// case you can also use the [DescopeSdk] class directly instead.
-  static DescopeConfig get config => _config;
-
-  static set config(DescopeConfig config) {
-    assert(_config.projectId == '');
-    _config = config;
+  /// The [projectId] of the Descope project can be found in the project page in
+  /// the Descope console. Use the optional [configure] function to
+  /// finely configure the Descope SDK.
+  static void setup(String projectId, [Function(DescopeConfig)? configure]) {
+    _sdk = DescopeSdk(projectId, configure);
   }
 
   /// Manages the storage and lifetime of a [DescopeSession].
@@ -94,14 +82,14 @@ class Descope {
   /// Authentication with SSO.
   static DescopeSso get sso => _sdk.sso;
 
+  /// Authentication with passkeys.
+  static DescopePasskey get passkey => _sdk.passkey;
+
   /// Authentication with passwords.
   static DescopePassword get password => _sdk.password;
 
-  // The backing field for the config property.
-  static DescopeConfig _config = DescopeConfig.initial;
-
   // The underlying DescopeSdk object used by the Descope singleton.
-  static final DescopeSdk _sdk = DescopeSdk(config);
+  static late final DescopeSdk _sdk;
 
   // This class cannot be instantiated.
   Descope._();

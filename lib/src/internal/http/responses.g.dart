@@ -82,3 +82,11 @@ SsoServerResponse _$SsoServerResponseFromJson(Map<String, dynamic> json) =>
     SsoServerResponse(
       json['url'] as String,
     );
+
+PasskeyStartServerResponse _$PasskeyStartServerResponseFromJson(
+        Map<String, dynamic> json) =>
+    PasskeyStartServerResponse(
+      json['transactionId'] as String,
+      json['options'] as String,
+      json['create'] as bool,
+    );
