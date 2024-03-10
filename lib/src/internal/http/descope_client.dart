@@ -107,8 +107,8 @@ class DescopeClient extends HttpClient {
     });
   }
 
-  Future<void> passwordReplace(String loginId, String oldPassword, String newPassword) {
-    return post('auth/password/replace', emptyResponse, body: {
+  Future<JWTServerResponse> passwordReplace(String loginId, String oldPassword, String newPassword) {
+    return post('auth/password/replace', JWTServerResponse.decoder, body: {
       'loginId': loginId,
       'oldPassword': oldPassword,
       'newPassword': newPassword,
