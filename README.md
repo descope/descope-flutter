@@ -609,6 +609,27 @@ final authResponse = await Descope.password.signUp(loginId: 'desmond_c@mail.com'
     details: SignUpDetails(name: 'Desmond Copeland'));
 ```
 
+#### Update or Replace Password
+
+```dart
+// It's possible to update a user's password when the user has an active session:
+await Descope.password.update(loginId: 'andy@example.com', newPassword: 'newSecurePassword456!', refreshJwt: "user-refresh-jwt");
+
+// Or to replace a user's password by providing their current password.
+// this is especially true when a password expires:
+final authResponse = await Descope.password.replace(loginId: 'andy@example.com', oldPassword: 'SecurePassword123!', newPassword: 'NewSecurePassword456!');
+```
+
+#### Send Password Reset Email
+
+Initiate a password reset (update) by sending a magic link email, that needs to be validated
+like any other magic link. After authenticating the user using this magic link, it's
+possible to use the `update` function to update the user's password:
+
+```dart
+await Descope.password.sendReset(loginId: 'andy@example.com', redirectUrl: "exampleauthschema://my-app.com/handle-reset");
+```
+
 ## Additional Information
 
 To learn more please see the [Descope Documentation and API reference page](https://docs.descope.com/).
