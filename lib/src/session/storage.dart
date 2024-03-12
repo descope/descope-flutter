@@ -1,12 +1,11 @@
-// ignore_for_file: avoid_web_libraries_in_flutter
 import 'dart:convert';
-import 'dart:html' hide Platform;
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import '/src/internal/others/stub_html.dart' if (dart.library.js) 'dart:html' hide Platform;
 import '/src/types/user.dart';
 import 'manager.dart';
 import 'session.dart';
