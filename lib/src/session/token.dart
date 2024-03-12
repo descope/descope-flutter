@@ -124,7 +124,7 @@ class Token implements DescopeToken {
   }
 }
 
-class CookiePlaceholderToken implements DescopeToken {
+class WebRefreshToken implements DescopeToken {
   final DescopeToken _sessionToken;
 
   @override
@@ -170,7 +170,7 @@ class CookiePlaceholderToken implements DescopeToken {
     return _sessionToken.getRoles(tenant: tenant);
   }
 
-  CookiePlaceholderToken(this._sessionToken);
+  WebRefreshToken(this._sessionToken);
 }
 
 // Claims

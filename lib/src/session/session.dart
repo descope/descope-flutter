@@ -37,7 +37,7 @@ class DescopeSession {
   factory DescopeSession(DescopeToken sessionToken, DescopeToken refreshToken, DescopeUser user) {
     // for web only - refresh token might be available via cookie only
     if (sessionToken.jwt == refreshToken.jwt) {
-      refreshToken = CookiePlaceholderToken(sessionToken);
+      refreshToken = WebRefreshToken(sessionToken);
     }
     return DescopeSession._internal(sessionToken, refreshToken, user);
   }
