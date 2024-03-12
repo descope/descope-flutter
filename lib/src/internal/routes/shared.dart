@@ -44,9 +44,16 @@ extension ConvertJWTResponse on JWTServerResponse {
     if (sessionJwt == null || sessionJwt.isEmpty) {
       throw InternalErrors.decodeError.add(message: 'Missing session JWT');
     }
+    final sessionToken = Token.decode(sessionJwt);
 
+    DescopeToken refreshToken;
     final refreshJwt = this.refreshJwt;
-    if (refreshJwt == null || refreshJwt.isEmpty) {
+    if (refreshJwt != null && refreshJwt.isNotEmpty) {
+      refreshToken = Token.decode(refreshJwt);
+    } else if (kIsWeb) {
+      // web only - refresh might be available via cookie
+      refreshToken = sessionToken;
+    } else {
       throw InternalErrors.decodeError.add(message: 'Missing refresh JWT');
     }
 
@@ -55,7 +62,7 @@ extension ConvertJWTResponse on JWTServerResponse {
       throw InternalErrors.decodeError.add(message: 'Missing user details');
     }
 
-    return AuthenticationResponse(Token.decode(sessionJwt), Token.decode(refreshJwt), firstSeen, user.convert());
+    return AuthenticationResponse(sessionToken, refreshToken, firstSeen, user.convert());
   }
 
   RefreshResponse toRefreshResponse() {

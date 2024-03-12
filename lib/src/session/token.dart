@@ -27,6 +27,12 @@ abstract class DescopeToken {
   /// Whether the JWT expiry time (if any) has already passed.
   bool get isExpired;
 
+  /// The value of the "rexp" (refresh expiration time) claim which is the time
+  /// after which the refresh JWT expires. This is either the same as the [expiresAt]
+  /// property for the refresh JWT, or the corresponding refresh JWT expiration for
+  /// session JWTs.
+  DateTime? get refreshExpiresAt;
+
   /// A map with all the custom claims in the JWT value. It includes
   /// any claims whose values aren't already exposed by other accessors
   /// or authorization functions.
@@ -41,6 +47,17 @@ abstract class DescopeToken {
   /// a value of `null` for the [tenant] parameter if the project
   /// doesn't use multiple tenants.
   List<String> getRoles({required String? tenant});
+
+  // toString
+  @override
+  String toString() {
+    var expires = 'expires: Never';
+    if (expiresAt != null) {
+      final label = isExpired ? 'expired' : 'expires';
+      expires = '$label: $expiresAt';
+    }
+    return 'DescopeToken(id: $id, $expires)';
+  }
 }
 
 // Internal
@@ -69,6 +86,9 @@ class Token implements DescopeToken {
   }
 
   @override
+  final DateTime? refreshExpiresAt;
+
+  @override
   List<String> getPermissions({required String? tenant}) {
     try {
       final items = Claim.permissions.getTypedTenantValue<List<dynamic>>(allClaims, tenant);
@@ -88,27 +108,69 @@ class Token implements DescopeToken {
     }
   }
 
-  Token(this.jwt, this.id, this.projectId, this.expiresAt, this.customClaims, this.allClaims);
+  Token(this.jwt, this.id, this.projectId, this.expiresAt, this.refreshExpiresAt, this.customClaims, this.allClaims);
 
   factory Token.decode(String jwt) {
     final claims = decodeJWT(jwt);
+
     final id = Claim.subject.getTypedValue<String>(claims);
     final projectId = decoderIssuer(Claim.issuer.getTypedValue<String>(claims));
     final expiration = Claim.expiration.getTypedValue<int>(claims);
     final expiresAt = DateTime.fromMillisecondsSinceEpoch(expiration * 1000, isUtc: true);
+    final refreshExpiration = Claim.refreshExpiration.getTypedValue<String>(claims);
+    final refreshExpiresAt = refreshExpiration.isNotEmpty ? DateTime.parse(refreshExpiration) : null;
     final customClaims = claims.filterPrivateClaims();
-    return Token(jwt, id, projectId, expiresAt, customClaims, claims);
+    return Token(jwt, id, projectId, expiresAt, refreshExpiresAt, customClaims, claims);
+  }
+}
+
+class CookiePlaceholderToken implements DescopeToken {
+  final DescopeToken _sessionToken;
+
+  @override
+  final String jwt = "";
+
+  @override
+  String get id {
+    return _sessionToken.id;
   }
 
   @override
-  String toString() {
-    var expires = 'expires: Never';
-    if (expiresAt != null) {
-      final label = isExpired ? 'expired' : 'expires';
-      expires = '$label: $expiresAt';
-    }
-    return 'DescopeToken(id: $id, $expires)';
+  String get projectId {
+    return _sessionToken.projectId;
   }
+
+  @override
+  Map<String, dynamic> get customClaims {
+    return _sessionToken.customClaims;
+  }
+
+  @override
+  DateTime? get expiresAt {
+    return _sessionToken.refreshExpiresAt;
+  }
+
+  @override
+  bool get isExpired {
+    return expiresAt?.isBefore(DateTime.now()) ?? false;
+  }
+
+  @override
+  DateTime? get refreshExpiresAt {
+    return _sessionToken.refreshExpiresAt;
+  }
+
+  @override
+  List<String> getPermissions({required String? tenant}) {
+    return _sessionToken.getPermissions(tenant: tenant);
+  }
+
+  @override
+  List<String> getRoles({required String? tenant}) {
+    return _sessionToken.getRoles(tenant: tenant);
+  }
+
+  CookiePlaceholderToken(this._sessionToken);
 }
 
 // Claims
@@ -119,6 +181,7 @@ enum Claim {
   issuer('iss'),
   issuedAt('iat'),
   expiration('exp'),
+  refreshExpiration('rexp'),
   tenants('tenants'),
   permissions('permissions'),
   roles('roles');

@@ -33,22 +33,33 @@ class DescopeSession {
   DescopeToken _refreshToken;
   DescopeUser _user;
 
-  DescopeSession(this._sessionToken, this._refreshToken, this._user);
+  /// Creates a new [DescopeSession] object from tokens.
+  factory DescopeSession(DescopeToken sessionToken, DescopeToken refreshToken, DescopeUser user) {
+    // for web only - refresh token might be available via cookie only
+    if (sessionToken.jwt == refreshToken.jwt) {
+      refreshToken = CookiePlaceholderToken(sessionToken);
+    }
+    return DescopeSession._internal(sessionToken, refreshToken, user);
+  }
 
   /// Creates a new [DescopeSession] object from an [AuthenticationResponse].
   ///
   /// Use this initializer to create a [DescopeSession] after the user completes
   /// a sign in or sign up flow in the application.
-  DescopeSession.fromAuthenticationResponse(AuthenticationResponse authenticationResponse) : this(authenticationResponse.sessionToken, authenticationResponse.refreshToken, authenticationResponse.user);
+  factory DescopeSession.fromAuthenticationResponse(AuthenticationResponse authenticationResponse) {
+    return DescopeSession(authenticationResponse.sessionToken, authenticationResponse.refreshToken, authenticationResponse.user);
+  }
 
   /// Creates a new [DescopeSession] object from two JWT strings.
   ///
   /// This constructor can be used to manually recreate a user's [DescopeSession] after
   /// the application is relaunched if not using a `DescopeSessionManager` for this.
-  DescopeSession.fromJwt(String sessionJwt, String refreshJwt, DescopeUser user)
-      : _sessionToken = Token.decode(sessionJwt),
-        _refreshToken = Token.decode(refreshJwt),
-        _user = user;
+  factory DescopeSession.fromJwt(String sessionJwt, String refreshJwt, DescopeUser user) {
+    final sessionToken = Token.decode(sessionJwt);
+    return DescopeSession._internal(sessionToken, refreshJwt.isNotEmpty ? Token.decode(refreshJwt) : sessionToken, user);
+  }
+
+  DescopeSession._internal(this._sessionToken, this._refreshToken, this._user);
 
   /// The wrapper for the short lived JWT that can be sent with every server
   /// request that requires authentication.
