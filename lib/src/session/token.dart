@@ -41,6 +41,16 @@ abstract class DescopeToken {
   /// a value of `null` for the [tenant] parameter if the project
   /// doesn't use multiple tenants.
   List<String> getRoles({required String? tenant});
+
+  @override
+  String toString() {
+    var expires = 'expires: Never';
+    if (expiresAt != null) {
+      final label = isExpired ? 'expired' : 'expires';
+      expires = '$label: $expiresAt';
+    }
+    return 'DescopeToken(id: $id, $expires)';
+  }
 }
 
 // Internal
@@ -99,16 +109,54 @@ class Token implements DescopeToken {
     final customClaims = claims.filterPrivateClaims();
     return Token(jwt, id, projectId, expiresAt, customClaims, claims);
   }
+}
+
+class WebRefreshToken implements DescopeToken {
+  final DescopeToken _sessionToken;
+  
+  @override
+  final String jwt = "";
 
   @override
-  String toString() {
-    var expires = 'expires: Never';
-    if (expiresAt != null) {
-      final label = isExpired ? 'expired' : 'expires';
-      expires = '$label: $expiresAt';
-    }
-    return 'DescopeToken(id: $id, $expires)';
+  String get id {
+    return _sessionToken.id;
   }
+
+  @override
+  String get projectId {
+    return _sessionToken.projectId;
+  }
+
+  @override
+  Map<String, dynamic> get customClaims {
+    return _sessionToken.customClaims;
+  }
+
+  @override
+  DateTime? expiresAt;
+
+  @override
+  bool get isExpired {
+    return expiresAt?.isBefore(DateTime.now()) ?? false;
+  }
+
+  @override
+  List<String> getPermissions({required String? tenant}) {
+    return _sessionToken.getPermissions(tenant: tenant);
+  }
+
+  @override
+  List<String> getRoles({required String? tenant}) {
+    return _sessionToken.getRoles(tenant: tenant);
+  }
+
+  factory WebRefreshToken(DescopeToken sessionToken) {
+    final refreshExpiration = Claim.refreshExpiration.getOptionalTypedValue<String>(sessionToken.customClaims);
+    final expiresAt = refreshExpiration != null && refreshExpiration.isNotEmpty ? DateTime.parse(refreshExpiration) : null;
+    return WebRefreshToken._internal(sessionToken, expiresAt);
+  }
+
+  WebRefreshToken._internal(this._sessionToken, this.expiresAt);
 }
 
 // Claims
@@ -119,6 +167,7 @@ enum Claim {
   issuer('iss'),
   issuedAt('iat'),
   expiration('exp'),
+  refreshExpiration('rexp'),
   tenants('tenants'),
   permissions('permissions'),
   roles('roles');
@@ -129,6 +178,14 @@ enum Claim {
 
   static bool isPrivateClaim(String key) {
     return Claim.values.any((element) => element.key == key);
+  }
+
+  T? getOptionalTypedValue<T>(Map<String, dynamic> claims) {
+    try {
+      return getTypedValue<T>(claims);
+    } catch (e) {
+      return null;
+    }
   }
 
   T getTypedValue<T>(Map<String, dynamic> claims) {
