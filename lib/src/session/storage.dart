@@ -127,25 +127,23 @@ class SessionStorageMobileStore implements SessionStorageStore {
 }
 
 class SessionStorageWebStore implements SessionStorageStore {
-  final Storage _localStorage = window.localStorage;
-
   static SessionStorageWebStore? ifSupported() {
     return kIsWeb ? SessionStorageWebStore() : null;
   }
 
   @override
   Future<String?> loadItem(String key) async {
-    return _localStorage[key];
+    return window.localStorage[key];
   }
 
   @override
   Future<void> removeItem(String key) async {
-    _localStorage.remove(key);
+    window.localStorage.remove(key);
   }
 
   @override
   Future<void> saveItem({required String key, required String data}) async {
-    _localStorage[key] = data;
+    window.localStorage[key] = data;
   }
 }
 
