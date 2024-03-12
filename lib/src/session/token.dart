@@ -117,8 +117,8 @@ class Token implements DescopeToken {
     final projectId = decoderIssuer(Claim.issuer.getTypedValue<String>(claims));
     final expiration = Claim.expiration.getTypedValue<int>(claims);
     final expiresAt = DateTime.fromMillisecondsSinceEpoch(expiration * 1000, isUtc: true);
-    final refreshExpiration = Claim.refreshExpiration.getTypedValue<String>(claims);
-    final refreshExpiresAt = refreshExpiration.isNotEmpty ? DateTime.parse(refreshExpiration) : null;
+    final refreshExpiration = Claim.refreshExpiration.getOptionalTypedValue<String>(claims);
+    final refreshExpiresAt = refreshExpiration != null && refreshExpiration.isNotEmpty ? DateTime.parse(refreshExpiration) : null;
     final customClaims = claims.filterPrivateClaims();
     return Token(jwt, id, projectId, expiresAt, refreshExpiresAt, customClaims, claims);
   }
@@ -192,6 +192,14 @@ enum Claim {
 
   static bool isPrivateClaim(String key) {
     return Claim.values.any((element) => element.key == key);
+  }
+
+  T? getOptionalTypedValue<T>(Map<String, dynamic> claims) {
+    try {
+      return getTypedValue<T>(claims);
+    } catch (e) {
+      return null;
+    }
   }
 
   T getTypedValue<T>(Map<String, dynamic> claims) {
