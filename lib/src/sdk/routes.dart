@@ -1,7 +1,8 @@
-import '../session/session.dart';
-import '../types/others.dart';
-import '../types/responses.dart';
-import '../types/user.dart';
+import '/src/session/session.dart';
+import '/src/types/flows.dart';
+import '/src/types/others.dart';
+import '/src/types/responses.dart';
+import '/src/types/user.dart';
 
 /// General authentication functions
 abstract class DescopeAuth {
@@ -25,14 +26,61 @@ abstract class DescopeAuth {
 /// Authenticate a user using a flow.
 ///
 /// Descope Flows is a visual no-code interface to build screens and authentication flows
-/// for common user interactions with your application. Flows are hosted on a webpage and
-/// are run using a sandboxed browser view.
+/// for common user interactions with your application. On mobile platforms,
+/// Flows are hosted on a webpage and are run using a sandboxed browser view.
+/// On the web, they are embedded into the running web-app.
 ///
 /// Under the hood, this authentication method uses platform specific classes to
-/// display the flows: `ASWebAuthenticationSession` on iOS and `Chrome Custom Tabs` on Android.
+/// display the flows: `ASWebAuthenticationSession` on iOS, `Chrome Custom Tabs` on Android,
+/// and `Web Components` on the web.
 /// If targeting Android you need to set up `Android App Links` in order to communicate back
 /// to the application. Read more about it in the README under the `Running Flows` section.
 abstract class DescopeFlow {
+
+  /// Starts a user authentication flow.
+  ///
+  /// The flow presentation differs according to the target:
+  /// - On mobile platforms - screens are presented in a sandboxed browser view that's displayed by this
+  /// method call.
+  /// - On the web - the screens are embedded into the active browser window.
+  ///
+  /// The method then waits until the authentication completed successfully,
+  /// at which point it will return an [AuthenticationResponse] as in all other
+  /// authentication methods. Provide this call with a [DescopeFlowOptions] that
+  /// contains all of the required information to run the flow on different targets.where the flow
+  ///
+  /// When targeting Android: The [DescopeFlowOptions.mobile.deepLinkUrl] is required
+  /// in order to return a result from the flow. This result URI should then be
+  /// processed by the [exchange] function.
+  Future<AuthenticationResponse> run(DescopeFlowOptions options);
+
+  /// Resumes an ongoing **mobile** flow after a redirect back to the app with an [incomingUri].
+  /// This is required for *Magic Link only* at this stage.
+  ///
+  /// **Note:** This requires additional setup on the application side.
+  /// See the README for more details.
+  ///
+  /// **Note:** Do not call this method when running web flows. Use [run] instead.
+  Future<void> resume(Uri incomingUri);
+
+  /// Exchange a URI for an [AuthenticationResponse].
+  ///
+  /// This method should be called only when targeting Android.
+  /// When a flow completes successfully, the result will be sent through
+  /// the configured deep link URL. However, it must still be exchanged for an
+  /// actual [AuthenticationResponse] to complete the authentication flow.
+  /// The [AuthenticationResponse] will be returned to the original call to [run].
+  void exchange(Uri incomingUri);
+
+  /// Cancel the current flow.
+  ///
+  /// This function is only supported when targeting the web, and should
+  /// be used in order to cancel out of a running flow.
+  /// As all websites are different, feel free to define your own UX
+  /// and call this function to cancel and remove any running flow.
+  void cancel();
+
+  // deprecated
 
   /// Starts a user authentication flow.
   ///
@@ -43,23 +91,8 @@ abstract class DescopeFlow {
   /// is hosted, and optionally a [deepLinkUrl] if targeting Android. This is the URL
   /// that needs to be called by Descope in order to return a result from the flow.
   /// This result URI should then be processed by the [exchange] function.
+  @Deprecated("Use `run` instead")
   Future<AuthenticationResponse> start(String flowUrl, {String? deepLinkUrl});
-
-  /// Resumes an ongoing flow after a redirect back to the app with an [incomingUri].
-  /// This is required for *Magic Link only* at this stage.
-  ///
-  /// **Note:** This requires additional setup on the application side.
-  /// See the README for more details.
-  Future<void> resume(Uri incomingUri);
-
-  /// Exchange a URI for an [AuthenticationResponse].
-  ///
-  /// This method should be called only when targeting Android.
-  /// When a flow completes successfully, the result will be sent through
-  /// the configured deep link URL. However, it must still be exchanged for an
-  /// actual [AuthenticationResponse] to complete the authentication flow.
-  /// The [AuthenticationResponse] will be returned to the original call to [start].
-  void exchange(Uri incomingUri);
 }
 
 /// Authenticate users using a one time password (OTP) code, sent via
