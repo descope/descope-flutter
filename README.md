@@ -355,8 +355,7 @@ final _router = GoRouter(
 
 When targeting the Web, the flow is embedded into the web app as a `Web Component`.
 Provide a `flowId` to indicate which flow to run. It's recommended to provide the CSS key-value
-pairs to control how the flow is positioned and displayed in your page. You can also provide
-an optional `loadingElement` to be displayed in the web component loading state.
+pairs to control how the flow is positioned and displayed in your page.
 
 ```dart
 final options = DescopeFlowOptions(
@@ -383,13 +382,15 @@ final options = DescopeFlowOptions(
 #### Handling Redirections
 
 When targeting the web, authentication methods that redirect, such as OAuth and Magic Link,
-require a different and simpler handling to the mobile flows: In these cases, the redirection
-will include a few URL query parameters. Simply `run` the flow, and it will pick up
-where it left off.
+will redirect back to your web-app according to how they're defined in the flow. When the redirection
+happens, make sure any query parameters in the URL remain intact and call the flow `start` function. 
+The flow will pick up where it left off.
 
 ### Run a Flow
 
 After completing the prerequisite steps, it is now possible to run a flow.
+Since this is an async operation, it is recommended to enter a "loading state"
+to prevent any unwanted user interactions until the flow is displayed.
 The flow will run in a Chrome [Custom Tab](https://developer.chrome.com/docs/android/custom-tabs/) on Android,
 or via [ASWebAuthenticationSession](https://developer.apple.com/documentation/authenticationservices/aswebauthenticationsession) on iOS.
 Run the flow by calling the flow start function:
@@ -397,8 +398,8 @@ Run the flow by calling the flow start function:
 ```dart
 final options = DescopeFlowOptions(
         mobile: DescopeMobileFlowOptions(
-                flowUrl: '<URL_FOR_FLOW_IN_MOBILE_SETUP_#1>',
-                deepLinkUrl: '<URL_FOR_APP_LINK_IN_MOBILE_SETUP_#2>'
+          flowUrl: '<URL_FOR_FLOW_IN_MOBILE_SETUP_#1>',
+          deepLinkUrl: '<URL_FOR_APP_LINK_IN_MOBILE_SETUP_#2>'
         ),
         web: DescopeWebFlowOptions(
           flowId: 'flowId',
@@ -416,9 +417,8 @@ final options = DescopeFlowOptions(
             "justify-content": "center",
             "box-shadow": "0px 0px 10px gray",
           },
-          loadingElement: myCustomLoadingElement,
         ));
-final authResponse = await Descope.flow.run(options);
+final authResponse = await Descope.flow.start(options);
 final session = DescopeSession.fromAuthenticationResponse(authResponse);
 Descope.sessionManager.manageSession(session);
 ```

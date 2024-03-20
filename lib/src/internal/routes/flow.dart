@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import '/src/internal/others/stub_html.dart' if (dart.library.js) 'dart:html' hide Platform;
 import 'dart:io' show Platform;
 import 'dart:math';
 
@@ -11,6 +10,7 @@ import 'package:flutter/services.dart';
 import '/src/internal/http/descope_client.dart';
 import '/src/internal/http/responses.dart';
 import '/src/internal/others/error.dart';
+import '/src/internal/others/stub_html.dart' if (dart.library.js) 'dart:html' hide Platform;
 import '/src/internal/routes/shared.dart';
 import '/src/sdk/routes.dart';
 import '/src/types/error.dart';
@@ -55,12 +55,7 @@ class Flow extends DescopeFlow {
   Flow(this.client);
 
   @override
-  Future<AuthenticationResponse> start(String flowUrl, {String? deepLinkUrl}) async {
-    return run(DescopeFlowOptions(mobile: DescopeMobileFlowOptions(flowUrl: flowUrl, deepLinkUrl: deepLinkUrl)));
-  }
-
-  @override
-  Future<AuthenticationResponse> run(DescopeFlowOptions options) async {
+  Future<AuthenticationResponse> start(DescopeFlowOptions options) async {
     // cancel any previous still running flows
     _cancelCurrentFlow();
 
@@ -139,9 +134,6 @@ class Flow extends DescopeFlow {
   void _startWebFlow(_FlowRunner runner) {
     final flowId = runner._options.web?.flowId;
     if (flowId == null) throw DescopeException.flowSetup.add(message: 'Web flows require a flow ID');
-    var loadingElement = runner._options.web?.loadingElement;
-    if (loadingElement != null && loadingElement is! Element) throw DescopeException.flowSetup.add(message: 'Web flows loading element must be an instance of Element (dart:html)');
-    loadingElement = loadingElement ?? Element.html('<div class="loading">Loading ...</div>', validator: _htmlValidator);
 
     // inject style and wc script into page
     _addFlowStyleToPage(runner);
@@ -149,15 +141,15 @@ class Flow extends DescopeFlow {
 
     // create a login container
     var loginContainer = DivElement();
-    loginContainer.className = "login-container";
+    loginContainer.className = "hidden-container";
     Element wc = Element.html('<descope-wc project-id=${client.config.projectId} flow-id=$flowId base-url=${client.baseUrl}/>', validator: _htmlValidator);
     loginContainer.children.add(wc);
-    loginContainer.children.add(loadingElement);
+    // loginContainer.children.add(loadingElement);
     document.body?.children.add(loginContainer);
 
     // js event listeners
     runner._readyListener = (Event event) {
-      loadingElement.remove();
+      loginContainer.className = "login-container";
     };
 
     runner._successListener = (Event event) {
@@ -185,7 +177,7 @@ class Flow extends DescopeFlow {
     css.forEach((key, value) {
       styleTag += '$key: $value;';
     });
-    styleTag += '}</style>';
+    styleTag += '}.hidden-container{display: none;}</style>';
     var style = Element.html(styleTag, validator: _htmlValidator);
     final existingStyle = querySelectorAll('.web-component-style');
     if (existingStyle.isNotEmpty) {

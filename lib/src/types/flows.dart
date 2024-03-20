@@ -29,15 +29,10 @@ class DescopeMobileFlowOptions {
 ///
 /// Provide a [flowId] to embed a flow web component
 /// inside your web app. It's recommended to provide the [flowContainerCss]
-/// to control how the flow is positioned and displayed. Provide
-/// an optional [loadingElement] to be displayed in your loading state.
-///
-/// **IMPORTANT**: Make sure when providing the [loadingElement]
-/// that it is some instance of `Element` (from dart:html).
+/// to control how the flow is positioned and displayed.
 class DescopeWebFlowOptions {
   String flowId;
   Map<String, String>? flowContainerCss;
-  dynamic loadingElement;
 
-  DescopeWebFlowOptions({required this.flowId, this.flowContainerCss, this.loadingElement});
+  DescopeWebFlowOptions({required this.flowId, this.flowContainerCss});
 }
