@@ -12,11 +12,11 @@ typedef ResponseDecoder<T> = T Function(Map<String, dynamic> json, Map<String, S
 ResponseDecoder<void> emptyResponse = (json, headers) => {};
 
 class HttpClient {
-  final String baseURL;
+  final String baseUrl;
   final DescopeLogger? logger;
   final DescopeNetworkClient networkClient;
 
-  HttpClient(this.baseURL, this.logger, DescopeNetworkClient? client) : networkClient = client ?? _DefaultNetworkClient();
+  HttpClient(this.baseUrl, this.logger, DescopeNetworkClient? client) : networkClient = client ?? _DefaultNetworkClient();
 
   // Convenience functions
 
@@ -82,7 +82,7 @@ class HttpClient {
   }
 
   Uri makeUrl(String route, Map<String, String?> params) {
-    var url = Uri.parse('$baseURL$basePath$route');
+    var url = Uri.parse('$baseUrl$basePath$route');
     if (params.isNotEmpty) {
       url = url.replace(queryParameters: params.compacted());
     }

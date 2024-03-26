@@ -113,7 +113,7 @@ class Token implements DescopeToken {
 
 class WebRefreshToken implements DescopeToken {
   final DescopeToken _sessionToken;
-  
+
   @override
   final String jwt = "";
 

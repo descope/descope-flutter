@@ -41,6 +41,7 @@ class DescopeException implements Exception {
 
   static const flowFailed = DescopeException._sdkError(code: 'F100001', desc: 'Flow failed to run');
   static const flowCancelled = DescopeException._sdkError(code: 'F100002', desc: 'Flow cancelled');
+  static const flowSetup = DescopeException._sdkError(code: 'F100003', desc: 'Flow setup error');
 
   static const passkeyFailed = DescopeException._sdkError(code: 'F110001', desc: 'Passkey authentication failed');
   static const passkeyCancelled = DescopeException._sdkError(code: 'F110002', desc: 'Passkey authentication cancelled');

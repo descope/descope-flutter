@@ -10,7 +10,7 @@ You can read more on the [Descope Website](https://descope.com).
 - [Session Management](#session-management)
 - [Custom Claims](#custom-claims)
 - [Error handling](#error-handling)
-- [Authentication Flows](#running-flows)
+- [Running Flows](#running-flows)
 - Authenticate users using the authentication methods that suit your needs:
   - [OTP](#otp-authentication) (one-time password)
   - [TOTP](#totp-authentication) (timed one-time password / authenticator app)
@@ -225,16 +225,20 @@ define both the behavior and the UI that take the user through their
 authentication journey. Read more about it in the  Descope
 [getting started](https://docs.descope.com/build/guides/gettingstarted/) guide.
 
-### Setup #1: Define and host your flow
+The flow setup differs according to the targeted platforms
 
-Before we can run a flow, it must first be defined and hosted. Every project
+### Mobile Flows Setup
+
+#### Setup #1: Define and host your flow
+
+Before we can run a mobile flow, it must first be defined and hosted. Every project
 comes with predefined flows out of the box. You can customize your flows to suit your needs
 and host it. Follow
 the [getting started](https://docs.descope.com/build/guides/gettingstarted/) guide for more details.
 You can host the flow yourself or leverage Descope's hosted flow page. Read more about it [here](https://docs.descope.com/customize/auth/oidc/#hosted-flow-application).
 You can also check out the [auth-hosting repo itself](https://github.com/descope/auth-hosting).
 
-### (Android Only) Setup #2: Enable App Links
+#### (Android Only) Setup #2: Enable App Links
 
 Running a flow via the Flutter SDK, when targeting Android, requires setting up [App Links](https://developer.android.com/training/app-links#android-app-links).
 This is essential for the SDK to be notified when the user has successfully
@@ -242,7 +246,7 @@ authenticated using a flow. Once you have a domain set up and
 [verified](https://developer.android.com/training/app-links/verify-android-applinks)
 for sending App Links, you'll need to handle the incoming deep links in your app:
 
-#### Define a route to handle the App Link sent at the end of a flow
+##### Define a route to handle the App Link sent at the end of a flow
 _this code example demonstrates how app links should be handled - you can customize it to fit your app_
 ```dart
 final _router = GoRouter(
@@ -269,7 +273,7 @@ final _router = GoRouter(
 );
 ```
 
-#### Add a matching Manifest declaration
+##### Add a matching Manifest declaration
 Read more about the flutter specific `meta-data` tag mentioned here in the [official documentation](https://docs.flutter.dev/ui/navigation/deep-linking).
 ```xml
 <activity
@@ -297,7 +301,7 @@ Read more about the flutter specific `meta-data` tag mentioned here in the [offi
 </activity>
 ```
 
-### (OPTIONAL) Setup #3: Support Magic Link Redirects
+#### (OPTIONAL) Setup #3: Support Magic Link Redirects
 
 Supporting Magic Link authentication in flows requires some platform specific setup:
 - On Android: add another path entry to the [App Links](https://developer.android.com/training/app-links#android-app-links).
@@ -309,7 +313,7 @@ Supporting Magic Link authentication in flows requires some platform specific se
 Regardless of the platform, another path is required to handle magic link redirects specifically. For the sake of this README, let's name
 it `/magiclink`
 
-#### Define a route to handle the App Link or Universal Link sent when a magic link is sent
+##### Define a route to handle the App Link or Universal Link sent when a magic link is sent
 _this code example demonstrates how app links or universal links should be handled - you can customize it to fit your app_
 ```dart
 final _router = GoRouter(
@@ -347,20 +351,79 @@ final _router = GoRouter(
 );
 ```
 
+### Web Flows Setup
+
+When targeting the Web, the flow is embedded into the web app as a `Web Component`.
+Provide a `flowId` to indicate which flow to run. It's recommended to provide the CSS key-value
+pairs to control how the flow is positioned and displayed in your page.
+
+```dart
+final options = DescopeFlowOptions(
+        web: DescopeWebFlowOptions(
+            flowId: 'flowId', 
+            flowContainerCss: {
+                "background-color": "antiquewhite",
+                "width": "500px",
+                "min-height": "300px",
+                "margin": "auto",
+                "position": "relative",
+                "top": "50%",
+                "transform": "translateY(-50%)",
+                "display": "flex",
+                "flex-direction": "column",
+                "align-items": "center",
+                "justify-content": "center",
+                "box-shadow": "0px 0px 10px gray",
+            },
+            loadingElement: myCustomLoadingElement,
+        ));
+```
+
+#### Handling Redirections
+
+When targeting the web, authentication methods that redirect, such as OAuth and Magic Link,
+will redirect back to your web-app according to how they're defined in the flow. When the redirection
+happens, make sure any query parameters in the URL remain intact and call the flow `start` function. 
+The flow will pick up where it left off.
+
 ### Run a Flow
 
 After completing the prerequisite steps, it is now possible to run a flow.
+Since this is an async operation, it is recommended to enter a "loading state"
+to prevent any unwanted user interactions until the flow is displayed.
 The flow will run in a Chrome [Custom Tab](https://developer.chrome.com/docs/android/custom-tabs/) on Android,
 or via [ASWebAuthenticationSession](https://developer.apple.com/documentation/authenticationservices/aswebauthenticationsession) on iOS.
 Run the flow by calling the flow start function:
 
 ```dart
-final authResponse = await Descope.flow.start('<URL_FOR_FLOW_IN_SETUP_#1>', deepLinkUrl: '<URL_FOR_APP_LINK_IN_SETUP_#2>');
+final options = DescopeFlowOptions(
+        mobile: DescopeMobileFlowOptions(
+          flowUrl: '<URL_FOR_FLOW_IN_MOBILE_SETUP_#1>',
+          deepLinkUrl: '<URL_FOR_APP_LINK_IN_MOBILE_SETUP_#2>'
+        ),
+        web: DescopeWebFlowOptions(
+          flowId: 'flowId',
+          flowContainerCss: {
+            "background-color": "antiquewhite",
+            "width": "500px",
+            "min-height": "300px",
+            "margin": "auto",
+            "position": "relative",
+            "top": "50%",
+            "transform": "translateY(-50%)",
+            "display": "flex",
+            "flex-direction": "column",
+            "align-items": "center",
+            "justify-content": "center",
+            "box-shadow": "0px 0px 10px gray",
+          },
+        ));
+final authResponse = await Descope.flow.start(options);
 final session = DescopeSession.fromAuthenticationResponse(authResponse);
 Descope.sessionManager.manageSession(session);
 ```
 
-When running on iOS nothing else is required. When running on Android, `Descope.flow.exchange()` function must be called.
+When targeting Android, in order to complete the flow successfully, `Descope.flow.exchange()` function must be called.
 See the [app link setup](#-android-only--setup-2--enable-app-links) for more details.
 
 ## Authentication Methods
