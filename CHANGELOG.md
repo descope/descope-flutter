@@ -1,3 +1,9 @@
+# 0.9.0
+
+- New setup function for initializing the Descope SDK
+- Replace password now returns a `AuthenticationResponse`
+- Flutter Web support for both Session Management and Flows
+
 # 0.8.1
 
 - Remove OAuth `clientId` validation in iOS plugin
