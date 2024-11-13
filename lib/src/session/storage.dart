@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '/src/internal/others/stub_html.dart' if (dart.library.js) 'dart:html' hide Platform;
+import '/src/internal/others/stubs/stub_html.dart' if (dart.library.js) 'dart:html' hide Platform;
 import '/src/types/user.dart';
 import 'manager.dart';
 import 'session.dart';
