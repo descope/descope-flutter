@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 import '/src/internal/http/descope_client.dart';
 import '/src/internal/http/responses.dart';
 import '/src/internal/others/error.dart';
-import '/src/internal/others/stub_html.dart' if (dart.library.js) 'dart:html' hide Platform;
+import '/src/internal/others/stubs/stub_html.dart' if (dart.library.js) 'dart:html' hide Platform;
 import '/src/internal/routes/shared.dart';
 import '/src/sdk/routes.dart';
 import '/src/types/error.dart';

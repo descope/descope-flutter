@@ -1,3 +1,7 @@
+# 0.9.1
+
+- Support passkeys in Flutter Web
+
 # 0.9.0
 
 - New setup function for initializing the Descope SDK
