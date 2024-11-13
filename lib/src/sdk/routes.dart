@@ -21,6 +21,9 @@ abstract class DescopeAuth {
 
   /// Logs out from an active [DescopeSession].
   Future<void> logout(String refreshJwt);
+
+  /// Revokes all previous created sessions [DescopeSession].
+  Future<void> logoutPrevious(String refreshJwt);
 }
 
 /// Authenticate a user using a flow.

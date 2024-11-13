@@ -23,4 +23,9 @@ class Auth implements DescopeAuth {
   Future<void> logout(String refreshJwt) {
     return client.logout(refreshJwt);
   }
+
+  @override
+  Future<void> logoutPrevious(String refreshJwt) {
+    return client.logoutPrevious(refreshJwt);
+  }
 }

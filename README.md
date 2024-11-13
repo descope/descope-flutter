@@ -167,6 +167,15 @@ if (refreshJwt != null) {
 }
 ```
 
+When the user wants to revoke previously created sessions, also from other devices:
+
+```dart
+final refreshJwt = Descope.sessionManager.session?.refreshJwt;
+if (refreshJwt != null) {
+  Descope.auth.logoutPrevious(refreshJwt);
+}
+```
+
 You can customize how the `DescopeSessionManager` behaves by using
 your own `storage` and `lifecycle` objects. See the documentation
 for more details.

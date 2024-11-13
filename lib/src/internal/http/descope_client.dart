@@ -348,6 +348,10 @@ class DescopeClient extends HttpClient {
     return post('auth/logout', emptyResponse, headers: authorization(refreshJwt));
   }
 
+  Future<void> logoutPrevious(String refreshJwt) {
+    return post('auth/logoutprevious', emptyResponse, headers: authorization(refreshJwt));
+  }
+
   // Internal
 
   @override
