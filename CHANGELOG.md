@@ -1,3 +1,7 @@
+# 0.9.1
+
+- Flutter Web support for Passkeys
+
 # 0.9.0
 
 - New setup function for initializing the Descope SDK
