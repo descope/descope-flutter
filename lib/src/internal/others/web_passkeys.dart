@@ -45,6 +45,7 @@ const _webauthnScript = """
 // webauthn create
 
 async function descopeWebAuthnCreate(options) {
+  if (!descopeIsWebAuthnSupported()) throw Error('Passkeys are not supported');
   const createOptions = descopeDecodeCreateOptions(options);
   const createResponse = await window.navigator.credentials.create(createOptions);
   return descopeEncodeCreateResponse(createResponse);
@@ -75,6 +76,7 @@ function descopeEncodeCreateResponse(credential) {
 // webauthn get
 
 async function descopeWebAuthnGet(options) {
+  if (!descopeIsWebAuthnSupported()) throw Error('Passkeys are not supported');
   const getOptions = descopeDecodeGetOptions(options);
   const getResponse = await navigator.credentials.get(getOptions);
   return descopeEncodeGetResponse(getResponse);
@@ -115,5 +117,17 @@ function descopeDecodeBase64Url(value) {
 function descopeEncodeBase64Url(value) {
   const base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(value)));
   return base64.replace(/\\//g, '_').replace(/\\+/g, '-').replace(/=/g, '');
+}
+
+// Is supported
+
+function descopeIsWebAuthnSupported() {
+  const supported = !!(
+    window.PublicKeyCredential &&
+    navigator.credentials &&
+    navigator.credentials.create &&
+    navigator.credentials.get
+  );
+  return supported;
 }
 """;
