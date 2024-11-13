@@ -1,6 +1,6 @@
 # 0.9.1
 
-- Flutter Web support for Passkeys
+- Support passkeys in Flutter Web
 
 # 0.9.0
 
