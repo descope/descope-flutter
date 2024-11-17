@@ -160,12 +160,18 @@ When the user wants to sign out of the application we revoke the
 active session and clear it from the session manager:
 
 ```dart
-final refreshJwt = Descope.sessionManager.session?.refreshJwt;
+final refreshJwt = Descope.sessionManager.session?.refreshToken.jwt;
 if (refreshJwt != null) {
-  Descope.auth.logout(refreshJwt);
   Descope.sessionManager.clearSession();
+  try {
+    Descope.auth.revokeSessions(RevokeType.currentSession, refreshJwt);
+  } catch (e) {
+    // handle errors
+  }
 }
 ```
+
+It is also possible to revoke all sessions by providing the appropriate `RevokeType` parameter.
 
 You can customize how the `DescopeSessionManager` behaves by using
 your own `storage` and `lifecycle` objects. See the documentation

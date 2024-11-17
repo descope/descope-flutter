@@ -1,3 +1,14 @@
+/// Which sessions to revoke when calling `DescopeAuth.revokeSessions()`
+enum RevokeType {
+  /// Revokes the provided refresh JWT.
+  currentSession,
+  /// Revokes the provided refresh JWT and all other active sessions for the user.
+  ///
+  /// - Important: This causes all sessions for the user to be removed, and the provided
+  ///   refresh JWT will not be usable after the logout call completes.
+  allSessions,
+}
+
 /// The delivery method for an OTP or Magic Link message.
 enum DeliveryMethod {
   email,
@@ -75,7 +86,10 @@ class SignInOptions {
   /// be nested under the `nsec` custom claim.
   final Map<String, dynamic> customClaims;
 
-  const SignInOptions({this.stepupRefreshJwt, this.mfaRefreshJwt, this.customClaims = const {}});
+  /// Revokes all other active sessions for the user besides the new session being created.
+  final bool revokeOtherSessions;
+
+  const SignInOptions({this.stepupRefreshJwt, this.mfaRefreshJwt, this.customClaims = const {}, this.revokeOtherSessions = false});
 }
 
 /// Used to configure how users are updated.
