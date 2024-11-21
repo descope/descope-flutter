@@ -5,7 +5,7 @@ enum RevokeType {
   /// Revokes the provided refresh JWT and all other active sessions for the user.
   ///
   /// - Important: This causes all sessions for the user to be removed, and the provided
-  ///   refresh JWT will not be usable after the logout call completes.
+  ///   refresh JWT will not be usable after the revokeSessions call completes.
   allSessions,
 }
 
