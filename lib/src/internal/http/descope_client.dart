@@ -344,8 +344,9 @@ class DescopeClient extends HttpClient {
     return post('auth/refresh', JWTServerResponse.decoder, headers: authorization(refreshJwt));
   }
 
-  Future<void> logout(String refreshJwt) {
-    return post('auth/logout', emptyResponse, headers: authorization(refreshJwt));
+  Future<void> logout(RevokeType revokeType, String refreshJwt) {
+    final route = revokeType == RevokeType.currentSession ? 'auth/logout' : 'auth/logoutall';
+    return post(route, emptyResponse, headers: authorization(refreshJwt));
   }
 
   // Internal
@@ -384,6 +385,7 @@ extension on SignInOptions {
       'stepup': stepupRefreshJwt != null ? true : null,
       'mfa': mfaRefreshJwt != null ? true : null,
       'customClaims': customClaims.isNotEmpty ? customClaims : null,
+      'revokeOtherSessions': revokeOtherSessions,
     };
   }
 }

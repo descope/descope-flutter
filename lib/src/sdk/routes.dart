@@ -19,7 +19,33 @@ abstract class DescopeAuth {
   /// or is about expire.
   Future<RefreshResponse> refreshSession(String refreshJwt);
 
+  /// It's a good security practice to remove refresh JWTs from the Descope servers if
+  /// they become redundant before expiry. This function will called with a [RevokeType], usually [RevokeType.currentSession],
+  /// and a valid refresh JWT when the user wants to sign out of the application. For example:
+  ///
+  ///     void logout() {
+  ///         // clear the session locally from the app and spawn a background task to revoke
+  ///         // the refreshJWT from the Descope servers without waiting for the call to finish
+  ///         final refreshJwt = Descope.sessionManager.session?.refreshToken.jwt;
+  ///         if (refreshJwt != null) {
+  ///           Descope.sessionManager.clearSession();
+  ///           try {
+  ///             Descope.auth.revokeSessions(RevokeType.currentSession, refreshJwt);
+  ///           } catch (e) {
+  ///             // handle errors
+  ///           }
+  ///           showLaunchScreen();
+  ///         }
+  ///     }
+  ///
+  /// - Important: When called with [RevokeType.allSessions] the provided refresh JWT will not
+  ///     be usable anymore and the user will need to sign in again.
+  Future<void> revokeSessions(RevokeType revokeType, String refreshJwt);
+
+  // Deprecated
+
   /// Logs out from an active [DescopeSession].
+  @Deprecated('Use revokeSessions instead')
   Future<void> logout(String refreshJwt);
 }
 

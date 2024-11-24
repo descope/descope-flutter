@@ -1,7 +1,8 @@
+import '/src/internal/http/descope_client.dart';
 import '/src/sdk/routes.dart';
+import '/src/types/others.dart';
 import '/src/types/responses.dart';
 import '/src/types/user.dart';
-import '../http/descope_client.dart';
 import 'shared.dart';
 
 class Auth implements DescopeAuth {
@@ -20,7 +21,14 @@ class Auth implements DescopeAuth {
   }
 
   @override
+  Future<void> revokeSessions(RevokeType revokeType, String refreshJwt) async {
+    return client.logout(revokeType, refreshJwt);
+  }
+
+  // Deprecated
+
+  @override
   Future<void> logout(String refreshJwt) {
-    return client.logout(refreshJwt);
+    return revokeSessions(RevokeType.currentSession, refreshJwt);
   }
 }
