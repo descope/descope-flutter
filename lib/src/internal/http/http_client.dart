@@ -120,7 +120,6 @@ extension CompactMap<T> on Map<String, T?> {
 const String invalidResponse = 'The server returned an unexpected response';
 
 DescopeException generalServerError(int statusCode) {
-  print("generalServerError");
   String desc;
   switch (statusCode) {
     case 400:

@@ -1,3 +1,7 @@
+# 0.9.2
+
+- Add exception parsing from server response
+
 # 0.9.1
 
 - Support passkeys in Flutter Web
