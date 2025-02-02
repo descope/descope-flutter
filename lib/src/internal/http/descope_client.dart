@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '/src/internal/others/error.dart';
 import '/src/sdk/config.dart';
 import '/src/sdk/sdk.dart';
@@ -360,6 +362,19 @@ class DescopeClient extends HttpClient {
         'x-descope-sdk-name': 'flutter',
         'x-descope-sdk-version': DescopeSdk.version,
       };
+
+  @override
+  DescopeException? exceptionFromResponse(String response) {
+    try {
+      final json = jsonDecode(response) as Map<String, dynamic>;
+      var code = json["errorCode"] as String;
+      var desc = json["errorDescription"] as String?;
+      var message = json["errorMessage"] as String?;
+      return DescopeException(code: code, desc: desc ?? "Descope server error", message: message);
+    } catch (e) {
+      return null;
+    }
+  }
 
   Map<String, String> authorization(String? value) {
     return value != null ? {'Authorization': 'Bearer ${config.projectId}:$value'} : {};

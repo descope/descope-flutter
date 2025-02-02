@@ -45,6 +45,10 @@ class HttpClient {
 
   Map<String, String> get defaultHeaders => {};
 
+  DescopeException? exceptionFromResponse(String response) {
+    return null;
+  }
+
   // Internal
 
   Future<T> call<T>(http.Request request, ResponseDecoder<T> decoder) async {
@@ -90,8 +94,10 @@ class HttpClient {
   }
 
   String parseResponse(http.Response response) {
-    throwErrorIfNeeded(response.statusCode);
-    return response.body;
+    if (response.statusCode >= 200 && response.statusCode <= 299) {
+      return response.body;
+    }
+    throw exceptionFromResponse(response.body) ?? generalServerError(response.statusCode);
   }
 }
 
@@ -113,32 +119,29 @@ extension CompactMap<T> on Map<String, T?> {
 
 const String invalidResponse = 'The server returned an unexpected response';
 
-void throwErrorIfNeeded(int statusCode) {
-  final desc = errorDescriptionFromCode(statusCode);
-  if (desc != null) {
-    throw InternalErrors.httpError.add(desc: desc);
-  }
-}
-
-String? errorDescriptionFromCode(int statusCode) {
-  if (statusCode >= 200 && statusCode <= 299) {
-    return null;
-  }
+DescopeException generalServerError(int statusCode) {
+  String desc;
   switch (statusCode) {
     case 400:
-      return 'The request was invalid';
+      desc = 'The request was invalid';
+      break;
     case 401:
-      return 'The request was unauthorized';
+      desc = 'The request was unauthorized';
+      break;
     case 403:
-      return 'The request was forbidden';
+      desc = 'The request was forbidden';
+      break;
     case 404:
-      return 'The resource was not found';
+      desc = 'The resource was not found';
+      break;
     case 500:
     case 503:
-      return "The server failed with status code $statusCode";
+      desc = "The server failed with status code $statusCode";
+      break;
     default:
-      return statusCode >= 500 ? 'The server was unreachable' : "The server returned status code $statusCode";
+      desc = statusCode >= 500 ? 'The server was unreachable' : "The server returned status code $statusCode";
   }
+  return InternalErrors.httpError.add(desc: desc);
 }
 
 // Default Network Client
