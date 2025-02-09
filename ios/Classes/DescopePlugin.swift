@@ -208,13 +208,14 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         var challenge: Data
         var rpId: String
         var user: (id: Data, name: String, displayName: String?)
-        
+
         init(from options: String) throws {
             guard let root = try? JSONDecoder().decode(Root.self, from: Data(options.utf8)) else { throw PasskeyError.failed("Invalid passkey register options") }
             guard let challengeData = Data(base64URLEncoded: root.publicKey.challenge) else { throw PasskeyError.failed("Invalid passkey challenge") }
+            guard let userId = Data(base64URLEncoded: root.publicKey.user.id) else { throw PasskeyError.failed("Invalid passkey user id") }
             challenge = challengeData
             rpId = root.publicKey.rp.id
-            user = (id: Data(root.publicKey.user.id.utf8), name: root.publicKey.user.name, displayName: root.publicKey.user.displayName)
+            user = (id: userId, name: root.publicKey.user.name, displayName: root.publicKey.user.displayName)
         }
         
         private struct Root: Codable {
@@ -312,21 +313,30 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         @available(iOS 15.0, *)
         static func encodedResponse(from credential: ASAuthorizationCredential) throws -> String {
             guard let assertion = credential as? ASAuthorizationPlatformPublicKeyCredentialAssertion else { throw PasskeyError.failed("Invalid assertion credential type") }
-            
+
             let credentialId = assertion.credentialID.base64URLEncodedString()
             let authenticatorData = assertion.rawAuthenticatorData.base64URLEncodedString()
             let clientDataJSON = assertion.rawClientDataJSON.base64URLEncodedString()
-            guard let userHandle = String(bytes: assertion.userID, encoding: .utf8) else { throw PasskeyError.failed("Invalid user handle") }
+            let userHandle = try parseUserHandle(assertion.userID)
             let signature = assertion.signature.base64URLEncodedString()
-            
+
             let response = Response(authenticatorData: authenticatorData, clientDataJSON: clientDataJSON, signature: signature, userHandle: userHandle)
             let object = AssertionFinish(id: credentialId, rawId: credentialId, response: response)
-            
+
             guard let encodedObject = try? JSONEncoder().encode(object), let encoded = String(bytes: encodedObject, encoding: .utf8) else { throw PasskeyError.failed("Invalid assertion finish object") }
             return encoded
         }
+
+        static func parseUserHandle(_ value: Data) throws -> String {
+            guard let stringValue = String(bytes: value, encoding: .utf8) else { throw PasskeyError.failed("Invalid user handle") }
+            if stringValue.count >= 30, stringValue.hasPrefix("V") {
+                return stringValue
+            }
+            return value.base64URLEncodedString()
+        }
+
     }
-    
+
     // Storage
     
     private func loadItem(call: FlutterMethodCall, result: FlutterResult) {
