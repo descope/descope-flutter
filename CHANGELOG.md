@@ -1,3 +1,7 @@
+# 0.9.3
+
+- Fix issue with passkey userId encoding/decoding
+
 # 0.9.2
 
 - Add exception parsing from server response
