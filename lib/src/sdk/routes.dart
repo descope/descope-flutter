@@ -550,6 +550,9 @@ abstract class DescopeSso {
 /// with the `webcredentials` service type, whose value matches the top level domain
 /// you configured in the Descope console earlier.
 abstract class DescopePasskey {
+  /// Checks whether Passkeys are supported on this device
+  Future<bool> isSupported();
+
   /// Authenticates a new user by creating a new passkey.
   ///
   /// This function creates a new user identified by [loginId] and

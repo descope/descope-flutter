@@ -21,6 +21,21 @@ class Passkey implements DescopePasskey {
   Passkey(this.client);
 
   @override
+  Future<bool> isSupported() async {
+    try {
+      if (kIsWeb) {
+        return _webPasskeys.isSupported();
+      } else if (Platform.isIOS || Platform.isAndroid) {
+        return await _mChannel.invokeMethod('passkeySupported', {});
+      } else {
+        return false;
+      }
+    } on Exception {
+      throw DescopeException.passkeyFailed.add(message: 'Failed to determine if passkeys are supported');
+    }
+  }
+
+  @override
   Future<AuthenticationResponse> signUp({required String loginId, SignUpDetails? details}) async {
     _ensureSupportedPlatform();
 

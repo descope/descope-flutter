@@ -6,6 +6,15 @@ import '/src/internal/others/error.dart';
 import '/src/types/error.dart';
 
 class WebPasskeys {
+ bool isSupported() {
+    try {
+      _setupJs();
+      return descopeIsWebAuthnSupported();
+    } catch (e) {
+      throw DescopeException.passkeyFailed.add(message: e.toString());
+    }
+  }
+
   String getOrigin() {
     final origin = window.origin;
     if (origin != null) {
@@ -33,6 +42,9 @@ void _setupJs() async {
   scriptElement.text = _webauthnScript;
   document.head?.children.add(scriptElement);
 }
+
+@JS()
+external dynamic descopeIsWebAuthnSupported();
 
 @JS()
 external dynamic descopeWebAuthnCreate(String options);
