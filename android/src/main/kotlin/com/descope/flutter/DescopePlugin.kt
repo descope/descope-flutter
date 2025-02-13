@@ -46,6 +46,7 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
     when (call.method) {
       "startFlow" -> startFlow(call, result)
       "oauthNative" -> oauthNative(call, result)
+      "passkeySupported" -> isPasskeySupported(result)
       "passkeyOrigin" -> passkeyOrigin(result)
       "passkeyCreate" -> createPasskey(call, result)
       "passkeyAuthenticate" -> usePasskey(call, result)
@@ -130,6 +131,10 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
 
   // Passkeys
 
+  private fun isPasskeySupported(res: Result) {
+    res.success(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P)
+  }
+
   private fun passkeyOrigin(res: Result) {
     val context = this.context ?: return res.error("NULLCONTEXT", "Context is null", null)
     try {
@@ -200,7 +205,7 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
 
   private fun prepareRegisterResponse(resultCode: Int, intent: Intent?): String {
     val credential = extractCredential(resultCode, intent)
-    val rawId = credential.rawId.toBase64()
+    val rawId = credential.rawId?.toBase64()
     val response = credential.response as AuthenticatorAttestationResponse
     return JSONObject().apply {
       put("id", rawId)
@@ -215,7 +220,7 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
 
   private fun prepareAssertionResponse(resultCode: Int, intent: Intent?): String {
     val credential = extractCredential(resultCode, intent)
-    val rawId = credential.rawId.toBase64()
+    val rawId = credential.rawId?.toBase64()
     val response = credential.response as AuthenticatorAssertionResponse
     return JSONObject().apply {
       put("id", rawId)

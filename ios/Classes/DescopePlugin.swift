@@ -27,6 +27,8 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             startFlow(call: call, result: result)
         case "oauthNative":
             oauthNative(call: call, result: result)
+        case "passkeySupported":
+            passkeySupported(result: result)
         case "passkeyOrigin":
             result("") // No need for passkey origin on iOS
         case "passkeyCreate":
@@ -87,6 +89,13 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     }
     
     // Passkeys
+    
+    private func passkeySupported(result: @escaping FlutterResult) {
+        if #available(iOS 15, *) {
+            result(true)
+        }
+        result(false)
+    }
     
     private func createPasskey(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard #available(iOS 15, *) else { return result(FlutterError(code: "OSVERSION", message: "Passkeys require iOS 15 and above", details: nil)) }

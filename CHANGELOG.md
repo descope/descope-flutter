@@ -1,3 +1,7 @@
+# 0.9.4
+
+- Add the ability to explicitly check if passkeys are supported on the device
+
 # 0.9.3
 
 - Fix issue with passkey userId encoding/decoding
