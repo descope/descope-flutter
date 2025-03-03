@@ -1,31 +1,40 @@
 package com.descope.flutter
 
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
+import androidx.credentials.CreateCredentialRequest
+import androidx.credentials.CreatePublicKeyCredentialRequest
+import androidx.credentials.CreatePublicKeyCredentialResponse
 import androidx.credentials.CredentialManager
 import androidx.credentials.CredentialManagerCallback
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
-import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.GetPublicKeyCredentialOption
+import androidx.credentials.PublicKeyCredential
 import androidx.credentials.exceptions.GetCredentialException
-import com.google.android.gms.fido.Fido
-import com.google.android.gms.fido.fido2.api.common.AuthenticatorAssertionResponse
-import com.google.android.gms.fido.fido2.api.common.AuthenticatorAttestationResponse
-import com.google.android.gms.fido.fido2.api.common.AuthenticatorErrorResponse
-import com.google.android.gms.fido.fido2.api.common.ErrorCode.ABORT_ERR
-import com.google.android.gms.fido.fido2.api.common.ErrorCode.TIMEOUT_ERR
-import com.google.android.gms.fido.fido2.api.common.PublicKeyCredential
-import com.google.android.gms.fido.fido2.api.common.PublicKeyCredentialType
+import androidx.credentials.exceptions.CreateCredentialCancellationException
+import androidx.credentials.exceptions.CreateCredentialInterruptedException
+import androidx.credentials.exceptions.CreateCredentialNoCreateOptionException
+import androidx.credentials.exceptions.CreateCredentialProviderConfigurationException
+import androidx.credentials.exceptions.CreateCredentialUnknownException
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialInterruptedException
+import androidx.credentials.exceptions.GetCredentialProviderConfigurationException
+import androidx.credentials.exceptions.GetCredentialUnknownException
+import androidx.credentials.exceptions.NoCredentialException
+import androidx.credentials.exceptions.publickeycredential.CreatePublicKeyCredentialDomException
+import androidx.credentials.exceptions.publickeycredential.GetPublicKeyCredentialDomException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import org.json.JSONObject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -148,18 +157,11 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   private fun createPasskey(call: MethodCall, res: Result) {
     val context = this.context ?: return res.error("NULLCONTEXT", "Context is null", null)
     val options = call.argument<String>("options") ?: return res.error("MISSINGARGS", "'options' is required for createPasskey", null)
-    performRegister(context, options) { pendingIntent, e ->
+    performRegister(context, options) { json, e ->
       if (e != null) {
         res.error("FAILED", e.message, null)
-      } else if (pendingIntent != null) {
-        activityHelper.startHelperActivity(context, pendingIntent) { code, intent ->
-          try {
-            val json = prepareRegisterResponse(code, intent)
-            res.success(json)
-          } catch (e: Exception) {
-            res.error("FAILED", e.message, null)
-          }
-        }
+      } else if (json != null) {
+        res.success(json)
       } else {
         res.error("FAILED", "Unxepected result when registering passkey", null)
       }
@@ -169,95 +171,69 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   private fun usePasskey(call: MethodCall, res: Result) {
     val context = this.context ?: return res.error("NULLCONTEXT", "Context is null", null)
     val options = call.argument<String>("options") ?: return res.error("MISSINGARGS", "'options' is required for usePasskey", null)
-    performAssertion(context, options) { pendingIntent, e ->
+    performAssertion(context, options) { json, e ->
       if (e != null) {
         res.error("FAILED", e.message, null)
-      } else if (pendingIntent != null) {
-        activityHelper.startHelperActivity(context, pendingIntent) { code, intent ->
-          try {
-            val json = prepareAssertionResponse(code, intent)
-            res.success(json)
-          } catch (e: Exception) {
-            res.error("FAILED", e.message, null)
-          }
-        }
+      } else if (json != null) {
+        res.success(json)
       } else {
-        res.error("FAILED", "Unxepected result when registering passkey", null)
+        res.error("FAILED", "Unxepected result when using passkey", null)
       }
     }
   }
 
-  private fun performRegister(context: Context, options: String, callback: (PendingIntent?, Exception?) -> Unit) {
-    val client = Fido.getFido2ApiClient(context)
-    val opts = parsePublicKeyCredentialCreationOptions(convertOptions(options))
-    val task = client.getRegisterPendingIntent(opts)
-    task.addOnSuccessListener { callback(it, null) }
-    task.addOnFailureListener { callback(null, it) }
-  }
-
-  private fun performAssertion(context: Context, options: String, callback: (PendingIntent?, Exception?) -> Unit) {
-    val client = Fido.getFido2ApiClient(context)
-    val opts = parsePublicKeyCredentialRequestOptions(convertOptions(options))
-    val task = client.getSignPendingIntent(opts)
-    task.addOnSuccessListener { callback(it, null) }
-    task.addOnFailureListener { callback(null, it) }
-  }
-
-  private fun prepareRegisterResponse(resultCode: Int, intent: Intent?): String {
-    val credential = extractCredential(resultCode, intent)
-    val rawId = credential.rawId?.toBase64()
-    val response = credential.response as AuthenticatorAttestationResponse
-    return JSONObject().apply {
-      put("id", rawId)
-      put("type", PublicKeyCredentialType.PUBLIC_KEY.toString())
-      put("rawId", rawId)
-      put("response", JSONObject().apply {
-        put("clientDataJson", response.clientDataJSON.toBase64())
-        put("attestationObject", response.attestationObject.toBase64())
-      })
-    }.toString()
-  }
-
-  private fun prepareAssertionResponse(resultCode: Int, intent: Intent?): String {
-    val credential = extractCredential(resultCode, intent)
-    val rawId = credential.rawId?.toBase64()
-    val response = credential.response as AuthenticatorAssertionResponse
-    return JSONObject().apply {
-      put("id", rawId)
-      put("type", PublicKeyCredentialType.PUBLIC_KEY.toString())
-      put("rawId", rawId)
-      put("response", JSONObject().apply {
-        put("clientDataJson", response.clientDataJSON.toBase64())
-        put("authenticatorData", response.authenticatorData.toBase64())
-        put("signature", response.signature.toBase64())
-        response.userHandle?.let { put("userHandle", it.toBase64()) }
-      })
-    }.toString()
-  }
-
-  private fun extractCredential(resultCode: Int, intent: Intent?): PublicKeyCredential {
-    // check general response
-    if (resultCode == RESULT_CANCELED) throw Exception("Passkey canceled")
-    if (intent == null) throw Exception("Null intent received from ")
-
-    // get the credential from the intent extra
-    val credential = try {
-      val byteArray = intent.getByteArrayExtra("FIDO2_CREDENTIAL_EXTRA")!!
-      PublicKeyCredential.deserializeFromBytes(byteArray)
-    } catch (e: Exception) {
-      throw Exception("Failed to extract credential from intent")
-    }
-
-    // check for any logical failures
-    (credential.response as? AuthenticatorErrorResponse)?.run {
-      when (errorCode) {
-        ABORT_ERR -> throw Exception("Passkey canceled")
-        TIMEOUT_ERR -> throw Exception("The operation timed out")
-        else -> throw Exception("Passkey authentication failed (${errorCode.name}: $errorMessage)")
+  private fun performRegister(context: Context, options: String, callback: (String?, Exception?) -> Unit) {
+    val publicKey = convertOptions(options)
+    val request = CreatePublicKeyCredentialRequest(publicKey)
+    GlobalScope.launch(Dispatchers.Main) {
+      try {
+        val credentialManager = CredentialManager.create(context)
+        val result = credentialManager.createCredential(context, request as CreateCredentialRequest) as CreatePublicKeyCredentialResponse
+        callback(result.registrationResponseJson, null)
+      } catch (e: CreateCredentialCancellationException) {
+        callback(null, Exception("Passkey canceled"))
+      } catch (e: CreatePublicKeyCredentialDomException) {
+        callback(null, Exception("Error signing registration"))
+      } catch (e: CreateCredentialInterruptedException) {
+        callback(null, Exception("Please try again"))
+      } catch (e: CreateCredentialProviderConfigurationException) {
+        callback(null, Exception("Application might be improperly configured"))
+      } catch (e: CreateCredentialNoCreateOptionException) {
+        callback(null, Exception("No option to create credentials"))
+      } catch (e: CreateCredentialUnknownException) {
+        callback(null, Exception("Unknown failure"))
+      } catch (e: Exception) {
+        callback(null, Exception("Unexpected failure"))
       }
     }
+  }
 
-    return credential
+  private fun performAssertion(context: Context, options: String, callback: (String?, Exception?) -> Unit) {
+    val publicKey = convertOptions(options)
+    val option = GetPublicKeyCredentialOption(publicKey)
+    val request = GetCredentialRequest(listOf(option))
+    GlobalScope.launch(Dispatchers.Main) {
+      try {
+        val credentialManager = CredentialManager.create(context)
+        val result = credentialManager.getCredential(context, request)
+        val credential = result.credential as PublicKeyCredential
+        callback(credential.authenticationResponseJson, null)
+      } catch (e: NoCredentialException) {
+        callback(null, Exception("No available credentials"))
+      } catch (e: GetCredentialCancellationException) {
+        callback(null, Exception("Passkey canceled"))
+      } catch (e: GetPublicKeyCredentialDomException) {
+        callback(null, Exception("Error signing assertion"))
+      } catch (e: GetCredentialInterruptedException) {
+        callback(null, Exception("Please try again"))
+      } catch (e: GetCredentialProviderConfigurationException) {
+        callback(null, Exception("Application might be improperly configured"))
+      } catch (e: GetCredentialUnknownException) {
+        callback(null, Exception("Unknown failure"))
+      } catch (e: Exception) {
+        callback(null, Exception("Unexpected failure"))
+      }
+    }
   }
 
   // Storage
