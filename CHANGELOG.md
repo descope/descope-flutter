@@ -1,3 +1,7 @@
+# 0.9.5
+
+- Migrate Android passkey implementation to use `CredentialManager` instead of `Fido2`
+
 # 0.9.4
 
 - Add the ability to explicitly check if passkeys are supported on the device
