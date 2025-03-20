@@ -9,17 +9,22 @@ part of 'user.dart';
 DescopeUser _$DescopeUserFromJson(Map<String, dynamic> json) => DescopeUser(
       json['userId'] as String,
       (json['loginIds'] as List<dynamic>).map((e) => e as String).toList(),
-      json['createdAt'] as int,
+      (json['createdAt'] as num).toInt(),
       json['name'] as String?,
       json['picture'] == null ? null : Uri.parse(json['picture'] as String),
       json['email'] as String?,
       json['isVerifiedEmail'] as bool,
       json['phone'] as String?,
       json['isVerifiedPhone'] as bool,
-      json['customAttributes'] == null ? <String, dynamic>{} : json['customAttributes'] as Map<String, dynamic>,
+      json['customAttributes'] as Map<String, dynamic>,
       json['givenName'] as String?,
       json['middleName'] as String?,
       json['familyName'] as String?,
+      json['hasPassword'] as bool,
+      json['status'] as String,
+      (json['roleNames'] as List<dynamic>).map((e) => e as String).toList(),
+      (json['ssoAppIds'] as List<dynamic>).map((e) => e as String).toList(),
+      (json['oauth'] as List<dynamic>).map((e) => e as String).toList(),
     );
 
 Map<String, dynamic> _$DescopeUserToJson(DescopeUser instance) =>
@@ -37,4 +42,9 @@ Map<String, dynamic> _$DescopeUserToJson(DescopeUser instance) =>
       'givenName': instance.givenName,
       'middleName': instance.middleName,
       'familyName': instance.familyName,
+      'hasPassword': instance.hasPassword,
+      'status': instance.status,
+      'roleNames': instance.roleNames,
+      'ssoAppIds': instance.ssoAppIds,
+      'oauth': instance.oauthProviders,
     };

@@ -25,11 +25,18 @@ UserResponse _$UserResponseFromJson(Map<String, dynamic> json) => UserResponse(
       json['verifiedEmail'] as bool,
       json['phone'] as String?,
       json['verifiedPhone'] as bool,
-      json['createdTime'] as int,
+      (json['createdTime'] as num).toInt(),
       json['customAttributes'] as Map<String, dynamic>?,
       json['givenName'] as String?,
       json['middleName'] as String?,
       json['familyName'] as String?,
+      json['password'] as bool,
+      json['status'] as String,
+      (json['roleNames'] as List<dynamic>).map((e) => e as String).toList(),
+      (json['ssoAppIds'] as List<dynamic>).map((e) => e as String).toList(),
+      (json['OAuth'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, e as bool),
+      ),
     );
 
 MaskedAddressServerResponse _$MaskedAddressServerResponseFromJson(
@@ -42,7 +49,7 @@ MaskedAddressServerResponse _$MaskedAddressServerResponseFromJson(
 PasswordPolicyServerResponse _$PasswordPolicyServerResponseFromJson(
         Map<String, dynamic> json) =>
     PasswordPolicyServerResponse(
-      json['minLength'] as int,
+      (json['minLength'] as num).toInt(),
       json['lowercase'] as bool,
       json['uppercase'] as bool,
       json['number'] as bool,

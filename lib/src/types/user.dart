@@ -88,7 +88,22 @@ class DescopeUser {
   /// Optional user's family name.
   final String? familyName;
 
-  DescopeUser(this.userId, this.loginIds, this.createdAt, this.name, this.picture, this.email, this.isVerifiedEmail, this.phone, this.isVerifiedPhone, this.customAttributes, this.givenName, this.middleName, this.familyName);
+  /// Whether the user has a password set or not.
+  final bool hasPassword;
+
+  /// The user's status, one of 'enabled', 'disabled' or 'invited'.
+  String status;
+
+  /// A list of role names the user is associated with. Can be empty.
+  List<String> roleNames;
+
+  /// A list of SSO App IDs the user is associated with. Can be empty.
+  List<String> ssoAppIds;
+
+  /// A list of OAuth providers the user has used. Can be empty.
+  List<String> oauthProviders;
+
+  DescopeUser(this.userId, this.loginIds, this.createdAt, this.name, this.picture, this.email, this.isVerifiedEmail, this.phone, this.isVerifiedPhone, this.customAttributes, this.givenName, this.middleName, this.familyName, this.hasPassword, this.status, this.roleNames, this.ssoAppIds, this.oauthProviders);
 
   static var fromJson = _$DescopeUserFromJson;
   static var toJson = _$DescopeUserToJson;

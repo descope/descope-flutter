@@ -34,7 +34,10 @@ extension ConvertUserResponse on UserResponse {
       uri = Uri.parse(pic);
     }
 
-    return DescopeUser(userId, loginIds, createdTime, name, uri, emailValue, verifiedEmail, phoneValue, verifiedPhone, caValue, givenName, middleName, familyName);
+    List<String> providers = [];
+    providers.addAll(oauth?.keys ?? []);
+
+    return DescopeUser(userId, loginIds, createdTime, name, uri, emailValue, verifiedEmail, phoneValue, verifiedPhone, caValue, givenName, middleName, familyName, password, status, roleNames, ssoAppIds, providers);
   }
 }
 

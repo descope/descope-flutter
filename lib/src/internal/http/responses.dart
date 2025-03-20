@@ -47,8 +47,13 @@ class UserResponse {
   String? givenName;
   String? middleName;
   String? familyName;
+  bool password;
+  String status;
+  List<String> roleNames;
+  List<String> ssoAppIds;
+  Map<String, bool>? oauth;
 
-  UserResponse(this.userId, this.loginIds, this.name, this.picture, this.email, this.verifiedEmail, this.phone, this.verifiedPhone, this.createdTime, this.customAttributes, this.givenName, this.middleName, this.familyName);
+  UserResponse(this.userId, this.loginIds, this.name, this.picture, this.email, this.verifiedEmail, this.phone, this.verifiedPhone, this.createdTime, this.customAttributes, this.givenName, this.middleName, this.familyName, this.password, this.status, this.roleNames, this.ssoAppIds, this.oauth);
   static var fromJson = _$UserResponseFromJson;
   static var decoder = _ignoreHeaders(fromJson);
 }
