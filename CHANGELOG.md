@@ -1,3 +1,7 @@
+# 0.9.6
+
+- Add more fields to the `DescopeUser`
+
 # 0.9.5
 
 - Migrate Android passkey implementation to use `CredentialManager` instead of `Fido2`
