@@ -1,6 +1,6 @@
 name: descope
 description: A Flutter package for working with the Descope API.
-version: 0.9.5
+version: 0.9.6
 homepage: https://www.descope.com
 repository: https://github.com/descope/descope-flutter
 issue_tracker: https://github.com/descope/descope-flutter/issues
