@@ -339,10 +339,21 @@ class DescopeClient extends HttpClient {
   }
 
   Future<PasskeyStartServerResponse> passkeyAddStart(String loginId, String origin, String refreshJwt) {
-    return post('auth/webauthn/update/start', PasskeyStartServerResponse.decoder, headers: authorization(refreshJwt), body: {
+    Map<String, dynamic> body = {
       'loginId': loginId,
       'origin': origin,
-    });
+    };
+    if (!kIsWeb && Platform.isAndroid) {
+      body['passkeyOptions'] = {
+        'attestation': 'none',
+        'authenticatorSelection': {
+          'authenticatorAttachment': 'platform',
+          'userVerification': 'required',
+          'residentKey': 'required',
+        }
+      };
+    }
+    return post('auth/webauthn/update/start', PasskeyStartServerResponse.decoder, headers: authorization(refreshJwt), body: body);
   }
 
   Future<void> passkeyAddFinish(String transactionId, String response) {
