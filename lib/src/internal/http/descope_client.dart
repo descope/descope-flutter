@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 
 import '/src/internal/others/error.dart';
 import '/src/sdk/config.dart';
@@ -276,11 +279,22 @@ class DescopeClient extends HttpClient {
   // Passkeys
 
   Future<PasskeyStartServerResponse> passkeySignUpStart(String loginId, SignUpDetails? details, String origin) {
-    return post('auth/webauthn/signup/start', PasskeyStartServerResponse.decoder, body: {
+    final body = {
       'loginId': loginId,
       'user': details?.toMap(),
       'origin': origin,
-    });
+    };
+    if (!kIsWeb && Platform.isAndroid) {
+      body['passkeyOptions'] =  {
+        'attestation': 'none',
+        'authenticatorSelection': {
+          'authenticatorAttachment': 'platform',
+          'userVerification': 'required',
+          'residentKey': 'required',
+        }
+      };
+    }
+    return post('auth/webauthn/signup/start', PasskeyStartServerResponse.decoder, body: body);
   }
 
   Future<JWTServerResponse> passkeySignUpFinish(String transactionId, String response) {
@@ -306,11 +320,22 @@ class DescopeClient extends HttpClient {
   }
 
   Future<PasskeyStartServerResponse> passkeySignUpInStart(String loginId, String origin, SignInOptions? options) {
-    return post('auth/webauthn/signup-in/start', PasskeyStartServerResponse.decoder, headers: authorization(options?.refreshJwt), body: {
+    final body = {
       'loginId': loginId,
       'origin': origin,
       'loginOptions': options?.toMap(),
-    });
+    };
+    if (!kIsWeb && Platform.isAndroid) {
+      body['passkeyOptions'] =  {
+        'attestation': 'none',
+        'authenticatorSelection': {
+          'authenticatorAttachment': 'platform',
+          'userVerification': 'required',
+          'residentKey': 'required',
+        }
+      };
+    }
+    return post('auth/webauthn/signup-in/start', PasskeyStartServerResponse.decoder, headers: authorization(options?.refreshJwt), body: body);
   }
 
   Future<PasskeyStartServerResponse> passkeyAddStart(String loginId, String origin, String refreshJwt) {
