@@ -16,13 +16,15 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         let eventChannel = FlutterEventChannel(name: "descope_flutter/events", binaryMessenger: registrar.messenger())
         
         let instance = DescopePlugin()
-        
+
         eventChannel.setStreamHandler(instance)
         registrar.addMethodCallDelegate(instance, channel: methodChannel)
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
+        case "getSystemInfo":
+            getSystemInfo(result: result)
         case "startFlow":
             startFlow(call: call, result: result)
         case "oauthNative":
@@ -44,6 +46,18 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         default:
             result(FlutterMethodNotImplemented)
         }
+    }
+
+    // General
+
+    private func getSystemInfo(result: @escaping FlutterResult) {
+        result([
+            "platformName": SystemInfo.osName,
+            "platformVersion": SystemInfo.osVersion,
+            "appName": SystemInfo.appName,
+            "appVersion": SystemInfo.appVersion,
+            "device": SystemInfo.device,
+        ])
     }
     
     // Flows

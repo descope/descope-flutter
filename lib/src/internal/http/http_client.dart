@@ -21,11 +21,13 @@ class HttpClient {
   // Convenience functions
 
   Future<T> get<T>(String route, ResponseDecoder<T> decoder, {Map<String, String> headers = const {}, Map<String, String?> params = const {}}) async {
+    await lazyInit();
     final request = makeRequest(route, 'GET', headers, params.compacted(), null);
     return call(request, decoder);
   }
 
   Future<T> post<T>(String route, ResponseDecoder<T> decoder, {Map<String, String> headers = const {}, Map<String, String?> params = const {}, Map<String, dynamic> body = const {}}) async {
+    await lazyInit();
     String json;
     try {
       json = jsonEncode(body.compacted());
@@ -47,6 +49,10 @@ class HttpClient {
 
   DescopeException? exceptionFromResponse(String response) {
     return null;
+  }
+
+  Future<void> lazyInit() async {
+    // This function is called before a request is made to ensure that the client is initialized
   }
 
   // Internal

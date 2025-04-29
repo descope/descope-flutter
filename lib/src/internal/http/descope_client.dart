@@ -1,4 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 import '/src/internal/others/error.dart';
 import '/src/sdk/config.dart';
@@ -9,7 +13,10 @@ import 'http_client.dart';
 import 'responses.dart';
 
 class DescopeClient extends HttpClient {
+  static const _mChannel = MethodChannel('descope_flutter/methods');
+
   final DescopeConfig config;
+  Map<String, String> systemInfoHeaders = {};
 
   DescopeClient(this.config) : super(config.baseUrl ?? baseUrlForProjectId(config.projectId), config.logger, config.networkClient);
 
@@ -361,6 +368,8 @@ class DescopeClient extends HttpClient {
         'Authorization': 'Bearer ${config.projectId}',
         'x-descope-sdk-name': 'flutter',
         'x-descope-sdk-version': DescopeSdk.version,
+        'x-descope-project-id': config.projectId,
+        ...systemInfoHeaders,
       };
 
   @override
@@ -376,8 +385,31 @@ class DescopeClient extends HttpClient {
     }
   }
 
+  @override
+  Future<void> lazyInit() async {
+    // run only once
+    if (systemInfoHeaders.isNotEmpty || kIsWeb || (!Platform.isIOS && !Platform.isAndroid)) return;
+    try {
+      Map<Object?, Object?> systemInfo = await _mChannel.invokeMethod('getSystemInfo');
+      addSystemInfoHeader("x-descope-platform-name", systemInfo["platformName"]);
+      addSystemInfoHeader("x-descope-platform-version", systemInfo["platformVersion"]);
+      addSystemInfoHeader("x-descope-app-name", systemInfo["appName"]);
+      addSystemInfoHeader("x-descope-app-version", systemInfo["appVersion"]);
+      addSystemInfoHeader("x-descope-device", systemInfo["device"]);
+      config.logger?.log(level: DescopeLogger.info, message: "Gathered system info before first request");
+    } catch (e) {
+      config.logger?.log(level: DescopeLogger.error, message: "Unable to get system information", values: [e]);
+    }
+  }
+
   Map<String, String> authorization(String? value) {
     return value != null ? {'Authorization': 'Bearer ${config.projectId}:$value'} : {};
+  }
+
+  void addSystemInfoHeader(String key, Object? value) {
+    if (value != null && value is String) {
+      systemInfoHeaders[key] = value;
+    }
   }
 }
 

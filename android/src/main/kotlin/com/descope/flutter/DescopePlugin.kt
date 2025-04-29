@@ -53,6 +53,7 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   // MethodCallHandler
   override fun onMethodCall(call: MethodCall, result: Result) {
     when (call.method) {
+      "getSystemInfo" -> getSystemInfo(result)
       "startFlow" -> startFlow(call, result)
       "oauthNative" -> oauthNative(call, result)
       "passkeySupported" -> isPasskeySupported(result)
@@ -64,6 +65,22 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
       "removeItem" -> removeItem(call, result)
       else -> result.notImplemented()
     }
+  }
+
+  // General
+
+  private fun getSystemInfo(res: Result) {
+    val context = this.context ?: return res.error("NULLCONTEXT", "Context is null", null)
+    val systemInfo = DescopeSystemInfo.getInstance(context)
+    val info = mutableMapOf(
+      "platformName" to "android",
+      "platformVersion" to systemInfo.platformVersion,
+    ).apply {
+      systemInfo.appName?.let { put("appName", it) }
+      systemInfo.appVersion?.let { put("appVersion", it) }
+      systemInfo.device?.let { put("device", it) }
+    }
+    res.success(info)
   }
 
   // Flows
