@@ -1,8 +1,9 @@
 import 'dart:io';
-import 'dart:ui_web' as uiweb;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+
+import '/src/internal/others/stubs/stub_uiweb.dart' if (dart.library.js) 'dart:ui_web' as uiweb;
 
 class SystemInfo {
   String platformName = '';
@@ -65,10 +66,6 @@ class SystemInfo {
       systemInfo.platformName = 'firefox';
     } else if (uiweb.browser.isEdge) {
       systemInfo.platformName = 'edge';
-    }
-
-    if (uiweb.browser.isMobile) {
-      systemInfo.platformName = 'mobile ${systemInfo.platformName}';
     }
 
     try {
