@@ -1,9 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:descope/src/internal/others/system_info.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 
 import '/src/internal/others/error.dart';
 import '/src/sdk/config.dart';
