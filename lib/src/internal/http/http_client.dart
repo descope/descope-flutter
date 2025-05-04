@@ -21,13 +21,11 @@ class HttpClient {
   // Convenience functions
 
   Future<T> get<T>(String route, ResponseDecoder<T> decoder, {Map<String, String> headers = const {}, Map<String, String?> params = const {}}) async {
-    await lazyInit();
-    final request = makeRequest(route, 'GET', headers, params.compacted(), null);
+    final request = await makeRequest(route, 'GET', headers, params.compacted(), null);
     return call(request, decoder);
   }
 
   Future<T> post<T>(String route, ResponseDecoder<T> decoder, {Map<String, String> headers = const {}, Map<String, String?> params = const {}, Map<String, dynamic> body = const {}}) async {
-    await lazyInit();
     String json;
     try {
       json = jsonEncode(body.compacted());
@@ -37,7 +35,7 @@ class HttpClient {
     } catch (e) {
       throw InternalErrors.encodeError.add(cause: e);
     }
-    final request = makeRequest(route, 'POST', headers, params.compacted(), json);
+    final request = await makeRequest(route, 'POST', headers, params.compacted(), json);
     return call(request, decoder);
   }
 
@@ -45,14 +43,10 @@ class HttpClient {
 
   String get basePath => '/';
 
-  Map<String, String> get defaultHeaders => {};
+  Future<Map<String, String>> get defaultHeaders async => {};
 
   DescopeException? exceptionFromResponse(String response) {
     return null;
-  }
-
-  Future<void> lazyInit() async {
-    // This function is called before a request is made to ensure that the client is initialized
   }
 
   // Internal
@@ -77,7 +71,7 @@ class HttpClient {
     }
   }
 
-  http.Request makeRequest(String route, String method, Map<String, String> headers, Map<String, String> params, String? body) {
+  Future<http.Request> makeRequest(String route, String method, Map<String, String> headers, Map<String, String> params, String? body) async {
     final url = makeUrl(route, params);
     final request = http.Request(method, url);
     // TODO request.headers['User-Agent'] = '';
@@ -86,7 +80,7 @@ class HttpClient {
       request.headers['Content-Type'] = 'application/json';
       request.body = body;
     }
-    request.headers.addAll(defaultHeaders);
+    request.headers.addAll(await defaultHeaders);
     request.headers.addAll(headers);
     return request;
   }
@@ -142,10 +136,10 @@ DescopeException generalServerError(int statusCode) {
       break;
     case 500:
     case 503:
-      desc = "The server failed with status code $statusCode";
+      desc = 'The server failed with status code $statusCode';
       break;
     default:
-      desc = statusCode >= 500 ? 'The server was unreachable' : "The server returned status code $statusCode";
+      desc = statusCode >= 500 ? 'The server was unreachable' : 'The server returned status code $statusCode';
   }
   return InternalErrors.httpError.add(desc: desc);
 }

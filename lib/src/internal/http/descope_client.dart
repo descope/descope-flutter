@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:descope/src/internal/others/system_info.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -13,10 +14,7 @@ import 'http_client.dart';
 import 'responses.dart';
 
 class DescopeClient extends HttpClient {
-  static const _mChannel = MethodChannel('descope_flutter/methods');
-
   final DescopeConfig config;
-  Map<String, String> systemInfoHeaders = {};
 
   DescopeClient(this.config) : super(config.baseUrl ?? baseUrlForProjectId(config.projectId), config.logger, config.networkClient);
 
@@ -364,63 +362,58 @@ class DescopeClient extends HttpClient {
   String get basePath => '/v1/';
 
   @override
-  Map<String, String> get defaultHeaders => {
-        'Authorization': 'Bearer ${config.projectId}',
-        'x-descope-sdk-name': 'flutter',
-        'x-descope-sdk-version': DescopeSdk.version,
-        'x-descope-project-id': config.projectId,
-        ...systemInfoHeaders,
-      };
+  Future<Map<String, String>> get defaultHeaders async {
+    final values = {
+      'Authorization': 'Bearer ${config.projectId}',
+      'x-descope-sdk-name': 'flutter',
+      'x-descope-sdk-version': DescopeSdk.version,
+      'x-descope-project-id': config.projectId,
+    };
+    final systemInfo = await SystemInfo.get();
+    if (systemInfo.platformName.isNotEmpty) {
+      values['x-descope-platform-name'] = systemInfo.platformName;
+    }
+    if (systemInfo.platformVersion.isNotEmpty) {
+      values['x-descope-platform-version'] = systemInfo.platformVersion;
+    }
+    if (systemInfo.appName.isNotEmpty) {
+      values['x-descope-app-name'] = systemInfo.appName;
+    }
+    if (systemInfo.appVersion.isNotEmpty) {
+      values['x-descope-app-version'] = systemInfo.appVersion;
+    }
+    if (systemInfo.device.isNotEmpty) {
+      values['x-descope-device'] = systemInfo.device;
+    }
+    return values;
+  }
 
   @override
   DescopeException? exceptionFromResponse(String response) {
     try {
       final json = jsonDecode(response) as Map<String, dynamic>;
-      var code = json["errorCode"] as String;
-      var desc = json["errorDescription"] as String?;
-      var message = json["errorMessage"] as String?;
-      return DescopeException(code: code, desc: desc ?? "Descope server error", message: message);
+      var code = json['errorCode'] as String;
+      var desc = json['errorDescription'] as String?;
+      var message = json['errorMessage'] as String?;
+      return DescopeException(code: code, desc: desc ?? 'Descope server error', message: message);
     } catch (e) {
       return null;
-    }
-  }
-
-  @override
-  Future<void> lazyInit() async {
-    // run only once
-    if (systemInfoHeaders.isNotEmpty || kIsWeb || (!Platform.isIOS && !Platform.isAndroid)) return;
-    try {
-      Map<Object?, Object?> systemInfo = await _mChannel.invokeMethod('getSystemInfo');
-      addSystemInfoHeader("x-descope-platform-name", systemInfo["platformName"]);
-      addSystemInfoHeader("x-descope-platform-version", systemInfo["platformVersion"]);
-      addSystemInfoHeader("x-descope-app-name", systemInfo["appName"]);
-      addSystemInfoHeader("x-descope-app-version", systemInfo["appVersion"]);
-      addSystemInfoHeader("x-descope-device", systemInfo["device"]);
-      config.logger?.log(level: DescopeLogger.info, message: "Gathered system info before first request");
-    } catch (e) {
-      config.logger?.log(level: DescopeLogger.error, message: "Unable to get system information", values: [e]);
     }
   }
 
   Map<String, String> authorization(String? value) {
     return value != null ? {'Authorization': 'Bearer ${config.projectId}:$value'} : {};
   }
-
-  void addSystemInfoHeader(String key, Object? value) {
-    if (value != null && value is String) {
-      systemInfoHeaders[key] = value;
-    }
-  }
 }
 
 String baseUrlForProjectId(String projectId) {
-  const prefix = "https://api";
-  const suffix = "descope.com";
+  const prefix = 'https://api';
+  const suffix = 'descope.com';
   if (projectId.length >= 32) {
     final region = projectId.substring(1, 5);
-    return "$prefix.$region.$suffix";
+    return '$prefix.$region.$suffix';
   } else {
-    return "$prefix.$suffix";
+    return '$prefix.$suffix';
   }
 }
 
