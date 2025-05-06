@@ -1,9 +1,9 @@
-import 'dart:io';
+import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import '/src/internal/others/stubs/stub_uiweb.dart' if (dart.library.js) 'dart:ui_web' as uiweb;
+import '/src/internal/others/stubs/stub_html.dart' if (dart.library.js) 'dart:html' hide Platform;
 
 class SystemInfo {
   String platformName = '';
@@ -59,20 +59,35 @@ class SystemInfo {
   static Future<SystemInfo> _createWeb() async {
     final systemInfo = SystemInfo._();
 
-    systemInfo.platformName = 'chromium';
-    if (uiweb.browser.isSafari) {
-      systemInfo.platformName = 'safari';
-    } else if (uiweb.browser.isFirefox) {
-      systemInfo.platformName = 'firefox';
-    } else if (uiweb.browser.isEdge) {
-      systemInfo.platformName = 'edge';
-    }
-
     try {
+      final agent = window.navigator.userAgent;
+      final vendor = window.navigator.vendor;
+
+      // see: https://github.com/flutter/flutter/blob/7cfaf04fa9781d5287af8b348ea1cc1cf5ef701d/engine/src/flutter/lib/web_ui/lib/ui_web/src/ui_web/browser_detection.dart
+      if (vendor == 'Google Inc.') {
+        systemInfo.platformName = 'chromium';
+      } else if (vendor == 'Apple Computer, Inc.') {
+        systemInfo.platformName = 'webkit';
+      } else if (agent.contains('Edg/')) {
+        systemInfo.platformName = 'edge';
+      } else if (vendor == '' && agent.contains('firefox')) {
+        systemInfo.platformName = 'firefox';
+      }
+
       final regexp = RegExp(_versionPattern);
-      final match = regexp.firstMatch(uiweb.browser.userAgent);
+      final match = regexp.firstMatch(agent);
       if (match != null && match.groupCount == 2) {
         systemInfo.platformVersion = match[2] ?? '';
+        if (systemInfo.platformName.isEmpty) {
+          final browser = (match[1] ?? '').toLowerCase();
+          if (browser == 'chrome') {
+            systemInfo.platformName = agent.contains('Edg/') ? 'edge' : 'chromium';
+          } else if (browser == 'safari') {
+            systemInfo.platformName = 'webkit';
+          } else {
+            systemInfo.platformName = browser;
+          }
+        }
       }
     } catch (e) {
       // ignore
