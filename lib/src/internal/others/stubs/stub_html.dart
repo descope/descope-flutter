@@ -1,12 +1,18 @@
 // stub window & document
 class StubWindow {
   final localStorage = <String, String>{};
+  final navigator = StubNavigator();
   String? origin = "";
 }
 
 class StubDocument {
   StubHtml? head;
   StubHtml? body;
+}
+
+class StubNavigator {
+  String userAgent = "";
+  String vendor = "";
 }
 
 class StubHtml {
