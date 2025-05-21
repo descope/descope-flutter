@@ -61,6 +61,7 @@ class SessionStorage implements DescopeSessionStorage {
     if (data != null) {
       try {
         final decoded = jsonDecode(data) as Map<String, dynamic>;
+        _Value.addMissingFieldsIfNeeded(decoded);
         final value = _Value.fromJson(decoded);
         return DescopeSession.fromJwt(value.sessionJwt, value.refreshJwt, value.user);
       } on Exception {
@@ -157,4 +158,13 @@ class _Value {
 
   static var fromJson = _$ValueFromJson;
   static var toJson = _$ValueToJson;
+  static void addMissingFieldsIfNeeded(Map<String, dynamic> data) {
+    final userJson = data['user'] as Map<String, dynamic>;
+    userJson.putIfAbsent('hasPassword', () => false);
+    userJson.putIfAbsent('status', () => 'unknown');
+    userJson.putIfAbsent('roleNames', () => []);
+    userJson.putIfAbsent('ssoAppIds', () => []);
+    userJson.putIfAbsent('oauth', () => []);
+    data['user'] = userJson;
+  }
 }

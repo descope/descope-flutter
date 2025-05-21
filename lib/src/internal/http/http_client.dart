@@ -74,7 +74,6 @@ class HttpClient {
   Future<http.Request> makeRequest(String route, String method, Map<String, String> headers, Map<String, String> params, String? body) async {
     final url = makeUrl(route, params);
     final request = http.Request(method, url);
-    // TODO request.headers['User-Agent'] = '';
     if (body != null) {
       request.encoding = utf8;
       request.headers['Content-Type'] = 'application/json';
