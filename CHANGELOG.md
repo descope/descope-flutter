@@ -1,3 +1,7 @@
+# 0.9.7
+
+- Fix user deserialization
+
 # 0.9.6
 
 - Add more fields to the `DescopeUser`
