@@ -17,7 +17,10 @@ class AuthenticationResponse {
   /// Information about the user.
   final DescopeUser user;
 
-  AuthenticationResponse(this.sessionToken, this.refreshToken, this.isFirstAuthentication, this.user);
+  /// A value for an external token if the authentication returns it.
+  final String? externalToken;
+
+  AuthenticationResponse(this.sessionToken, this.refreshToken, this.isFirstAuthentication, this.user, this.externalToken);
 }
 
 /// Returned from the refreshSession call.

@@ -65,7 +65,7 @@ extension ConvertJWTResponse on JWTServerResponse {
       throw InternalErrors.decodeError.add(message: 'Missing user details');
     }
 
-    return AuthenticationResponse(sessionToken, refreshToken, firstSeen, user.convert());
+    return AuthenticationResponse(sessionToken, refreshToken, firstSeen, user.convert(), externalToken);
   }
 
   RefreshResponse toRefreshResponse() {

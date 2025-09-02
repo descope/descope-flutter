@@ -1,3 +1,7 @@
+# 0.9.8
+
+- Support external token in `AuthenticationResponse`
+
 # 0.9.7
 
 - Fix user deserialization

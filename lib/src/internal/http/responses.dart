@@ -14,8 +14,9 @@ class JWTServerResponse {
   String? refreshJwt;
   UserResponse? user;
   bool firstSeen;
+  String? externalToken;
 
-  JWTServerResponse(this.sessionJwt, this.refreshJwt, this.user, this.firstSeen);
+  JWTServerResponse(this.sessionJwt, this.refreshJwt, this.user, this.firstSeen, this.externalToken);
   static var fromJson = _$JWTServerResponseFromJson;
   static var decoder = _parseHeaders(fromJson, (response, headers) {
     final cookies = _cookiesFromHeaders(headers);
