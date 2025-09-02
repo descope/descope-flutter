@@ -14,6 +14,7 @@ JWTServerResponse _$JWTServerResponseFromJson(Map<String, dynamic> json) =>
           ? null
           : UserResponse.fromJson(json['user'] as Map<String, dynamic>),
       json['firstSeen'] as bool,
+      json['externalToken'] as String?,
     );
 
 UserResponse _$UserResponseFromJson(Map<String, dynamic> json) => UserResponse(
