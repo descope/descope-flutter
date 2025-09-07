@@ -9,6 +9,9 @@ import '/src/session/manager.dart';
 import '/src/session/session.dart';
 
 export '/src/extensions/request.dart';
+export '/src/flow/descope_flow_callbacks.dart' show DescopeFlowCallbacks;
+export '/src/flow/descope_flow_config.dart' show DescopeFlowConfig;
+export '/src/flow/descope_flow_view.dart' show DescopeFlowView, DescopeFlowController;
 export '/src/sdk/config.dart' show DescopeConfig, DescopeLogger, DescopeNetworkClient;
 export '/src/sdk/routes.dart';
 export '/src/sdk/sdk.dart' show DescopeSdk;

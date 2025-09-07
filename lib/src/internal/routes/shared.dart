@@ -26,6 +26,10 @@ extension ConvertUserResponse on UserResponse {
   DescopeUser convert() {
     final emailValue = (email ?? '').isNotEmpty ? email : null;
     final phoneValue = (phone ?? '').isNotEmpty ? phone : null;
+    final nameValue = (name ?? '').isNotEmpty ? name : null;
+    final givenNameValue = (givenName ?? '').isNotEmpty ? givenName : null;
+    final middleNameValue = (middleName ?? '').isNotEmpty ? middleName : null;
+    final familyNameValue = (familyName ?? '').isNotEmpty ? familyName : null;
     final caValue = customAttributes ?? <String, dynamic>{};
 
     Uri? uri;
@@ -37,7 +41,7 @@ extension ConvertUserResponse on UserResponse {
     List<String> providers = [];
     providers.addAll(oauth?.keys ?? []);
 
-    return DescopeUser(userId, loginIds, createdTime, name, uri, emailValue, verifiedEmail, phoneValue, verifiedPhone, caValue, givenName, middleName, familyName, password, status, roleNames, ssoAppIds, providers);
+    return DescopeUser(userId, loginIds, createdTime, nameValue, uri, emailValue, verifiedEmail, phoneValue, verifiedPhone, caValue, givenNameValue, middleNameValue, familyNameValue, password, status, roleNames, ssoAppIds, providers);
   }
 }
 

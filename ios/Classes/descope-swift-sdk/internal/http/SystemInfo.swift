@@ -27,7 +27,7 @@ private func makeAppName() -> String? {
 
 private func makeAppVersion() -> String? {
     guard let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String, !version.isEmpty else { return nil }
-    guard let build = Bundle.main.object(forInfoDictionaryKey: kCFBundleVersionKey as String) as? String, !build.isEmpty else { return nil }
+    guard let build = Bundle.main.object(forInfoDictionaryKey: kCFBundleVersionKey as String) as? String, !build.isEmpty else { return version }
     return "\(version).\(build)"
 }
 
