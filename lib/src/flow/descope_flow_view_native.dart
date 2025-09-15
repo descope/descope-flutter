@@ -199,8 +199,10 @@ class _DescopeFlowViewState extends State<DescopeFlowView> {
   void _resumeFromDeepLink(Uri uri) {
     // only supported on mobile platforms
     if (_rejectNonMobilePlatform()) return;
-    // unfortunately the URI encoding may be unpredictable, so we need to
-    // make sure to encode the URL properly before passing it to the native side.
+    // unfortunately the URI encoding may be unpredictable, as Flutter seems to
+    // pass the URL with only '#' unencoded, while all other characters seem to remain percent encoded.
+    // re-encoding the entire URI doesn't solve this, at least at the time of writing,
+    // so manual fixing of this bug is required before passing it to the native side.
     final url = uri.toString().replaceAll("#", "%23");
     _channel?.invokeMethod("resumeFromDeepLink", {'url': url});
   }
