@@ -1,3 +1,8 @@
+# 0.9.9
+
+- Introducing the `DescopeFlowView` widget for seamless integration of Descope Flows in Flutter applications. Available for both Android and iOS platforms.
+- `DescopeFlow` is now deprecated in favor of `DescopeFlowView`, however, it is still available for backward compatibility, and for non-mobile platforms like web.
+
 # 0.9.8
 
 - Support external token in `AuthenticationResponse`
