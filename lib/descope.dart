@@ -63,6 +63,7 @@ class Descope {
   }
 
   /// Authenticate using an authentication flow
+  @Deprecated('When targeting iOS and Android please use DescopeFlowView. Other platforms will be supported soon, until then DescopeFlow is still available.')
   static DescopeFlow get flow => _sdk.flow;
 
   /// General functions.

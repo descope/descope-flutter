@@ -61,6 +61,7 @@ abstract class DescopeAuth {
 /// and `Web Components` on the web.
 /// If targeting Android you need to set up `Android App Links` in order to communicate back
 /// to the application. Read more about it in the README under the `Running Flows` section.
+@Deprecated('When targeting iOS and Android please use DescopeFlowView. Other platforms will be supported soon, until then DescopeFlow is still available.')
 abstract class DescopeFlow {
 
   /// Starts a user authentication flow.
