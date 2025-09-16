@@ -225,7 +225,7 @@ need us to add any entries to make your code simpler.
 
 ## Running Flows
 
-**Important Note**: `DescopeFlowView` is only available on iOS and Android platforms. Other platforms can use, the [previous implementation of flows](https://github.com/descope/descope-flutter/blob/main/lib/src/sdk/routes.dart#L52) until `DescopeFlowView` is supported.
+**Important Note**: `DescopeFlowView` is only available on iOS and Android platforms. Other platforms can still use the [previous implementation of flows](https://github.com/descope/descope-flutter/blob/main/lib/src/sdk/routes.dart#L52) until `DescopeFlowView` is supported.
 
 We can authenticate users by building and running Flows. Flows are built in the Descope
 [flow editor](https://app.descope.com/flows). The editor allows you to easily
