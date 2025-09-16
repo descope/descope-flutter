@@ -1,0 +1,35 @@
+// Regenerate by running:
+//     brew install sourcery
+//     sourcery --parseDocumentation --sources src/sdk/Routes.swift --templates src/sdk/Callbacks.stencil --output src/sdk/Callbacks.swift
+
+// Convenience functions for working with completion handlers.
+
+import Foundation
+
+{% for protocol in types.protocols %}
+public extension {{ protocol.name }} {
+    {% for method in protocol.methods %}
+    {% for line in method.documentation %}
+    /// {{ line }}
+    {% endfor %}
+    {% for key, value in method.attributes %}
+    {{ value[0] }}
+    {% endfor %}
+    func {{ method.callName }}({% for param in method.parameters %}{{ param.asSource }}, {% endfor %}completion: @escaping @Sendable (Result<{{ method.actualReturnTypeName }}, Error>) -> Void) {
+        Task {
+            do {
+                completion(.success(try await {{ method.callName }}({% for param in method.parameters %}{% if param.argumentLabel %}{{ param.argumentLabel }}: {% endif %}{{ param.name }}{% if not forloop.last %}, {% endif %}{% endfor %})))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+    }
+    {% if not forloop.last %}
+
+    {% endif %}
+    {% endfor %}
+}
+{% if not forloop.last %}
+
+{% endif %}
+{% endfor %}

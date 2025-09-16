@@ -9,6 +9,9 @@ import '/src/session/manager.dart';
 import '/src/session/session.dart';
 
 export '/src/extensions/request.dart';
+export '/src/flow/descope_flow_callbacks.dart' show DescopeFlowCallbacks;
+export '/src/flow/descope_flow_config.dart' show DescopeFlowConfig;
+export '/src/flow/descope_flow_view.dart' show DescopeFlowView, DescopeFlowController;
 export '/src/sdk/config.dart' show DescopeConfig, DescopeLogger, DescopeNetworkClient;
 export '/src/sdk/routes.dart';
 export '/src/sdk/sdk.dart' show DescopeSdk;
@@ -60,6 +63,7 @@ class Descope {
   }
 
   /// Authenticate using an authentication flow
+  @Deprecated('When targeting iOS and Android please use DescopeFlowView. Other platforms will be supported soon, until then DescopeFlow is still available.')
   static DescopeFlow get flow => _sdk.flow;
 
   /// General functions.
