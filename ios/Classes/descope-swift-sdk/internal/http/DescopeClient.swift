@@ -12,35 +12,35 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
     
     // MARK: - OTP
     
-    func otpSignUp(with method: DeliveryMethod, loginId: String, details: SignUpDetails?) async throws -> MaskedAddress {
+    func otpSignUp(with method: DeliveryMethod, loginId: String, details: SignUpDetails?) async throws(DescopeError) -> MaskedAddress {
         return try await post("auth/otp/signup/\(method.rawValue)", body: [
             "loginId": loginId,
             "user": details?.dictValue,
         ])
     }
     
-    func otpSignIn(with method: DeliveryMethod, loginId: String, refreshJwt: String?, options: LoginOptions?) async throws -> MaskedAddress {
+    func otpSignIn(with method: DeliveryMethod, loginId: String, refreshJwt: String?, options: LoginOptions?) async throws(DescopeError) -> MaskedAddress {
         return try await post("auth/otp/signin/\(method.rawValue)", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
             "loginOptions": options?.dictValue,
         ])
     }
     
-    func otpSignUpIn(with method: DeliveryMethod, loginId: String, refreshJwt: String?, options: LoginOptions?) async throws -> MaskedAddress {
+    func otpSignUpIn(with method: DeliveryMethod, loginId: String, refreshJwt: String?, options: LoginOptions?) async throws(DescopeError) -> MaskedAddress {
         return try await post("auth/otp/signup-in/\(method.rawValue)", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
             "loginOptions": options?.dictValue,
         ])
     }
     
-    func otpVerify(with method: DeliveryMethod, loginId: String, code: String) async throws -> JWTResponse {
+    func otpVerify(with method: DeliveryMethod, loginId: String, code: String) async throws(DescopeError) -> JWTResponse {
         return try await post("auth/otp/verify/\(method.rawValue)", body: [
             "loginId": loginId,
             "code": code,
         ])
     }
     
-    func otpUpdateEmail(_ email: String, loginId: String, refreshJwt: String, options: UpdateOptions) async throws -> MaskedAddress {
+    func otpUpdateEmail(_ email: String, loginId: String, refreshJwt: String, options: UpdateOptions) async throws(DescopeError) -> MaskedAddress {
         return try await post("auth/otp/update/email", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
             "email": email,
@@ -49,7 +49,7 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         ])
     }
     
-    func otpUpdatePhone(_ phone: String, with method: DeliveryMethod, loginId: String, refreshJwt: String, options: UpdateOptions) async throws -> MaskedAddress {
+    func otpUpdatePhone(_ phone: String, with method: DeliveryMethod, loginId: String, refreshJwt: String, options: UpdateOptions) async throws(DescopeError) -> MaskedAddress {
         try method.ensurePhoneMethod()
         return try await post("auth/otp/update/phone/\(method.rawValue)", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
@@ -67,14 +67,14 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         var key: String
     }
     
-    func totpSignUp(loginId: String, details: SignUpDetails?) async throws -> TOTPResponse {
+    func totpSignUp(loginId: String, details: SignUpDetails?) async throws(DescopeError) -> TOTPResponse {
         return try await post("auth/totp/signup", body: [
             "loginId": loginId,
             "user": details?.dictValue,
         ])
     }
     
-    func totpVerify(loginId: String, code: String, refreshJwt: String?, options: LoginOptions?) async throws -> JWTResponse {
+    func totpVerify(loginId: String, code: String, refreshJwt: String?, options: LoginOptions?) async throws(DescopeError) -> JWTResponse {
         return try await post("auth/totp/verify", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
             "code": code,
@@ -82,7 +82,7 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         ])
     }
     
-    func totpUpdate(loginId: String, refreshJwt: String) async throws -> TOTPResponse {
+    func totpUpdate(loginId: String, refreshJwt: String) async throws(DescopeError) -> TOTPResponse {
         return try await post("auth/totp/update", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
         ])
@@ -96,48 +96,48 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         var create: Bool
     }
     
-    func passkeySignUpStart(loginId: String, details: SignUpDetails?) async throws -> PasskeyStartResponse {
+    func passkeySignUpStart(loginId: String, details: SignUpDetails?) async throws(DescopeError) -> PasskeyStartResponse {
         return try await post("auth/webauthn/signup/start", body: [
             "loginId": loginId,
             "user": details?.dictValue,
         ])
     }
     
-    func passkeySignUpFinish(transactionId: String, response: String) async throws -> JWTResponse {
+    func passkeySignUpFinish(transactionId: String, response: String) async throws(DescopeError) -> JWTResponse {
         return try await post("auth/webauthn/signup/finish", body: [
             "transactionId": transactionId,
             "response": response,
         ])
     }
     
-    func passkeySignInStart(loginId: String, refreshJwt: String?, options: LoginOptions?) async throws -> PasskeyStartResponse {
+    func passkeySignInStart(loginId: String, refreshJwt: String?, options: LoginOptions?) async throws(DescopeError) -> PasskeyStartResponse {
         return try await post("auth/webauthn/signin/start", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
             "loginOptions": options?.dictValue,
         ])
     }
     
-    func passkeySignInFinish(transactionId: String, response: String) async throws -> JWTResponse {
+    func passkeySignInFinish(transactionId: String, response: String) async throws(DescopeError) -> JWTResponse {
         return try await post("auth/webauthn/signin/finish", body: [
             "transactionId": transactionId,
             "response": response,
         ])
     }
     
-    func passkeySignUpInStart(loginId: String, refreshJwt: String?, options: LoginOptions?) async throws -> PasskeyStartResponse {
+    func passkeySignUpInStart(loginId: String, refreshJwt: String?, options: LoginOptions?) async throws(DescopeError) -> PasskeyStartResponse {
         return try await post("auth/webauthn/signup-in/start", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
             "loginOptions": options?.dictValue,
         ])
     }
     
-    func passkeyAddStart(loginId: String, refreshJwt: String) async throws -> PasskeyStartResponse {
+    func passkeyAddStart(loginId: String, refreshJwt: String) async throws(DescopeError) -> PasskeyStartResponse {
         return try await post("auth/webauthn/update/start", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
         ])
     }
     
-    func passkeyAddFinish(transactionId: String, response: String) async throws {
+    func passkeyAddFinish(transactionId: String, response: String) async throws(DescopeError) {
         try await post("auth/webauthn/update/finish", body: [
             "transactionId": transactionId,
             "response": response,
@@ -146,7 +146,7 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
     
     // MARK: - Password
     
-    func passwordSignUp(loginId: String, password: String, details: SignUpDetails?) async throws -> JWTResponse {
+    func passwordSignUp(loginId: String, password: String, details: SignUpDetails?) async throws(DescopeError) -> JWTResponse {
         return try await post("auth/password/signup", body: [
             "loginId": loginId,
             "user": details?.dictValue,
@@ -154,21 +154,21 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         ])
     }
     
-    func passwordSignIn(loginId: String, password: String) async throws -> JWTResponse {
+    func passwordSignIn(loginId: String, password: String) async throws(DescopeError) -> JWTResponse {
         return try await post("auth/password/signin", body: [
             "loginId": loginId,
             "password": password,
         ])
     }
     
-    func passwordUpdate(loginId: String, newPassword: String, refreshJwt: String) async throws {
+    func passwordUpdate(loginId: String, newPassword: String, refreshJwt: String) async throws(DescopeError) {
         try await post("auth/password/update", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
             "newPassword": newPassword,
         ])
     }
     
-    func passwordReplace(loginId: String, oldPassword: String, newPassword: String) async throws -> JWTResponse {
+    func passwordReplace(loginId: String, oldPassword: String, newPassword: String) async throws(DescopeError) -> JWTResponse {
         return try await post("auth/password/replace", body: [
             "loginId": loginId,
             "oldPassword": oldPassword,
@@ -176,7 +176,7 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         ])
     }
     
-    func passwordSendReset(loginId: String, redirectURL: String?) async throws {
+    func passwordSendReset(loginId: String, redirectURL: String?) async throws(DescopeError) {
         try await post("auth/password/reset", body: [
             "loginId": loginId,
             "redirectUrl": redirectURL,
@@ -191,14 +191,14 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         var nonAlphanumeric: Bool
     }
     
-    func passwordGetPolicy() async throws -> PasswordPolicyResponse {
+    func passwordGetPolicy() async throws(DescopeError) -> PasswordPolicyResponse {
         return try await get("auth/password/policy")
     }
 
     
     // MARK: - Magic Link
     
-    func magicLinkSignUp(with method: DeliveryMethod, loginId: String, details: SignUpDetails?, redirectURL: String?) async throws -> MaskedAddress {
+    func magicLinkSignUp(with method: DeliveryMethod, loginId: String, details: SignUpDetails?, redirectURL: String?) async throws(DescopeError) -> MaskedAddress {
         return try await post("auth/magiclink/signup/\(method.rawValue)", body: [
             "loginId": loginId,
             "user": details?.dictValue,
@@ -206,7 +206,7 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         ])
     }
     
-    func magicLinkSignIn(with method: DeliveryMethod, loginId: String, redirectURL: String?, refreshJwt: String?, options: LoginOptions?) async throws -> MaskedAddress {
+    func magicLinkSignIn(with method: DeliveryMethod, loginId: String, redirectURL: String?, refreshJwt: String?, options: LoginOptions?) async throws(DescopeError) -> MaskedAddress {
         return try await post("auth/magiclink/signin/\(method.rawValue)", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
             "redirectUrl": redirectURL,
@@ -214,7 +214,7 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         ])
     }
     
-    func magicLinkSignUpOrIn(with method: DeliveryMethod, loginId: String, redirectURL: String?, refreshJwt: String?, options: LoginOptions?) async throws -> MaskedAddress {
+    func magicLinkSignUpOrIn(with method: DeliveryMethod, loginId: String, redirectURL: String?, refreshJwt: String?, options: LoginOptions?) async throws(DescopeError) -> MaskedAddress {
         return try await post("auth/magiclink/signup-in/\(method.rawValue)", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
             "redirectUrl": redirectURL,
@@ -222,13 +222,13 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         ])
     }
     
-    func magicLinkVerify(token: String) async throws -> JWTResponse {
+    func magicLinkVerify(token: String) async throws(DescopeError) -> JWTResponse {
         return try await post("auth/magiclink/verify", body: [
             "token": token,
         ])
     }
     
-    func magicLinkUpdateEmail(_ email: String, loginId: String, redirectURL: String?, refreshJwt: String, options: UpdateOptions) async throws -> MaskedAddress {
+    func magicLinkUpdateEmail(_ email: String, loginId: String, redirectURL: String?, refreshJwt: String, options: UpdateOptions) async throws(DescopeError) -> MaskedAddress {
         return try await post("auth/magiclink/update/email", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
             "email": email,
@@ -238,7 +238,7 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         ])
     }
     
-    func magicLinkUpdatePhone(_ phone: String, with method: DeliveryMethod, loginId: String, redirectURL: String?, refreshJwt: String, options: UpdateOptions) async throws -> MaskedAddress {
+    func magicLinkUpdatePhone(_ phone: String, with method: DeliveryMethod, loginId: String, redirectURL: String?, refreshJwt: String, options: UpdateOptions) async throws(DescopeError) -> MaskedAddress {
         try method.ensurePhoneMethod()
         return try await post("auth/magiclink/update/phone/\(method.rawValue)", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
@@ -257,7 +257,7 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         var maskedEmail: String
     }
     
-    func enchantedLinkSignUp(loginId: String, details: SignUpDetails?, redirectURL: String?) async throws -> EnchantedLinkResponse {
+    func enchantedLinkSignUp(loginId: String, details: SignUpDetails?, redirectURL: String?) async throws(DescopeError) -> EnchantedLinkResponse {
         return try await post("auth/enchantedlink/signup/email", body: [
             "loginId": loginId,
             "user": details?.dictValue,
@@ -265,7 +265,7 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         ])
     }
     
-    func enchantedLinkSignIn(loginId: String, redirectURL: String?, refreshJwt: String?, options: LoginOptions?) async throws -> EnchantedLinkResponse {
+    func enchantedLinkSignIn(loginId: String, redirectURL: String?, refreshJwt: String?, options: LoginOptions?) async throws(DescopeError) -> EnchantedLinkResponse {
         try await post("auth/enchantedlink/signin/email", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
             "redirectUrl": redirectURL,
@@ -273,7 +273,7 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         ])
     }
     
-    func enchantedLinkSignUpOrIn(loginId: String, redirectURL: String?, refreshJwt: String?, options: LoginOptions?) async throws -> EnchantedLinkResponse {
+    func enchantedLinkSignUpOrIn(loginId: String, redirectURL: String?, refreshJwt: String?, options: LoginOptions?) async throws(DescopeError) -> EnchantedLinkResponse {
         try await post("auth/enchantedlink/signup-in/email", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
             "redirectUrl": redirectURL,
@@ -281,7 +281,7 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         ])
     }
     
-    func enchantedLinkUpdateEmail(_ email: String, loginId: String, redirectURL: String?, refreshJwt: String, options: UpdateOptions) async throws -> EnchantedLinkResponse {
+    func enchantedLinkUpdateEmail(_ email: String, loginId: String, redirectURL: String?, refreshJwt: String, options: UpdateOptions) async throws(DescopeError) -> EnchantedLinkResponse {
         return try await post("auth/enchantedlink/update/email", headers: authorization(with: refreshJwt), body: [
             "loginId": loginId,
             "email": email,
@@ -291,7 +291,7 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         ])
     }
     
-    func enchantedLinkPendingSession(pendingRef: String) async throws -> JWTResponse {
+    func enchantedLinkPendingSession(pendingRef: String) async throws(DescopeError) -> JWTResponse {
         return try await post("auth/enchantedlink/pending-session", body: [
             "pendingRef": pendingRef,
         ])
@@ -310,27 +310,27 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         var implicit: Bool
     }
     
-    func oauthWebStart(provider: OAuthProvider, redirectURL: String?, refreshJwt: String?, options: LoginOptions?) async throws -> OAuthResponse {
+    func oauthWebStart(provider: OAuthProvider, redirectURL: String?, refreshJwt: String?, options: LoginOptions?) async throws(DescopeError) -> OAuthResponse {
         return try await post("auth/oauth/authorize", headers: authorization(with: refreshJwt), params: [
             "provider": provider.name,
             "redirectUrl": redirectURL
         ], body: options?.dictValue ?? [:])
     }
     
-    func oauthWebExchange(code: String) async throws -> JWTResponse {
+    func oauthWebExchange(code: String) async throws(DescopeError) -> JWTResponse {
         return try await post("auth/oauth/exchange", body: [
             "code": code
         ])
     }
 
-    func oauthNativeStart(provider: OAuthProvider, refreshJwt: String?, options: LoginOptions?) async throws -> OAuthNativeStartResponse {
+    func oauthNativeStart(provider: OAuthProvider, refreshJwt: String?, options: LoginOptions?) async throws(DescopeError) -> OAuthNativeStartResponse {
         return try await post("auth/oauth/native/start", headers: authorization(with: refreshJwt), body: [
             "provider": provider.name,
             "loginOptions": options?.dictValue
         ])
     }
     
-    func oauthNativeFinish(provider: OAuthProvider, stateId: String, user: String?, authorizationCode: String?, identityToken: String?) async throws -> JWTResponse {
+    func oauthNativeFinish(provider: OAuthProvider, stateId: String, user: String?, authorizationCode: String?, identityToken: String?) async throws(DescopeError) -> JWTResponse {
         return try await post("auth/oauth/native/finish", body: [
             "provider": provider.name,
             "stateId": stateId,
@@ -346,14 +346,14 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         var url: String
     }
     
-    func ssoStart(emailOrTenantName: String, redirectURL: String?, refreshJwt: String?, options: LoginOptions?) async throws -> OAuthResponse {
+    func ssoStart(emailOrTenantName: String, redirectURL: String?, refreshJwt: String?, options: LoginOptions?) async throws(DescopeError) -> OAuthResponse {
         return try await post("auth/saml/authorize", headers: authorization(with: refreshJwt), params: [
             "tenant": emailOrTenantName,
             "redirectUrl": redirectURL
         ], body: options?.dictValue ?? [:])
     }
     
-    func ssoExchange(code: String) async throws -> JWTResponse {
+    func ssoExchange(code: String) async throws(DescopeError) -> JWTResponse {
         return try await post("auth/saml/exchange", body: [
             "code": code
         ])
@@ -365,20 +365,20 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         var sessionJwt: String
     }
     
-    func accessKeyExchange(_ accessKey: String) async throws -> AccessKeyExchangeResponse {
+    func accessKeyExchange(_ accessKey: String) async throws(DescopeError) -> AccessKeyExchangeResponse {
         return try await post("auth/accesskey/exchange", headers: authorization(with: accessKey))
     }
     
     // MARK: - Flow
     
-    func flowExchange(authorizationCode: String, codeVerifier: String) async throws -> JWTResponse {
+    func flowExchange(authorizationCode: String, codeVerifier: String) async throws(DescopeError) -> JWTResponse {
         return try await post("flow/exchange", body: [
             "authorizationCode": authorizationCode,
             "codeVerifier": codeVerifier,
         ])
     }
     
-    func flowPrime(codeChallenge: String, flowId: String, refreshJwt: String) async throws {
+    func flowPrime(codeChallenge: String, flowId: String, refreshJwt: String) async throws(DescopeError) {
         try await post("flow/prime", headers: authorization(with: refreshJwt), body: [
             "codeChallenge": codeChallenge,
             "flowId": flowId,
@@ -387,28 +387,28 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
     
     // MARK: - Others
     
-    func me(refreshJwt: String) async throws -> UserResponse {
+    func me(refreshJwt: String) async throws(DescopeError) -> UserResponse {
         return try await get("auth/me", headers: authorization(with: refreshJwt))
     }
 
-    func tenants(dct: Bool, tenantIds: [String], refreshJwt: String) async throws -> TenantsResponse {
+    func tenants(dct: Bool, tenantIds: [String], refreshJwt: String) async throws(DescopeError) -> TenantsResponse {
         return try await post("auth/me/tenants", headers: authorization(with: refreshJwt), body: [
             "dct": dct,
             "ids": tenantIds,
         ])
     }
 
-    func refresh(refreshJwt: String) async throws -> JWTResponse {
+    func refresh(refreshJwt: String) async throws(DescopeError) -> JWTResponse {
         return try await post("auth/refresh", headers: authorization(with: refreshJwt))
     }
     
-    func migrate(externalToken: String) async throws -> JWTResponse {
+    func migrate(externalToken: String) async throws(DescopeError) -> JWTResponse {
         return try await post("auth/refresh", body: [
             "externalToken": externalToken,
         ])
     }
     
-    func logout(type: RevokeType, refreshJwt: String) async throws {
+    func logout(type: RevokeType, refreshJwt: String) async throws(DescopeError) {
         switch type {
         case .currentSession:
             try await post("auth/logout", headers: authorization(with: refreshJwt))
@@ -427,6 +427,7 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         var refreshJwt: String?
         var user: UserResponse?
         var firstSeen: Bool
+        var cookieDomain: String?
         
         mutating func setValues(from data: Data, response: HTTPURLResponse) throws {
             guard let url = response.url, let fields = response.allHeaderFields as? [String: String] else { return }
@@ -456,6 +457,7 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         struct Fields: Decodable {
             var userId: String
             var loginIds: [String]
+            var status: String
             var createdTime: Int
             var email: String?
             var verifiedEmail: Bool?
@@ -466,6 +468,14 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
             var middleName: String?
             var familyName: String?
             var picture: String?
+            var roleNames: [String]
+            var ssoAppIds: [String]
+            var webauthn: Bool
+            var password: Bool
+            var TOTP: Bool
+            var OAuth: [String: Bool]
+            var SAML: Bool
+            var SCIM: Bool
         }
 
         var fields: Fields
@@ -591,7 +601,7 @@ private extension SignUpDetails {
 }
 
 private extension DeliveryMethod {
-    func ensurePhoneMethod() throws {
+    func ensurePhoneMethod() throws(DescopeError) {
         if self != .sms && self != .whatsapp {
             throw DescopeError.invalidArguments.with(message: "Update phone can be done using SMS or WhatsApp only")
         }

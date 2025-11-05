@@ -105,6 +105,25 @@ extension String {
     }
 }
 
+extension Task where Success == Never, Failure == Never {
+    static func checkCancellation(throwing err: DescopeError) throws(DescopeError) {
+        do {
+            try checkCancellation()
+        } catch {
+            throw err
+        }
+    }
+    
+    static func sleep(seconds: TimeInterval, throwing err: DescopeError) async throws(DescopeError) {
+        do {
+            let nanoseconds = UInt64(seconds * TimeInterval(NSEC_PER_SEC))
+            try await Task.sleep(nanoseconds: nanoseconds)
+        } catch {
+            throw err
+        }
+    }
+}
+
 class DefaultPresentationContextProvider: NSObject, ASWebAuthenticationPresentationContextProviding, ASAuthorizationControllerPresentationContextProviding {
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
         return presentationAnchor
@@ -184,5 +203,81 @@ extension AuthenticationResponse: Codable {
         try values.encode(refreshToken.jwt, forKey: .refreshToken)
         try values.encode(user, forKey: .user)
         try values.encode(isFirstAuthentication, forKey: .isFirstAuthentication)
+    }
+}
+
+extension DescopeUser {
+    struct SerializedUser: Codable, Equatable {
+        var userId: String
+        var loginIds: [String]
+        var status: String?
+        var createdAt: Date
+        var email: String?
+        var isVerifiedEmail: Bool
+        var phone: String?
+        var isVerifiedPhone: Bool
+        var name: String?
+        var givenName: String?
+        var middleName: String?
+        var familyName: String?
+        var picture: URL?
+        var authentication: Authentication?
+        var authorization: Authorization?
+        var customAttributes: String?
+        var isUpdateRequired: Bool?
+    }
+    
+    static func serialize(_ user: DescopeUser) -> SerializedUser {
+        var customAttributes = "{}"
+        if JSONSerialization.isValidJSONObject(user.customAttributes), let data = try? JSONSerialization.data(withJSONObject: user.customAttributes), let value = String(bytes: data, encoding: .utf8) {
+            customAttributes = value
+        }
+        
+        return SerializedUser(
+            userId: user.userId,
+            loginIds: user.loginIds,
+            status: user.status.rawValue,
+            createdAt: user.createdAt,
+            email: user.email,
+            isVerifiedEmail: user.isVerifiedEmail,
+            phone: user.phone,
+            isVerifiedPhone: user.isVerifiedPhone,
+            name: user.name,
+            givenName: user.givenName,
+            middleName: user.middleName,
+            familyName: user.familyName,
+            picture: user.picture,
+            authentication: user.authentication,
+            authorization: user.authorization,
+            customAttributes: customAttributes,
+            isUpdateRequired: user.isUpdateRequired,
+        )
+    }
+    
+    static func deserialize(_ user: SerializedUser) -> DescopeUser {
+        var customAttributes: [String: Any] = [:]
+        if let value = user.customAttributes, let json = try? JSONSerialization.jsonObject(with: Data(value.utf8)) {
+            customAttributes = json as? [String: Any] ?? [:]
+        }
+        
+        return DescopeUser(
+            userId: user.userId,
+            loginIds: user.loginIds,
+            status: Status(rawValue: user.status ?? "") ?? .enabled,
+            createdAt: user.createdAt,
+            email: user.email,
+            isVerifiedEmail: user.isVerifiedEmail,
+            phone: user.phone,
+            isVerifiedPhone: user.isVerifiedPhone,
+            name: user.name,
+            givenName: user.givenName,
+            middleName: user.middleName,
+            familyName: user.familyName,
+            picture: user.picture,
+            authentication: user.authentication ?? Authentication(passkey: false, password: false, totp: false, oauth: [], sso: false, scim: false),
+            authorization: user.authorization ?? Authorization(roles: [], ssoAppIds: []),
+            customAttributes: customAttributes,
+            isUpdateRequired: user.isUpdateRequired ?? true, // if the flag doesn't exist we've got old data without the new fields
+        )
     }
 }

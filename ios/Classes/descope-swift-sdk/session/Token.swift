@@ -56,7 +56,7 @@ final class Token: DescopeToken, @unchecked Sendable {
     let claims: [String: Any]
     let allClaims: [String: Any]
     
-    init(jwt: String) throws {
+    init(jwt: String) throws(DescopeError) {
         do {
             let dict = try decodeJWT(jwt)
             self.jwt = jwt

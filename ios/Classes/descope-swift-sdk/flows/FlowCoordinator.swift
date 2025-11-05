@@ -323,8 +323,8 @@ public class DescopeFlowCoordinator {
     private func parseAuthentication(_ data: Data) async -> AuthenticationResponse? {
         do {
             guard let webView else { return nil }
-            let cookies = await webView.configuration.websiteDataStore.httpCookieStore.cookies(for: webView.url)
             var jwtResponse = try JSONDecoder().decode(DescopeClient.JWTResponse.self, from: data)
+            let cookies = await webView.configuration.websiteDataStore.httpCookieStore.cookies(for: jwtResponse.cookieDomain, at: webView.url)
             try jwtResponse.setValues(from: data, cookies: cookies, refreshCookieName: bridge.attributes.refreshCookieName)
             return try jwtResponse.convert()
         } catch {
@@ -417,13 +417,18 @@ extension DescopeFlowCoordinator: FlowBridgeDelegate {
 }
 
 private extension WKHTTPCookieStore {
-    func cookies(for url: URL?) async -> [HTTPCookie] {
+    func cookies(for domain: String?, at url: URL?) async -> [HTTPCookie] {
         return await allCookies().filter { cookie in
-            guard let domain = url?.host else { return true }
-            if cookie.domain.hasPrefix(".") {
-                return domain.hasSuffix(cookie.domain) || domain == cookie.domain.dropFirst()
+            // prefer finding value cookies compared to the cookie domain if it's specified,
+            // but allow falling back to comparing against the page URL
+            for value in [domain, url?.host] {
+                guard let value, !value.isEmpty else { continue }
+                if cookie.domain.hasPrefix(".") {
+                    return value.hasSuffix(cookie.domain) || value == cookie.domain.dropFirst()
+                }
+                return value == cookie.domain
             }
-            return domain == cookie.domain
+            return true
         }
     }
 }
