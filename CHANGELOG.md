@@ -1,3 +1,6 @@
+# 0.9.10
+- Update Descope native SDKs
+
 # 0.9.9
 
 - Introducing the `DescopeFlowView` widget for seamless integration of Descope Flows in Flutter applications. Available for both Android and iOS platforms.
