@@ -548,6 +548,26 @@ window.descopeBridge = {
             } else {
                 window.webkit.messageHandlers.\(FlowBridgeMessage.ready.rawValue).postMessage(tag)
             }
+            this.disableTouchInteractions()
+        },
+
+        disableTouchInteractions() {
+            this.component.injectStyle?.(`
+                #content-root * {
+                    -webkit-touch-callout: none;
+                    -webkit-user-select: none;
+                }
+            `)
+
+            this.component.shadowRoot?.querySelectorAll('descope-enriched-text').forEach(t => {
+                t.shadowRoot?.querySelectorAll('a').forEach(a => {
+                    a.draggable = false
+                })
+            })
+
+            this.component.shadowRoot?.querySelectorAll('img').forEach(a => {
+                a.draggable = false
+            })
         },
 
         updateRefreshJwt(refreshJwt) {

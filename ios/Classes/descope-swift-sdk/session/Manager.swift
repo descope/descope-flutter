@@ -164,7 +164,7 @@ public class DescopeSessionManager {
     ///
     /// - Note: When using a custom ``DescopeSessionManager`` object the exact behavior
     ///     here depends on the `storage` and `lifecycle` objects.
-    public func refreshSessionIfNeeded() async throws {
+    public func refreshSessionIfNeeded() async throws(DescopeError) {
         let refreshed = try await lifecycle.refreshSessionIfNeeded()
         if refreshed {
             didUpdateTokens()

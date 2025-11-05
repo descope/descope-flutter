@@ -67,7 +67,7 @@ public extension DescopeFlow {
 
 public extension SessionStorage.KeychainStore {
     @available(*, deprecated, message: "Use the init() initializer instead and set the accessibility property manually")
-    public convenience init(accessibility: String) {
+    convenience init(accessibility: String) {
         self.init()
         self.accessibility = accessibility
     }

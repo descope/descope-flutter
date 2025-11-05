@@ -82,7 +82,8 @@ extension DescopeError {
     
     public static let enchantedLinkPending = DescopeError.apiError("E062503")
     public static let enchantedLinkExpired = DescopeError.sdkError("S060001", "Enchanted link expired")
-    
+    public static let enchantedLinkCancelled = DescopeError.sdkError("S060002", "Enchanted link cancelled")
+
     public static let flowFailed = DescopeError.sdkError("S100001", "Flow failed to run")
     public static let flowCancelled = DescopeError.sdkError("S100002", "Flow cancelled")
     

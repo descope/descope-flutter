@@ -41,6 +41,9 @@ public struct DescopeUser: @unchecked Sendable {
     /// custom identifiers the user can authenticate with.
     public var loginIds: [String]
     
+    /// The current status of the user.
+    public var status: Status
+    
     /// The time at which the user was created in Descope.
     public var createdAt: Date
     
@@ -78,14 +81,93 @@ public struct DescopeUser: @unchecked Sendable {
     
     /// The user's profile picture.
     public var picture: URL?
+    
+    /// Details about the authentication methods the user has set up.
+    public var authentication: Authentication
+    
+    /// Details about the authorization settings for this user.
+    public var authorization: Authorization
 
     /// A mapping of any custom attributes associated with this user. The custom attributes
     /// are managed via the Descope console.
     public var customAttributes: [String: Any]
-
-    public init(userId: String, loginIds: [String], createdAt: Date, email: String? = nil, isVerifiedEmail: Bool = false, phone: String? = nil, isVerifiedPhone: Bool = false, name: String? = nil, givenName: String? = nil, middleName: String? = nil, familyName: String? = nil, picture: URL? = nil, customAttributes: [String: Any] = [:]) {
+    
+    // Data Consistency
+    
+    /// This flag indicates that the ``DescopeUser`` of the signed in user was saved by an older
+    /// version of the Descope SDK, and some fields that were added to the ``DescopeUser`` class
+    /// might show empty values (`false`, `nil`, etc) as placeholders, until the user is loaded
+    /// from the server again.
+    ///
+    /// The scenario described above can happen when deploying an app update with a new version of
+    /// the Descope SDK, in which case it's recommended to call `Descope.auth.me()` to update the
+    /// user data, after which this flag will become `false`.
+    public var isUpdateRequired: Bool
+    
+    // Accessory types
+    
+    /// The current status of the user.
+    public enum Status: String, Sendable, Codable {
+        /// An invitation was sent to this user and they'll become enabled after signing in once.
+        case invited
+        
+        /// The user is enabled and can sign in.
+        case enabled
+        
+        /// The user is disabled and cannot sign in normally.
+        case disabled
+    }
+    
+    /// Details about the authentication methods the user has set up.
+    public struct Authentication: Sendable, Codable, Equatable {
+        /// Whether the user has passkey (WebAuthn) authentication set up.
+        public var passkey: Bool
+        
+        /// Whether the user has a password set up.
+        public var password: Bool
+        
+        /// Whether the user has TOTP (authenticator app) set up.
+        public var totp: Bool
+        
+        /// The OAuth providers the user has used to sign in. Can be empty.
+        public var oauth: Set<String>
+        
+        /// Whether the user has SSO set up.
+        public var sso: Bool
+        
+        /// Whether SCIM provisioning is enabled for this user.
+        public var scim: Bool
+        
+        public init(passkey: Bool, password: Bool, totp: Bool, oauth: Set<String>, sso: Bool, scim: Bool) {
+            self.passkey = passkey
+            self.password = password
+            self.totp = totp
+            self.oauth = oauth
+            self.sso = sso
+            self.scim = scim
+        }
+    }
+    
+    /// Details about the authorization settings for this user.
+    public struct Authorization: Sendable, Codable, Equatable {
+        /// The names of the roles assigned to this user. Can be empty.
+        public var roles: Set<String>
+        
+        /// The IDs of the SSO Apps assigned to this user. Can be empty.
+        public var ssoAppIds: Set<String>
+        
+        public init(roles: Set<String>, ssoAppIds: Set<String>) {
+            self.roles = roles
+            self.ssoAppIds = ssoAppIds
+        }
+    }
+    
+    // Initialization
+    
+    public init(userId: String, loginIds: [String], status: Status, createdAt: Date, email: String?, isVerifiedEmail: Bool, phone: String?, isVerifiedPhone: Bool, name: String?, givenName: String?, middleName: String?, familyName: String?, picture: URL?, authentication: Authentication, authorization: Authorization, customAttributes: [String: Any], isUpdateRequired: Bool) {
         self.userId = userId
         self.loginIds = loginIds
+        self.status = status
         self.createdAt = createdAt
         self.email = email
         self.isVerifiedEmail = isVerifiedEmail
@@ -97,6 +179,9 @@ public struct DescopeUser: @unchecked Sendable {
         self.familyName = familyName
         self.picture = picture
         self.customAttributes = customAttributes
+        self.authentication = authentication
+        self.authorization = authorization
+        self.isUpdateRequired = isUpdateRequired
     }
 }
 
@@ -118,62 +203,18 @@ extension DescopeUser: CustomStringConvertible {
 
 extension DescopeUser: Equatable {
     public static func == (lhs: DescopeUser, rhs: DescopeUser) -> Bool {
-        let attrs = lhs.customAttributes as NSDictionary
-        return lhs.userId == rhs.userId && lhs.loginIds == rhs.loginIds &&
-            lhs.createdAt == rhs.createdAt && lhs.picture == rhs.picture &&
-            lhs.email == rhs.email && lhs.isVerifiedEmail == rhs.isVerifiedEmail &&
-            lhs.phone == rhs.phone && lhs.isVerifiedPhone == rhs.isVerifiedPhone &&
-            lhs.name == rhs.name && lhs.givenName == rhs.givenName &&
-            lhs.middleName == rhs.middleName && lhs.familyName == rhs.familyName &&
-            attrs.isEqual(to: rhs.customAttributes)
+        return DescopeUser.serialize(lhs) == DescopeUser.serialize(rhs)
     }
 }
 
-// Unfortunately we can't rely on the compiler for automatic conformance
-// to Codable because the customAttributes dictionary isn't serializable
 extension DescopeUser: Codable {
-    enum CodingKeys: CodingKey {
-        case userId, loginIds, createdAt, email, isVerifiedEmail, phone, isVerifiedPhone, name, givenName, middleName, familyName, picture, customAttributes
-    }
-
     public init(from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        userId = try values.decode(String.self, forKey: .userId)
-        loginIds = try values.decode([String].self, forKey: .loginIds)
-        createdAt = try values.decode(Date.self, forKey: .createdAt)
-        email = try values.decodeIfPresent(String.self, forKey: .email)
-        isVerifiedEmail = try values.decode(Bool.self, forKey: .isVerifiedEmail)
-        phone = try values.decodeIfPresent(String.self, forKey: .phone)
-        isVerifiedPhone = try values.decode(Bool.self, forKey: .isVerifiedPhone)
-        name = try values.decodeIfPresent(String.self, forKey: .name)
-        givenName = try values.decodeIfPresent(String.self, forKey: .givenName)
-        middleName = try values.decodeIfPresent(String.self, forKey: .middleName)
-        familyName = try values.decodeIfPresent(String.self, forKey: .familyName)
-        picture = try values.decodeIfPresent(URL.self, forKey: .picture)
-        if let value = try values.decodeIfPresent(String.self, forKey: .customAttributes), let json = try? JSONSerialization.jsonObject(with: Data(value.utf8)) {
-            customAttributes = json as? [String: Any] ?? [:]
-        } else {
-            customAttributes = [:]
-        }
+        let serialized = try SerializedUser(from: decoder)
+        self = DescopeUser.deserialize(serialized)
     }
 
     public func encode(to encoder: Encoder) throws {
-        var values = encoder.container(keyedBy: CodingKeys.self)
-        try values.encode(userId, forKey: .userId)
-        try values.encode(loginIds, forKey: .loginIds)
-        try values.encode(createdAt, forKey: .createdAt)
-        try values.encodeIfPresent(email, forKey: .email)
-        try values.encode(isVerifiedEmail, forKey: .isVerifiedEmail)
-        try values.encodeIfPresent(phone, forKey: .phone)
-        try values.encode(isVerifiedPhone, forKey: .isVerifiedPhone)
-        try values.encodeIfPresent(name, forKey: .name)
-        try values.encodeIfPresent(givenName, forKey: .givenName)
-        try values.encodeIfPresent(middleName, forKey: .middleName)
-        try values.encodeIfPresent(familyName, forKey: .familyName)
-        try values.encodeIfPresent(picture, forKey: .picture)
-        // check before trying to serialize to prevent a runtime exception from being triggered
-        if JSONSerialization.isValidJSONObject(customAttributes), let data = try? JSONSerialization.data(withJSONObject: customAttributes), let value = String(bytes: data, encoding: .utf8) {
-            try values.encode(value, forKey: .customAttributes)
-        }
+        let serialized = DescopeUser.serialize(self)
+        try serialized.encode(to: encoder)
     }
 }

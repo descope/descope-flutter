@@ -8,7 +8,7 @@ public protocol DescopeAuth: Sendable {
     /// - Parameter refreshJwt: the `refreshJwt` from an active ``DescopeSession``.
     ///
     /// - Returns: A ``DescopeUser`` object with the user details.
-    func me(refreshJwt: String) async throws -> DescopeUser
+    func me(refreshJwt: String) async throws(DescopeError) -> DescopeUser
 
     /// Returns the current session user tenants.
     ///
@@ -21,7 +21,7 @@ public protocol DescopeAuth: Sendable {
     ///   - refreshJwt: the `refreshJwt` from an active ``DescopeSession``.
     ///
     /// - Returns: A list of one or more ``DescopeTenant`` values.
-    func tenants(dct: Bool, tenantIds: [String], refreshJwt: String) async throws -> [DescopeTenant]
+    func tenants(dct: Bool, tenantIds: [String], refreshJwt: String) async throws(DescopeError) -> [DescopeTenant]
 
     /// Refreshes a ``DescopeSession``.
     ///
@@ -37,7 +37,7 @@ public protocol DescopeAuth: Sendable {
     /// - Parameter refreshJwt: the `refreshJwt` from an active ``DescopeSession``.
     ///
     /// - Returns: A new ``RefreshResponse`` with a refreshed `sessionJwt`.
-    func refreshSession(refreshJwt: String) async throws -> RefreshResponse
+    func refreshSession(refreshJwt: String) async throws(DescopeError) -> RefreshResponse
     
     /// Migrates an external token to a ``DescopeSession``.
     ///
@@ -66,7 +66,7 @@ public protocol DescopeAuth: Sendable {
     /// - Parameter externalToken: the external token to migrate.
     ///
     /// - Returns: A new ``AuthenticationResponse`` if the migration was successful.
-    func migrateSession(externalToken: String) async throws -> AuthenticationResponse
+    func migrateSession(externalToken: String) async throws(DescopeError) -> AuthenticationResponse
 
     /// Revokes active sessions for the user.
     ///
@@ -96,7 +96,7 @@ public protocol DescopeAuth: Sendable {
     ///   - revoke: Pass `.currentSession` to revoke the session in the `refreshJwt`
     ///     parameter or see ``RevokeType`` for more options.
     ///   - refreshJwt: The `refreshJwt` from an active ``DescopeSession``.
-    func revokeSessions(_ revoke: RevokeType, refreshJwt: String) async throws
+    func revokeSessions(_ revoke: RevokeType, refreshJwt: String) async throws(DescopeError)
 }
 
 
@@ -117,7 +117,7 @@ public protocol DescopeOTP: Sendable {
     ///   - loginId: What identifies the user when logging in,
     ///     typically an email, phone, or any other unique identifier.
     ///   - details: Optional details about the user signing up.
-    func signUp(with method: DeliveryMethod, loginId: String, details: SignUpDetails?) async throws -> String
+    func signUp(with method: DeliveryMethod, loginId: String, details: SignUpDetails?) async throws(DescopeError) -> String
     
     /// Authenticates an existing user using an OTP, sent via a delivery
     /// method of choice.
@@ -127,7 +127,7 @@ public protocol DescopeOTP: Sendable {
     ///   - loginId: What identifies the user when logging in,
     ///     typically an email, phone, or any other unique identifier.
     ///   - options: Additional behaviors to perform during authentication.
-    func signIn(with method: DeliveryMethod, loginId: String, options: [SignInOptions]) async throws -> String
+    func signIn(with method: DeliveryMethod, loginId: String, options: [SignInOptions]) async throws(DescopeError) -> String
     
     /// Authenticates an existing user if one exists, or creates a new user
     /// using an OTP, sent via a delivery method of choice.
@@ -141,7 +141,7 @@ public protocol DescopeOTP: Sendable {
     ///   - loginId: What identifies the user when logging in,
     ///     typically an email, phone, or any other unique identifier
     ///   - options: Additional behaviors to perform during authentication.
-    func signUpOrIn(with method: DeliveryMethod, loginId: String, options: [SignInOptions]) async throws -> String
+    func signUpOrIn(with method: DeliveryMethod, loginId: String, options: [SignInOptions]) async throws(DescopeError) -> String
     
     /// Verifies an OTP code sent to the user.
     ///
@@ -151,7 +151,7 @@ public protocol DescopeOTP: Sendable {
     ///   - code: The code to validate.
     ///
     /// - Returns: An ``AuthenticationResponse`` value upon successful authentication.
-    func verify(with method: DeliveryMethod, loginId: String, code: String) async throws -> AuthenticationResponse
+    func verify(with method: DeliveryMethod, loginId: String, code: String) async throws(DescopeError) -> AuthenticationResponse
     
     /// Updates an existing user by adding an email address.
     ///
@@ -166,7 +166,7 @@ public protocol DescopeOTP: Sendable {
     ///   - options: Whether to add the new email address as a loginId for the updated user, and
     ///     in that case, if another user already has the same email address as a loginId how to
     ///     merge the two users. See the documentation for ``UpdateOptions`` for more details.
-    func updateEmail(_ email: String, loginId: String, refreshJwt: String, options: UpdateOptions) async throws -> String
+    func updateEmail(_ email: String, loginId: String, refreshJwt: String, options: UpdateOptions) async throws(DescopeError) -> String
     
     /// Updates an existing user by adding a phone number.
     ///
@@ -184,7 +184,7 @@ public protocol DescopeOTP: Sendable {
     ///   - options: Whether to add the new phone number as a loginId for the updated user, and
     ///     in that case, if another user already has the same phone number as a loginId how to
     ///     merge the two users. See the documentation for ``UpdateOptions`` for more details.
-    func updatePhone(_ phone: String, with method: DeliveryMethod, loginId: String, refreshJwt: String, options: UpdateOptions) async throws -> String
+    func updatePhone(_ phone: String, with method: DeliveryMethod, loginId: String, refreshJwt: String, options: UpdateOptions) async throws(DescopeError) -> String
 }
 
 
@@ -202,7 +202,7 @@ public protocol DescopeTOTP: Sendable {
     ///   - details: Optional details about the user signing up.
     ///
     /// - Returns: A ``TOTPResponse`` object with the key (seed) in multiple formats.
-    func signUp(loginId: String, details: SignUpDetails?) async throws -> TOTPResponse
+    func signUp(loginId: String, details: SignUpDetails?) async throws(DescopeError) -> TOTPResponse
     
     /// Updates an existing user by adding TOTP as an authentication method.
     ///
@@ -217,7 +217,7 @@ public protocol DescopeTOTP: Sendable {
     ///   - refreshJwt: The existing user's `refreshJwt` from an active ``DescopeSession``.
     ///
     /// - Returns: A ``TOTPResponse`` object with the key (seed) in multiple formats.
-    func update(loginId: String, refreshJwt: String) async throws -> TOTPResponse
+    func update(loginId: String, refreshJwt: String) async throws(DescopeError) -> TOTPResponse
     
     /// Verifies a TOTP code that was generated by an authenticator app.
     ///
@@ -227,7 +227,7 @@ public protocol DescopeTOTP: Sendable {
     ///   - options: Additional behaviors to perform during authentication.
     ///
     /// - Returns: An ``AuthenticationResponse`` value upon successful authentication.
-    func verify(loginId: String, code: String, options: [SignInOptions]) async throws -> AuthenticationResponse
+    func verify(loginId: String, code: String, options: [SignInOptions]) async throws(DescopeError) -> AuthenticationResponse
 }
 
 
@@ -256,7 +256,7 @@ public protocol DescopeMagicLink: Sendable {
     ///   - details: Optional details about the user signing up.
     ///   - redirectURL: Optional URL that will be used to generate the magic link.
     ///     If not given, the project default will be used.
-    func signUp(with method: DeliveryMethod, loginId: String, details: SignUpDetails?, redirectURL: String?) async throws -> String
+    func signUp(with method: DeliveryMethod, loginId: String, details: SignUpDetails?, redirectURL: String?) async throws(DescopeError) -> String
     
     /// Authenticates an existing user using a magic link, sent via a delivery
     /// method of choice.
@@ -271,7 +271,7 @@ public protocol DescopeMagicLink: Sendable {
     ///   - redirectURL: Optional URL that will be used to generate the magic link.
     ///     If not given, the project default will be used.
     ///   - options: Additional behaviors to perform during authentication.
-    func signIn(with method: DeliveryMethod, loginId: String, redirectURL: String?, options: [SignInOptions]) async throws -> String
+    func signIn(with method: DeliveryMethod, loginId: String, redirectURL: String?, options: [SignInOptions]) async throws(DescopeError) -> String
     
     /// Authenticates an existing user if one exists, or creates a new user
     /// using a magic link, sent via a delivery method of choice.
@@ -290,7 +290,7 @@ public protocol DescopeMagicLink: Sendable {
     ///   - redirectURL: Optional URL that will be used to generate the magic link.
     ///     If not given, the project default will be used.
     ///   - options: Additional behaviors to perform during authentication.
-    func signUpOrIn(with method: DeliveryMethod, loginId: String, redirectURL: String?, options: [SignInOptions]) async throws -> String
+    func signUpOrIn(with method: DeliveryMethod, loginId: String, redirectURL: String?, options: [SignInOptions]) async throws(DescopeError) -> String
     
     /// Updates an existing user by adding an email address.
     ///
@@ -307,7 +307,7 @@ public protocol DescopeMagicLink: Sendable {
     ///   - options: Whether to add the new email address as a loginId for the updated user, and
     ///     in that case, if another user already has the same email address as a loginId how to
     ///     merge the two users. See the documentation for ``UpdateOptions`` for more details.
-    func updateEmail(_ email: String, loginId: String, redirectURL: String?, refreshJwt: String, options: UpdateOptions) async throws -> String
+    func updateEmail(_ email: String, loginId: String, redirectURL: String?, refreshJwt: String, options: UpdateOptions) async throws(DescopeError) -> String
     
     /// Updates an existing user by adding a phone number.
     ///
@@ -328,7 +328,7 @@ public protocol DescopeMagicLink: Sendable {
     ///   - options: Whether to add the new phone number as a loginId for the updated user, and
     ///     in that case, if another user already has the same phone number as a loginId how to
     ///     merge the two users. See the documentation for ``UpdateOptions`` for more details.
-    func updatePhone(_ phone: String, with method: DeliveryMethod, loginId: String, redirectURL: String?, refreshJwt: String, options: UpdateOptions) async throws -> String
+    func updatePhone(_ phone: String, with method: DeliveryMethod, loginId: String, redirectURL: String?, refreshJwt: String, options: UpdateOptions) async throws(DescopeError) -> String
     
     /// Verifies a magic link token.
     ///
@@ -339,7 +339,7 @@ public protocol DescopeMagicLink: Sendable {
     /// - Parameter token: The extracted token from the `t` URL parameter from the magic link.
     ///
     /// - Returns: An ``AuthenticationResponse`` value upon successful authentication.
-    func verify(token: String) async throws -> AuthenticationResponse
+    func verify(token: String) async throws(DescopeError) -> AuthenticationResponse
 }
 
 
@@ -374,7 +374,7 @@ public protocol DescopeEnchantedLink: Sendable {
     ///
     /// - Returns: An ``EnchantedLinkResponse`` object with the `linkId` to show the
     ///     user and `pendingRef` for polling for the session.
-    func signUp(loginId: String, details: SignUpDetails?, redirectURL: String?) async throws -> EnchantedLinkResponse
+    func signUp(loginId: String, details: SignUpDetails?, redirectURL: String?) async throws(DescopeError) -> EnchantedLinkResponse
     
     /// Authenticates an existing user using an enchanted link, sent via email.
     ///
@@ -394,7 +394,7 @@ public protocol DescopeEnchantedLink: Sendable {
     ///
     /// - Returns: An ``EnchantedLinkResponse`` object with the `linkId` to show the
     ///     user and `pendingRef` for polling for the session.
-    func signIn(loginId: String, redirectURL: String?, options: [SignInOptions]) async throws -> EnchantedLinkResponse
+    func signIn(loginId: String, redirectURL: String?, options: [SignInOptions]) async throws(DescopeError) -> EnchantedLinkResponse
     
     /// Authenticates an existing user if one exists, or create a new user using an
     /// enchanted link, sent via email.
@@ -415,7 +415,7 @@ public protocol DescopeEnchantedLink: Sendable {
     ///
     /// - Returns: An ``EnchantedLinkResponse`` object with the `linkId` to show the
     ///     user and `pendingRef` for polling for the session.
-    func signUpOrIn(loginId: String, redirectURL: String?, options: [SignInOptions]) async throws -> EnchantedLinkResponse
+    func signUpOrIn(loginId: String, redirectURL: String?, options: [SignInOptions]) async throws(DescopeError) -> EnchantedLinkResponse
     
     /// Updates an existing user by adding an email address.
     ///
@@ -439,7 +439,7 @@ public protocol DescopeEnchantedLink: Sendable {
     ///
     /// - Returns: An ``EnchantedLinkResponse`` object with the `linkId` to show the
     ///     user and `pendingRef` for polling for the session.
-    func updateEmail(_ email: String, loginId: String, redirectURL: String?, refreshJwt: String, options: UpdateOptions) async throws -> EnchantedLinkResponse
+    func updateEmail(_ email: String, loginId: String, redirectURL: String?, refreshJwt: String, options: UpdateOptions) async throws(DescopeError) -> EnchantedLinkResponse
     
     /// Checks if an enchanted link authentication has been verified by the user.
     ///
@@ -454,7 +454,7 @@ public protocol DescopeEnchantedLink: Sendable {
     /// - Parameter pendingRef: The pendingRef value from an ``EnchantedLinkResponse`` object.
     ///
     /// - Returns: An ``AuthenticationResponse`` value upon successful authentication.
-    func checkForSession(pendingRef: String) async throws -> AuthenticationResponse
+    func checkForSession(pendingRef: String) async throws(DescopeError) -> AuthenticationResponse
     
     /// Waits until an enchanted link authentication has been verified by the user.
     ///
@@ -475,7 +475,7 @@ public protocol DescopeEnchantedLink: Sendable {
     ///     given a default value of 2 minutes is used.
     ///
     /// - Returns: An ``AuthenticationResponse`` value upon successful authentication.
-    func pollForSession(pendingRef: String, timeout: TimeInterval?) async throws -> AuthenticationResponse
+    func pollForSession(pendingRef: String, timeout: TimeInterval?) async throws(DescopeError) -> AuthenticationResponse
 }
 
 
@@ -517,7 +517,7 @@ public protocol DescopeOAuth: Sendable {
     ///     this, otherwise the user might accidentally interact with the app when the
     ///     authentication view is not being displayed.
     @MainActor
-    func web(provider: OAuthProvider, accessSharedUserData: Bool, options: [SignInOptions]) async throws -> AuthenticationResponse
+    func web(provider: OAuthProvider, accessSharedUserData: Bool, options: [SignInOptions]) async throws(DescopeError) -> AuthenticationResponse
 
     /// Starts an OAuth redirect chain to authenticate a user.
     ///
@@ -540,7 +540,7 @@ public protocol DescopeOAuth: Sendable {
     ///
     /// - Returns: A URL to redirect to in order to authenticate the user against
     ///     the chosen provider.
-    func webStart(provider: OAuthProvider, redirectURL: String?, options: [SignInOptions]) async throws -> URL
+    func webStart(provider: OAuthProvider, redirectURL: String?, options: [SignInOptions]) async throws(DescopeError) -> URL
 
     /// Completes an OAuth redirect chain by exchanging the code received in
     /// the `code` URL parameter for an ``AuthenticationResponse``.
@@ -549,7 +549,7 @@ public protocol DescopeOAuth: Sendable {
     ///     `code` URL parameter.
     ///
     /// - Returns: An ``AuthenticationResponse`` value upon successful exchange.
-    func webExchange(code: String) async throws -> AuthenticationResponse
+    func webExchange(code: String) async throws(DescopeError) -> AuthenticationResponse
 
     /// Authenticates the user using the native `Sign in with Apple` dialog.
     ///
@@ -583,7 +583,7 @@ public protocol DescopeOAuth: Sendable {
     /// - SeeAlso: For more details about configuring your app and generating client secrets
     ///     see the [Sign in with Apple documentation](https://developer.apple.com/sign-in-with-apple/get-started/).
     @MainActor
-    func native(provider: OAuthProvider, options: [SignInOptions]) async throws -> AuthenticationResponse
+    func native(provider: OAuthProvider, options: [SignInOptions]) async throws(DescopeError) -> AuthenticationResponse
 }
 
 
@@ -609,7 +609,7 @@ public protocol DescopeSSO: Sendable {
     ///
     /// - Returns: A URL to redirect to in order to authenticate the user against
     ///     the chosen provider.
-    func start(emailOrTenantName: String, redirectURL: String?, options: [SignInOptions]) async throws -> URL
+    func start(emailOrTenantName: String, redirectURL: String?, options: [SignInOptions]) async throws(DescopeError) -> URL
     
     /// Completes an SSO redirect chain by exchanging the code received in
     /// the `code` URL parameter for an ``AuthenticationResponse``.
@@ -618,7 +618,7 @@ public protocol DescopeSSO: Sendable {
     ///     `code` URL parameter.
     ///
     /// - Returns: An ``AuthenticationResponse`` value upon successful exchange.
-    func exchange(code: String) async throws -> AuthenticationResponse
+    func exchange(code: String) async throws(DescopeError) -> AuthenticationResponse
 }
 
 /// Authenticate users using a password.
@@ -632,7 +632,7 @@ public protocol DescopePassword: Sendable {
     ///   - password: The user's password.
     ///
     /// - Returns: An ``AuthenticationResponse`` value upon successful authentication.
-    func signUp(loginId: String, password: String, details: SignUpDetails?) async throws -> AuthenticationResponse
+    func signUp(loginId: String, password: String, details: SignUpDetails?) async throws(DescopeError) -> AuthenticationResponse
     
     /// Authenticates an existing user using a password.
     ///
@@ -642,7 +642,7 @@ public protocol DescopePassword: Sendable {
     ///   - password: The user's password.
     ///
     /// - Returns: An ``AuthenticationResponse`` value upon successful authentication.
-    func signIn(loginId: String, password: String) async throws -> AuthenticationResponse
+    func signIn(loginId: String, password: String) async throws(DescopeError) -> AuthenticationResponse
 
     /// Updates a user's password.
     ///
@@ -656,7 +656,7 @@ public protocol DescopePassword: Sendable {
     ///   - loginId: The existing user's loginId.
     ///   - newPassword: The new password to set for the user.
     ///   - refreshJwt: The existing user's `refreshJwt` from an active ``DescopeSession``.
-    func update(loginId: String, newPassword: String, refreshJwt: String) async throws
+    func update(loginId: String, newPassword: String, refreshJwt: String) async throws(DescopeError)
     
     /// Replaces a user's password by providing their current password.
     ///
@@ -669,7 +669,7 @@ public protocol DescopePassword: Sendable {
     ///   - newPassword: The new password to set for the user.
     ///
     /// - Returns: An ``AuthenticationResponse`` value upon successful replacement and authentication.
-    func replace(loginId: String, oldPassword: String, newPassword: String) async throws -> AuthenticationResponse
+    func replace(loginId: String, oldPassword: String, newPassword: String) async throws(DescopeError) -> AuthenticationResponse
     
     /// Sends a password reset email to the user.
     ///
@@ -684,7 +684,7 @@ public protocol DescopePassword: Sendable {
     ///   - loginId: The existing user's loginId.
     ///   - redirectURL: Optional URL that is used by Magic Link or Enchanted Link
     ///     if those are the chosen reset methods.
-    func sendReset(loginId: String, redirectURL: String?) async throws
+    func sendReset(loginId: String, redirectURL: String?) async throws(DescopeError)
 
     /// Fetches the rules for valid passwords.
     ///
@@ -693,7 +693,7 @@ public protocol DescopePassword: Sendable {
     /// for a better user experience.
     ///
     /// In any case, all password rules are enforced by Descope on the server side as well.
-    func getPolicy() async throws -> PasswordPolicyResponse
+    func getPolicy() async throws(DescopeError) -> PasswordPolicyResponse
 }
 
 
@@ -705,7 +705,7 @@ public protocol DescopeAccessKey: Sendable {
     /// - Parameter accessKey: the access key's clear text
     ///
     /// - Returns: A ``DescopeToken`` upon successful exchange.
-    func exchange(accessKey: String) async throws -> DescopeToken
+    func exchange(accessKey: String) async throws(DescopeError) -> DescopeToken
 }
 
 /// Authenticate a user using passkeys.
@@ -728,7 +728,7 @@ public protocol DescopePasskey: Sendable {
     ///
     /// - Returns: An ``AuthenticationResponse`` value upon successful authentication.
     @available(iOS 15.0, *)
-    func signUp(loginId: String, details: SignUpDetails?) async throws -> AuthenticationResponse
+    func signUp(loginId: String, details: SignUpDetails?) async throws(DescopeError) -> AuthenticationResponse
     
     /// Authenticates an existing user by prompting for an existing passkey.
     ///
@@ -742,7 +742,7 @@ public protocol DescopePasskey: Sendable {
     ///
     /// - Returns: An ``AuthenticationResponse`` value upon successful authentication.
     @available(iOS 15.0, *)
-    func signIn(loginId: String, options: [SignInOptions]) async throws -> AuthenticationResponse
+    func signIn(loginId: String, options: [SignInOptions]) async throws(DescopeError) -> AuthenticationResponse
     
     /// Authenticates an existing user if one exists or creates a new one.
     ///
@@ -759,7 +759,7 @@ public protocol DescopePasskey: Sendable {
     ///
     /// - Returns: An ``AuthenticationResponse`` value upon successful authentication.
     @available(iOS 15.0, *)
-    func signUpOrIn(loginId: String, options: [SignInOptions]) async throws -> AuthenticationResponse
+    func signUpOrIn(loginId: String, options: [SignInOptions]) async throws(DescopeError) -> AuthenticationResponse
 
     /// Updates an existing user by adding a new passkey as an authentication method.
     ///
@@ -771,5 +771,5 @@ public protocol DescopePasskey: Sendable {
     /// - Throws: ``DescopeError/passkeyCancelled`` if the async task is cancelled or
     ///     the authentication view is cancelled by the user.
     @available(iOS 15.0, *)
-    func add(loginId: String, refreshJwt: String) async throws
+    func add(loginId: String, refreshJwt: String) async throws(DescopeError)
 }

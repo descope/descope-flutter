@@ -50,7 +50,7 @@ public struct DescopeSession: Sendable {
     ///
     /// This initializer can be used to manually recreate a user's ``DescopeSession`` after
     /// the application is relaunched if not using a ``DescopeSessionManager`` for this.
-    public init(sessionJwt: String, refreshJwt: String, user: DescopeUser) throws {
+    public init(sessionJwt: String, refreshJwt: String, user: DescopeUser) throws(DescopeError) {
         let sessionToken = try Token(jwt: sessionJwt)
         let refreshToken = try Token(jwt: refreshJwt)
         self.init(sessionToken: sessionToken, refreshToken: refreshToken, user: user)

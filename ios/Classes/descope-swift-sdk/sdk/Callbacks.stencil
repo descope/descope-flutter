@@ -15,9 +15,9 @@ public extension {{ protocol.name }} {
     {% for key, value in method.attributes %}
     {{ value[0] }}
     {% endfor %}
-    func {{ method.callName }}({% for param in method.parameters %}{{ param.asSource }}, {% endfor %}completion: @escaping @Sendable (Result<{{ method.actualReturnTypeName }}, Error>) -> Void) {
+    func {{ method.callName }}({% for param in method.parameters %}{{ param.asSource }}, {% endfor %}completion: @escaping @Sendable (Result<{{ method.actualReturnTypeName }}, DescopeError>) -> Void) {
         Task {
-            do {
+            do throws(DescopeError) {
                 completion(.success(try await {{ method.callName }}({% for param in method.parameters %}{% if param.argumentLabel %}{{ param.argumentLabel }}: {% endif %}{{ param.name }}{% if not forloop.last %}, {% endif %}{% endfor %})))
             } catch {
                 completion(.failure(error))

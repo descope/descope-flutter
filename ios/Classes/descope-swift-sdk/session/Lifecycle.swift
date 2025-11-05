@@ -9,7 +9,7 @@ public protocol DescopeSessionLifecycle: AnyObject {
     var session: DescopeSession? { get set }
 
     /// Called by the session manager to conditionally refresh the active session.
-    func refreshSessionIfNeeded() async throws -> Bool
+    func refreshSessionIfNeeded() async throws(DescopeError) -> Bool
 
     /// The session manager sets this closure so it can be notified of successful periodic refreshes.
     var onPeriodicRefresh: () -> Void { get set }
@@ -53,7 +53,7 @@ public class SessionLifecycle: DescopeSessionLifecycle {
         }
     }
     
-    public func refreshSessionIfNeeded() async throws -> Bool {
+    public func refreshSessionIfNeeded() async throws(DescopeError) -> Bool {
         guard let current = session, shouldRefresh(current) else { return false }
 
         logger.info("Refreshing session that is about to expire", current.sessionToken.expiresAt.timeIntervalSinceNow)
@@ -120,7 +120,7 @@ public class SessionLifecycle: DescopeSessionLifecycle {
                 logger.debug("Periodic session refresh succeeded")
                 onPeriodicRefresh()
             }
-        } catch DescopeError.networkError {
+        } catch .networkError {
             logger.debug("Ignoring network error in periodic refresh")
         } catch {
             logger.error("Stopping periodic refresh after failure", error)

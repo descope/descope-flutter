@@ -8,7 +8,7 @@ final class OAuth: DescopeOAuth, Route {
         self.client = client
     }
 
-    func web(provider: OAuthProvider, accessSharedUserData: Bool, options: [SignInOptions]) async throws -> AuthenticationResponse {
+    func web(provider: OAuthProvider, accessSharedUserData: Bool, options: [SignInOptions]) async throws(DescopeError) -> AuthenticationResponse {
         logger.info("Starting OAuth web authentication")
         let url = try await webStart(provider: provider, redirectURL: WebAuth.redirectURL, options: options)
 
@@ -19,18 +19,18 @@ final class OAuth: DescopeOAuth, Route {
         return try await webExchange(code: code)
     }
 
-    func webStart(provider: OAuthProvider, redirectURL: String?, options: [SignInOptions]) async throws -> URL {
+    func webStart(provider: OAuthProvider, redirectURL: String?, options: [SignInOptions]) async throws(DescopeError) -> URL {
         let (refreshJwt, loginOptions) = try options.convert()
         let response = try await client.oauthWebStart(provider: provider, redirectURL: redirectURL, refreshJwt: refreshJwt, options: loginOptions)
         guard let url = URL(string: response.url) else { throw DescopeError.decodeError.with(message: "Invalid redirect URL") }
         return url
     }
 
-    func webExchange(code: String) async throws -> AuthenticationResponse {
+    func webExchange(code: String) async throws(DescopeError) -> AuthenticationResponse {
         return try await client.oauthWebExchange(code: code).convert()
     }
 
-    func native(provider: OAuthProvider, options: [SignInOptions]) async throws -> AuthenticationResponse {
+    func native(provider: OAuthProvider, options: [SignInOptions]) async throws(DescopeError) -> AuthenticationResponse {
         logger.info("Starting authentication using Sign in with Apple")
         let (refreshJwt, loginOptions) = try options.convert()
         let startResponse = try await client.oauthNativeStart(provider: provider, refreshJwt: refreshJwt, options: loginOptions)
