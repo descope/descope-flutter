@@ -54,7 +54,7 @@ final class EnchantedLink: DescopeEnchantedLink, Route {
                     logger.error("Timed out while polling for enchanted link")
                     throw DescopeError.enchantedLinkExpired
                 }
-            } catch let error where error ~= .networkError {
+            } catch let error where error == .networkError {
                 // we managed to start the enchanted link authentication
                 // so any network errors we get now are probably temporary
                 try await Task.sleep(seconds: 1, throwing: .enchantedLinkCancelled)

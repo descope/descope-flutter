@@ -102,6 +102,19 @@ public extension Descope {
     static var accessKey: DescopeAccessKey { sdk.accessKey }
 }
 
+/// Convenience accessors for configuration values.
+public extension Descope {
+    /// Returns the ``DescopeConfig`` value used when the ``Descope`` singleton was setup.
+    static var config: DescopeConfig {
+        return Descope.sdk.config
+    }
+    
+    /// Returns the projectId value used when the ``Descope`` singleton was setup.
+    static var projectId: String {
+        return Descope.sdk.config.projectId
+    }
+}
+
 /// Support for working with Universal Links.
 public extension Descope {
     /// Resumes an ongoing authentication that's waiting for Magic Link authentication.

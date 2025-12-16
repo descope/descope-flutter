@@ -49,6 +49,8 @@ class DescopeFlowViewWrapper: DescopeFlowView, DescopeFlowViewDelegate {
     func start(_ config: [String : Any]) {
         delegate = self
         guard let url = config["url"] as? String else { return }
+        guard let sdkVersion = config["sdkVersion"] as? String else { return }
+
         let descopeFlow = DescopeFlow(url: url)
         if let oauthNativeProvider = config["iosOAuthNativeProvider"] as? String {
             descopeFlow.oauthNativeProvider = OAuthProvider(stringLiteral: oauthNativeProvider)
@@ -56,6 +58,13 @@ class DescopeFlowViewWrapper: DescopeFlowView, DescopeFlowViewDelegate {
         if let magicLinkRedirect = config["magicLinkRedirect"] as? String {
             descopeFlow.magicLinkRedirect = magicLinkRedirect
         }
+
+        descopeFlow.hooks = [
+            .runJavaScript(on: .loaded, code: """
+                window.descopeBridge.hostInfo.sdkName = 'flutter'
+                window.descopeBridge.hostInfo.sdkVersion = '\(sdkVersion)'
+            """),
+        ]
 
         start(flow: descopeFlow)
     }
@@ -87,7 +96,7 @@ class DescopeFlowViewWrapper: DescopeFlowView, DescopeFlowViewDelegate {
     }
 
     func flowViewDidInterceptNavigation(_ flowView: DescopeFlowView, url: URL, external: Bool) {
-        // currently not implemented
+        UIApplication.shared.open(url)
     }
 
     func flowViewDidFail(_ flowView: DescopeFlowView, error: DescopeError) {

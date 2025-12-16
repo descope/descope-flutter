@@ -4,7 +4,9 @@ import android.content.Context
 import android.view.View
 import androidx.core.net.toUri
 import com.descope.android.DescopeFlow
+import com.descope.android.DescopeFlowHook
 import com.descope.android.DescopeFlowView
+import com.descope.android.runJavaScript
 import com.descope.types.AuthenticationResponse
 import com.descope.types.DescopeException
 import com.descope.types.DescopeUser
@@ -95,6 +97,7 @@ class DescopeFlowViewWrapper(
 fun Any?.toDescopeFlow(): DescopeFlow {
     val map = this as? Map<*, *> ?: throw IllegalArgumentException("Flow options are required")
     val url = map["url"] as? String ?: throw IllegalArgumentException("Flow URL is required")
+    val sdkVersion = map["sdkVersion"] as? String ?: throw IllegalArgumentException("SDK version is required")
     return DescopeFlow(url).apply {
         (map["androidOAuthNativeProvider"] as? String)?.let { oauthNativeProvider = OAuthProvider(name = it) }
         (map["oauthRedirect"] as? String)?.let { oauthRedirect = it }
@@ -102,6 +105,12 @@ fun Any?.toDescopeFlow(): DescopeFlow {
         (map["ssoRedirect"] as? String)?.let { ssoRedirect = it }
         (map["ssoRedirectCustomScheme"] as? String)?.let { ssoRedirectCustomScheme = it }
         (map["magicLinkRedirect"] as? String)?.let { magicLinkRedirect = it }
+        hooks = listOf(
+            runJavaScript(DescopeFlowHook.Event.Loaded, """
+                window.descopeBridge.hostInfo.sdkName = 'flutter'
+                window.descopeBridge.hostInfo.sdkVersion = '$sdkVersion'
+            """),
+        )
     }
 }
 
