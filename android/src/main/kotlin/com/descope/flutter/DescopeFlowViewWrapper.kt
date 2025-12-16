@@ -4,7 +4,9 @@ import android.content.Context
 import android.view.View
 import androidx.core.net.toUri
 import com.descope.android.DescopeFlow
+import com.descope.android.DescopeFlowHook
 import com.descope.android.DescopeFlowView
+import com.descope.android.runJavaScript
 import com.descope.types.AuthenticationResponse
 import com.descope.types.DescopeException
 import com.descope.types.DescopeUser
