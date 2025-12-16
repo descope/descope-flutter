@@ -87,7 +87,7 @@ class DescopeFlowViewWrapper: DescopeFlowView, DescopeFlowViewDelegate {
     }
 
     func flowViewDidInterceptNavigation(_ flowView: DescopeFlowView, url: URL, external: Bool) {
-        // currently not implemented
+        UIApplication.shared.open(url)
     }
 
     func flowViewDidFail(_ flowView: DescopeFlowView, error: DescopeError) {
