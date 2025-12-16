@@ -95,6 +95,7 @@ class DescopeFlowViewWrapper(
 fun Any?.toDescopeFlow(): DescopeFlow {
     val map = this as? Map<*, *> ?: throw IllegalArgumentException("Flow options are required")
     val url = map["url"] as? String ?: throw IllegalArgumentException("Flow URL is required")
+    val sdkVersion = map["sdkVersion"] as? String ?: throw IllegalArgumentException("SDK version is required")
     return DescopeFlow(url).apply {
         (map["androidOAuthNativeProvider"] as? String)?.let { oauthNativeProvider = OAuthProvider(name = it) }
         (map["oauthRedirect"] as? String)?.let { oauthRedirect = it }
@@ -102,6 +103,12 @@ fun Any?.toDescopeFlow(): DescopeFlow {
         (map["ssoRedirect"] as? String)?.let { ssoRedirect = it }
         (map["ssoRedirectCustomScheme"] as? String)?.let { ssoRedirectCustomScheme = it }
         (map["magicLinkRedirect"] as? String)?.let { magicLinkRedirect = it }
+        hooks = listOf(
+            runJavaScript(DescopeFlowHook.Event.Loaded, """
+                window.descopeBridge.hostInfo.sdkName = 'flutter'
+                window.descopeBridge.hostInfo.sdkVersion = '$sdkVersion'
+            """),
+        )
     }
 }
 

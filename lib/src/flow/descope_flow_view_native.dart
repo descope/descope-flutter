@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '/src/sdk/sdk.dart';
 import '/src/types/error.dart';
 import '/src/flow/descope_flow_callbacks.dart';
 import '/src/flow/descope_flow_config.dart';
@@ -126,6 +127,7 @@ class _DescopeFlowViewState extends State<DescopeFlowView> {
       'ssoRedirect': widget.config.ssoRedirect,
       'ssoRedirectCustomScheme': widget.config.ssoRedirectCustomScheme,
       'magicLinkRedirect': widget.config.magicLinkRedirect,
+      'sdkVersion': DescopeSdk.version,
     };
 
     if (defaultTargetPlatform == TargetPlatform.android) {
