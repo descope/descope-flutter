@@ -274,10 +274,18 @@ extension DescopeUser {
             middleName: user.middleName,
             familyName: user.familyName,
             picture: user.picture,
-            authentication: user.authentication ?? Authentication(passkey: false, password: false, totp: false, oauth: [], sso: false, scim: false),
-            authorization: user.authorization ?? Authorization(roles: [], ssoAppIds: []),
+            authentication: user.authentication ?? .placeholder,
+            authorization: user.authorization ?? .placeholder,
             customAttributes: customAttributes,
             isUpdateRequired: user.isUpdateRequired ?? true, // if the flag doesn't exist we've got old data without the new fields
         )
     }
+}
+
+extension DescopeUser.Authentication {
+    static let placeholder = DescopeUser.Authentication(passkey: false, password: false, totp: false, oauth: [], sso: false, scim: false)
+}
+
+extension DescopeUser.Authorization {
+    static let placeholder = DescopeUser.Authorization(roles: [], ssoAppIds: [])
 }

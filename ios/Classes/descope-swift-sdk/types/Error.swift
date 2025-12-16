@@ -10,17 +10,21 @@ import Foundation
 ///         showErrorAlert(text: err.localizedDescription)
 ///     }
 ///
+/// Most throwing functions in the Descope SDK specify `throws(DescopeError)` in their signatures,
+/// so you can usually elide the type annotation in `catch` clauses, and use the shortened forms
+/// as in the example below.
+///
 /// There are several ways to catch and handle a ``DescopeError`` thrown by a Descope SDK
 /// operation, and you can use whichever one is more appropriate in each specific use case.
 ///
 ///     do {
 ///         let authResponse = try await Descope.otp.verify(with: .email, loginId: loginId, code: code)
 ///         showLoginSuccess(with: authResponse)
-///     } catch DescopeError.wrongOTPCode, DescopeError.invalidRequest {
+///     } catch .wrongOTPCode, .invalidRequest {
 ///         // catch one or more kinds of errors where we don't
 ///         // need to use the actual error object
 ///         showBadCodeAlert()
-///     } catch let err as DescopeError where err == .networkError {
+///     } catch let err where err == .networkError {
 ///         // catch a specific kind of error and do something
 ///         // with the error object
 ///         logError("A network error has occurred", err.cause)
@@ -32,7 +36,7 @@ import Foundation
 ///     }
 ///
 /// See the ``DescopeError`` extension for specific error values. Note that not all API errors
-/// are listed in the SDK yet. Please let us know via a Github issue or pull request if you
+/// are listed in the SDK yet. Please let us know via a GitHub issue or pull request if you
 /// need us to add any entries to make your code simpler.
 public struct DescopeError: Error {
     /// A string of 7 characters that represents a specific Descope error.
@@ -106,7 +110,7 @@ extension DescopeError: Equatable {
     ///
     ///     do {
     ///        try await Descope.sso.exchange(code: mycode)
-    ///     } catch let err as DescopeError where err == .networkError {
+    ///     } catch let err where err == .networkError {
     ///        print("The network request failed: \(err)")
     ///     }
     public static func == (lhs: DescopeError, rhs: DescopeError) -> Bool {
@@ -120,7 +124,7 @@ extension DescopeError: Equatable {
     ///
     ///     do {
     ///        authResponse = try await Descope.otp.verify(with: .email, loginId: loginId, code: code)
-    ///     } catch DescopeError.wrongOTPCode {
+    ///     } catch .wrongOTPCode {
     ///        showBadCodeAlert()
     ///     }
     public static func ~= (lhs: DescopeError, rhs: Error) -> Bool {

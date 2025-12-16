@@ -94,14 +94,18 @@ public struct DescopeUser: @unchecked Sendable {
     
     // Data Consistency
     
-    /// This flag indicates that the ``DescopeUser`` of the signed in user was saved by an older
-    /// version of the Descope SDK, and some fields that were added to the ``DescopeUser`` class
-    /// might show empty values (`false`, `nil`, etc) as placeholders, until the user is loaded
-    /// from the server again.
+    /// This flag indicates that the ``DescopeUser`` value is stale and a new one should be loaded
+    /// by calling `Descope.auth.me()`.
+    ///
+    /// This property might be `true` if the signed in user was saved by an older version of the
+    /// Descope SDK, and some fields that were added to the ``DescopeUser`` struct might show empty
+    /// values (`false`, `nil`, etc) as placeholders, until the user is loaded again.
     ///
     /// The scenario described above can happen when deploying an app update with a new version of
     /// the Descope SDK, in which case it's recommended to call `Descope.auth.me()` to update the
     /// user data, after which this flag will become `false`.
+    ///
+    /// This property is also `true` when using the ``DescopeUser/placeholder`` value.
     public var isUpdateRequired: Bool
     
     // Accessory types
@@ -217,4 +221,20 @@ extension DescopeUser: Codable {
         let serialized = DescopeUser.serialize(self)
         try serialized.encode(to: encoder)
     }
+}
+
+extension DescopeUser {
+    /// A placeholder ``DescopeUser`` value.
+    ///
+    /// This can be useful in some circumstances, such as an app that only keeps the JWT values
+    /// it gets after the user authenticates but needs to create a ``DescopeSession`` with the
+    /// ``DescopeSession/init(sessionJwt:refreshJwt:user:)`` initializer.
+    ///
+    /// If your code ends up accessing any of the ``DescopeUser`` fields in the ``DescopeSession``
+    /// then make sure to call `Descope.auth.me()` to get an actual ``DescopeUser`` value and
+    /// update your session by calling ``DescopeSession/updateUser(with:)``.
+    ///
+    /// You can check if a ``DescopeSession`` has a valid ``DescopeSession/user`` field by checking
+    /// if the ``isUpdateRequired`` property is `false`.
+    public static let placeholder = DescopeUser(userId: "", loginIds: [], status: .enabled, createdAt: Date(timeIntervalSince1970: 0), email: nil, isVerifiedEmail: false, phone: nil, isVerifiedPhone: false, name: nil, givenName: nil, middleName: nil, familyName: nil, picture: nil, authentication: .placeholder, authorization: .placeholder, customAttributes: [:], isUpdateRequired: true)
 }

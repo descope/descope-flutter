@@ -459,6 +459,7 @@ window.descopeBridge = {
         appName: \(SystemInfo.appName?.javaScriptLiteralString() ?? "''"),
         appVersion: \(SystemInfo.appVersion?.javaScriptLiteralString() ?? "''"), 
         device: \(SystemInfo.device?.javaScriptLiteralString() ?? "''"),
+        webauthn: true,
     },
 
     abortFlow(reason) {
@@ -505,9 +506,8 @@ window.descopeBridge = {
         },
 
         initialize(nativeOptions, refreshJwt, clientInputs) {
-            // send running webpage sdk details to native log
-            const headers = window.customElements?.get('descope-wc')?.sdkConfigOverrides?.baseHeaders || {}
-            console.debug(`Descope ${headers['x-descope-sdk-name'] || 'unknown'} package version "${headers['x-descope-sdk-version'] || 'unknown'}"`)
+            // update webpage sdk headers and print sdk type and version to native log
+            this.updateConfigHeaders()
 
             this.component.nativeOptions = JSON.parse(nativeOptions)
             this.updateRefreshJwt(refreshJwt)
@@ -532,7 +532,7 @@ window.descopeBridge = {
             })
 
             this.component.addEventListener('success', (event) => {
-                const response = event.detail ? JSON.stringify(event.detail) : ''
+                const response = (event.detail && Object.keys(event.detail).length) ? JSON.stringify(event.detail) : ''
                 window.webkit.messageHandlers.\(FlowBridgeMessage.success.rawValue).postMessage(response)
             })
 
@@ -549,6 +549,28 @@ window.descopeBridge = {
                 window.webkit.messageHandlers.\(FlowBridgeMessage.ready.rawValue).postMessage(tag)
             }
             this.disableTouchInteractions()
+        },
+
+        updateConfigHeaders() {
+            const config = window.customElements?.get('descope-wc')?.sdkConfigOverrides || {}
+
+            const headers = config?.baseHeaders || {}
+            console.debug(`Descope ${headers['x-descope-sdk-name'] || 'unknown'} package version "${headers['x-descope-sdk-version'] || 'unknown'}"`)
+
+            const hostInfo = window.descopeBridge.hostInfo
+            headers['x-descope-bridge-name'] = hostInfo.sdkName
+            headers['x-descope-bridge-version'] = hostInfo.sdkVersion
+            headers['x-descope-platform-name'] = hostInfo.platformName
+            headers['x-descope-platform-version'] = hostInfo.platformVersion
+            if (hostInfo.appName) {
+                headers['x-descope-app-name'] = hostInfo.appName
+            }
+            if (hostInfo.appVersion) {
+                headers['x-descope-app-version'] = hostInfo.appVersion
+            }
+            if (hostInfo.device) {
+                headers['x-descope-device'] = hostInfo.device
+            }
         },
 
         disableTouchInteractions() {
