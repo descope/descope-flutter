@@ -1,3 +1,7 @@
+# 0.9.11
+- Support links in iOS native flows
+- Support `mailto:` links everywhere
+
 # 0.9.10
 - Update Descope native SDKs
 
