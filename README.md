@@ -38,7 +38,7 @@ Descope.setup('<Your-Project-Id>', (config) {
   // set a custom base URL (needs to be set up in the Descope console)
   config.baseUrl = 'https://my.app.com';
   // Enable the logger for debugging.
-  // You can use DescopeLogger.debugLogger (or DescopeLogger.unsafeLogger) when testing out the SDK.
+  // You can use DescopeLogger.debugLogger (or DescopeLogger.unsafeLogger) during development or to diagnose issues.
   // For production it is advised to provide a custom implementation hooked up to the application's log monitoring system.
   config.logger = DescopeLogger.debugLogger;
 });
