@@ -23,7 +23,7 @@ class DescopeSdk {
   static const name = 'DescopeFlutter';
 
   /// The Descope SDK version
-  static const version = '0.9.11';
+  static const version = '0.9.12';
 
   /// The configuration of the [DescopeSdk] instance.
   final DescopeConfig config;
