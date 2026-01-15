@@ -68,7 +68,6 @@ class NativeLogBridge {
       }
 
       // Forward to the Flutter logger, which will filter based on its settings
-      // Timestamp is available in `timestamp` variable for future ordering if needed
       logger.log(
         level: level,
         message: message,
