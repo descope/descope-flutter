@@ -14,8 +14,43 @@ public class DescopePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     public static func register(with registrar: FlutterPluginRegistrar) {
         let methodChannel = FlutterMethodChannel(name: "descope_flutter/methods", binaryMessenger: registrar.messenger())
         let eventChannel = FlutterEventChannel(name: "descope_flutter/events", binaryMessenger: registrar.messenger())
+        let logChannel = FlutterMethodChannel(name: "descope_flutter/logs", binaryMessenger: registrar.messenger())
         
         let instance = DescopePlugin()
+
+        // Set up log channel handler for logger configuration from Flutter
+        logChannel.setMethodCallHandler { call, result in
+            if call.method == "configure" {
+                guard let args = call.arguments as? [String: Any],
+                      let levelString = args["level"] as? String,
+                      let unsafe = args["unsafe"] as? Bool else {
+                    result(FlutterError(code: "INVALID_ARGS", message: "Missing level or unsafe arguments", details: nil))
+                    return
+                }
+
+                let level: DescopeLogger.Level
+                switch levelString {
+                case "error":
+                    level = .error
+                case "info":
+                    level = .info
+                default:
+                    level = .debug
+                }
+
+                // Initialize SDK with the logger configured from Flutter
+                // Descope.setup is @MainActor so we ensure we're on the main thread
+                DispatchQueue.main.async {
+                    Descope.setup(projectId: "") { config in
+                        config.logger = FlutterDescopeLogger(channel: logChannel, level: level, unsafe: unsafe)
+                    }
+                }
+
+                result(nil)
+            } else {
+                result(FlutterMethodNotImplemented)
+            }
+        }
 
         eventChannel.setStreamHandler(instance)
         registrar.addMethodCallDelegate(instance, channel: methodChannel)
@@ -304,5 +339,38 @@ extension FlutterError {
         }
 
         self.init(code: code, message: message, details: nil)
+    }
+}
+
+/// A DescopeLogger subclass that forwards all logs to Flutter via a MethodChannel.
+/// This logger is configured with the level and unsafe settings from the Flutter layer.
+private class FlutterDescopeLogger: DescopeLogger {
+    private let channel: FlutterMethodChannel
+
+    init(channel: FlutterMethodChannel, level: Level, unsafe: Bool) {
+        self.channel = channel
+        super.init(level: level, unsafe: unsafe)
+    }
+
+    override func output(level: Level, message: String, unsafe values: [Any]) {
+        let levelString: String
+        switch level {
+        case .error:
+            levelString = "error"
+        case .info:
+            levelString = "info"
+        case .debug:
+            levelString = "debug"
+        }
+
+        let valuesArray = values.map { String(describing: $0) }
+
+        DispatchQueue.main.async {
+            self.channel.invokeMethod("log", arguments: [
+                "level": levelString,
+                "message": message,
+                "values": valuesArray,
+            ])
+        }
     }
 }

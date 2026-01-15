@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated
 import '/src/internal/http/descope_client.dart';
+import '/src/internal/others/native_log_bridge.dart';
 import '/src/internal/routes/auth.dart';
 import '/src/internal/routes/enchanted_link.dart';
 import '/src/internal/routes/flow.dart';
@@ -22,7 +23,7 @@ class DescopeSdk {
   static const name = 'DescopeFlutter';
 
   /// The Descope SDK version
-  static const version = '0.9.11';
+  static const version = '0.9.12';
 
   /// The configuration of the [DescopeSdk] instance.
   final DescopeConfig config;
@@ -68,6 +69,8 @@ class DescopeSdk {
     // init config
     final config = DescopeConfig(projectId: projectId);
     configure?.call(config);
+    // init native log bridge to receive logs from native SDK layers
+    NativeLogBridge.pipeNativeLogs(config.logger);
     // init auth methods
     final client = DescopeClient(config);
     return DescopeSdk._internal(config, Flow(client), Auth(client), Otp(client), Totp(client), MagicLink(client), EnchantedLink(client), OAuth(client), Sso(client), Passkey(client), Password(client));

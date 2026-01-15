@@ -186,7 +186,15 @@ extension FlowBridge {
             if tag == "fail" {
                 logger.error("Bridge encountered script error in webpage", message)
             } else if logger.isUnsafeEnabled {
-                logger.debug("Webview console.\(tag): \(message)")
+                let logMessage = "Webview console.\(tag): \(message)"
+                switch tag {
+                case "error":
+                    logger.error(logMessage)
+                case "warn", "info", "log":
+                    logger.info(logMessage)
+                default:
+                    logger.debug(logMessage)
+                }
             }
         case .found:
             logger.info("Bridge received found event")
@@ -438,12 +446,21 @@ private struct FlowNativeOptions: Encodable {
 /// Redirects errors and console logs to the bridge
 private let loggingScript = """
 
-window.onerror = (s) => { window.webkit.messageHandlers.\(FlowBridgeMessage.log.rawValue).postMessage({ tag: 'fail', message: s }) }
-window.console.error = (s) => { window.webkit.messageHandlers.\(FlowBridgeMessage.log.rawValue).postMessage({ tag: 'error', message: s }) }
-window.console.warn = (s) => { window.webkit.messageHandlers.\(FlowBridgeMessage.log.rawValue).postMessage({ tag: 'warn', message: s }) }
-window.console.info = (s) => { window.webkit.messageHandlers.\(FlowBridgeMessage.log.rawValue).postMessage({ tag: 'info', message: s }) }
-window.console.debug = (s) => { window.webkit.messageHandlers.\(FlowBridgeMessage.log.rawValue).postMessage({ tag: 'debug', message: s }) }
-window.console.log = (s) => { window.webkit.messageHandlers.\(FlowBridgeMessage.log.rawValue).postMessage({ tag: 'log', message: s }) }
+(function() {
+    function stringify(args) {
+        return Array.from(args).map(arg => {
+            if (!arg) return ""
+            if (typeof arg === 'string') return arg
+            return JSON.stringify(arg)
+        }).join(' ')
+    }
+    window.onerror = function() { window.webkit.messageHandlers.\(FlowBridgeMessage.log.rawValue).postMessage({ tag: 'fail', message: stringify(arguments) }) };
+    window.console.error = function() { window.webkit.messageHandlers.\(FlowBridgeMessage.log.rawValue).postMessage({ tag: 'error', message: stringify(arguments) }) };
+    window.console.warn = function() { window.webkit.messageHandlers.\(FlowBridgeMessage.log.rawValue).postMessage({ tag: 'warn', message: stringify(arguments) }) };
+    window.console.info = function() { window.webkit.messageHandlers.\(FlowBridgeMessage.log.rawValue).postMessage({ tag: 'info', message: stringify(arguments) }) };
+    window.console.debug = function() { window.webkit.messageHandlers.\(FlowBridgeMessage.log.rawValue).postMessage({ tag: 'debug', message: stringify(arguments) }) };
+    window.console.log = function() { window.webkit.messageHandlers.\(FlowBridgeMessage.log.rawValue).postMessage({ tag: 'log', message: stringify(arguments) }) };
+})();
 
 """
 

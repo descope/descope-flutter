@@ -1,3 +1,8 @@
+# 0.9.12
+
+- Stream native (iOS/Android) logs to the Flutter `DescopeLogger`
+- **Breaking Change**: Renamed `DescopeLogger` properties to `level` and `unsafe`
+
 # 0.9.11
 - Support links in iOS native flows
 - Support `mailto:` links everywhere
