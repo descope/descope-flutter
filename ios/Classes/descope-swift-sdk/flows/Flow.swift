@@ -171,7 +171,7 @@ extension DescopeFlow: CustomStringConvertible {
     }
 }
 
-/// Convenience constructor when use Descope's Flow hosting service
+/// Convenience constructor when using Descope's Flow hosting service
 extension DescopeFlow {
     /// Creates a new ``DescopeFlow`` object that encapsulates a single flow run.
     ///
