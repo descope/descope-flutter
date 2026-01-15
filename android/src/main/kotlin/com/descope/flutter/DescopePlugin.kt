@@ -2,14 +2,18 @@ package com.descope.flutter
 
 import android.content.Context
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
+import com.descope.Descope
 import com.descope.android.DescopeSystemInfo
 import com.descope.internal.routes.getPackageOrigin
 import com.descope.internal.routes.performAssertion
 import com.descope.internal.routes.performNativeAuthorization
 import com.descope.internal.routes.performRegister
+import com.descope.sdk.DescopeLogger
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -25,6 +29,7 @@ import kotlinx.coroutines.launch
 /** DescopePlugin */
 class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   private var channel : MethodChannel? = null
+  private var logChannel: MethodChannel? = null
   private var context: Context? = null
   private lateinit var storage: Store
 
@@ -180,6 +185,38 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "descope_flutter/methods")
     channel?.setMethodCallHandler(this)
 
+    // Set up the log channel with a handler for logger configuration from Flutter
+    val logsChannel = MethodChannel(flutterPluginBinding.binaryMessenger, "descope_flutter/logs")
+    logChannel = logsChannel
+    val applicationContext = flutterPluginBinding.applicationContext
+
+    logsChannel.setMethodCallHandler { call, result ->
+      if (call.method == "configure") {
+        val levelString = call.argument<String>("level")
+        val unsafe = call.argument<Boolean>("unsafe")
+
+        if (levelString == null || unsafe == null) {
+          result.error("INVALID_ARGS", "Missing level or unsafe arguments", null)
+          return@setMethodCallHandler
+        }
+
+        val level = when (levelString) {
+          "error" -> DescopeLogger.Level.Error
+          "info" -> DescopeLogger.Level.Info
+          else -> DescopeLogger.Level.Debug
+        }
+
+        // Initialize SDK with the logger configured from Flutter
+        Descope.setup(applicationContext, projectId = "") {
+          logger = FlutterDescopeLogger(logsChannel, level, unsafe)
+        }
+
+        result.success(null)
+      } else {
+        result.notImplemented()
+      }
+    }
+
     flutterPluginBinding.platformViewRegistry.registerViewFactory(
       "descope_flutter/descope_flow_view",
       DescopeFlowViewFactory(flutterPluginBinding.binaryMessenger)
@@ -189,6 +226,8 @@ class DescopePlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     channel?.setMethodCallHandler(null)
     channel = null
+    logChannel?.setMethodCallHandler(null)
+    logChannel = null
   }
 
   // ActivityAware
@@ -271,4 +310,32 @@ private fun createEncryptedStore(context: Context, projectId: String): Store {
       return Store.none
     }
   }
+}
+
+// Logger
+
+/**
+ * A DescopeLogger subclass that forwards all logs to Flutter via a MethodChannel.
+ * This logger mirrors the level and unsafe settings from the Flutter layer.
+ */
+private class FlutterDescopeLogger(private val channel: MethodChannel, level: Level, unsafe: Boolean) : DescopeLogger(level, unsafe) {
+    private val handler = Handler(Looper.getMainLooper())
+
+    override fun output(level: Level, message: String, values: List<Any>) {
+        val levelString = when (level) {
+            Level.Error -> "error"
+            Level.Info -> "info"
+            Level.Debug -> "debug"
+        }
+
+        val valuesArray = values.map { it.toString() }
+
+        handler.post {
+            channel.invokeMethod("log", mapOf(
+                "level" to levelString,
+                "message" to message,
+                "values" to valuesArray,
+            ))
+        }
+    }
 }
