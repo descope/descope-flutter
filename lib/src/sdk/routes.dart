@@ -493,7 +493,7 @@ abstract class DescopeOAuth {
   /// being displayed.
   ///
   /// If you haven't already configured your app to support Sign in with Google you'll
-  /// probably need to set up your [Google APIs console project](https://developers.google.com/identity/one-tap/android/get-started#api-console)
+  /// probably need to set up your [Google APIs console project](https://developer.android.com/identity/sign-in/credential-manager-siwg#set-google)
   /// for this. You should also configure an OAuth provider for Google in the in the
   /// [Descope console](https://app.descope.com/settings/authentication/social),
   /// with its `Grant Type` set to `Implicit`. Also note that the `Client ID` and
