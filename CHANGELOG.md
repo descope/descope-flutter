@@ -1,3 +1,7 @@
+# 0.9.13
+
+- Update Descope iOS native SDK
+
 # 0.9.12
 
 - Stream native (iOS/Android) logs to the Flutter `DescopeLogger`
