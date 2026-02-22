@@ -61,6 +61,43 @@ extension DescopeLogger? {
     func debug(_ message: String, _ values: Any?...) {
         self?.log(.debug, message, values)
     }
+    
+    func sanitize(error: Error) -> String {
+        let error = error as NSError
+        var desc = "\(error)"
+        if !isUnsafeEnabled {
+            for v in error.userInfo.values {
+                if let url = v as? URL {
+                    desc = desc.replacingOccurrences(of: url.absoluteString, with: sanitize(url: url))
+                }
+            }
+        }
+        return desc
+    }
+
+    func sanitize(url: URL?) -> String {
+        guard let url, var components = URLComponents(url: url, resolvingAgainstBaseURL: true) else { return "-" }
+        guard !isUnsafeEnabled else { return url.absoluteString }
+        
+        let (query, fragment) = (components.query, components.fragment)
+        components.query = nil
+        components.fragment = nil
+        
+        guard var sanitized = components.url?.absoluteString else { return "-" }
+        if let query {
+            sanitized += "?" + mask(query)
+        }
+        if let fragment {
+            sanitized += "#" + mask(fragment)
+        }
+        
+        return sanitized
+    }
+    
+    private func mask(_ s: String) -> String {
+        let chars = s.map { ch in "./?&=".contains(ch) ? ch : Character("*") }
+        return String(chars)
+    }
 }
 
 extension DescopeFlow {

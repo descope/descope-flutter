@@ -185,7 +185,7 @@ extension FlowBridge {
             guard let json = message.body as? [String: Any], let tag = json["tag"] as? String, let message = json["message"] as? String else { return }
             if tag == "fail" {
                 logger.error("Bridge encountered script error in webpage", message)
-            } else if logger.isUnsafeEnabled {
+            } else if logger.isUnsafeEnabled && !message.contains("Fetched theme") {
                 let logMessage = "Webview console.\(tag): \(message)"
                 switch tag {
                 case "error":
@@ -195,6 +195,8 @@ extension FlowBridge {
                 default:
                     logger.debug(logMessage)
                 }
+            } else if tag == "error" {
+                logger.error("Bridge console reported an error: \(message)")
             }
         case .found:
             logger.info("Bridge received found event")
@@ -247,29 +249,30 @@ extension FlowBridge: WKNavigationDelegate {
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
         switch navigationAction.navigationType {
         case .linkActivated:
-            logger.info("Webview intercepted link", navigationAction.request.url?.absoluteString)
+            logger.info("Webview intercepted link: \(logger.sanitize(url: navigationAction.request.url))")
             if let url = navigationAction.request.url {
                 delegate?.bridgeDidInterceptNavigation(self, url: url, external: false)
             }
             return .cancel
         default:
-            logger.info("Webview will load url", navigationAction.navigationType == .other ? nil : "type=\(navigationAction.navigationType.rawValue)", navigationAction.request.url?.absoluteString)
+            let type = navigationAction.navigationType == .other ? "" : " [type=\(navigationAction.navigationType.rawValue)]"
+            logger.info("Webview will load url\(type): \(logger.sanitize(url: navigationAction.request.url))")
             return .allow
         }
     }
 
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation) {
-        logger.info("Webview started loading webpage")
+        logger.info("Webview started loading webpage <\(navigation.id)>")
         delegate?.bridgeDidStartLoading(self)
     }
 
     func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation) {
-        logger.info("Webview received server redirect", webView.url)
+        logger.info("Webview received server redirect: \(logger.sanitize(url: webView.url)) <\(navigation.id)>")
     }
 
     func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse) async -> WKNavigationResponsePolicy {
         if let response = navigationResponse.response as? HTTPURLResponse, let error = HTTPError(statusCode: response.statusCode) {
-            logger.error("Webview failed loading page", error)
+            logger.error("Webview failed loading page: \(error)")
             let networkError = DescopeError.networkError.with(message: error.description)
             if response.statusCode >= 500 {
                 scheduleRetryAfterError(networkError)
@@ -283,28 +286,36 @@ extension FlowBridge: WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation, withError error: Error) {
+        var error = error as NSError
+        
+        // Ignore navigation cancellations that are an expected part of the navigation lifecycle
+        // due to, e.g., redirects,
+        if error.domain == NSURLErrorDomain && error.code == NSURLErrorCancelled {
+            return logger.info("Webview ignoring cancellation <\(navigation.id)>")
+        }
+
         // Don't print an error log if this was triggered by a non-2xx status code that was caught
         // above and causing the delegate function to return `.cancel`. We rely on the coordinator
         // to not notify about errors multiple times.
-        if case let error = error as NSError, error.domain == "WebKitErrorDomain", error.code == 102 { // https://chromium.googlesource.com/chromium/src/+/2233628f5f5b32c7b458428f8d5cfbd0a18be82e/ios/web/public/web_kit_constants.h#25
-            logger.debug("Webview loading has already been cancelled")
-        } else {
-            logger.error("Webview failed loading url", error)
+        if error.domain == "WebKitErrorDomain", error.code == 102 { // https://chromium.googlesource.com/chromium/src/+/2233628f5f5b32c7b458428f8d5cfbd0a18be82e/ios/web/public/web_kit_constants.h#25
+            return logger.info("Webview loading has already been cancelled <\(navigation.id)>")
         }
+
+        logger.error("Webview failed loading url: \(logger.sanitize(error: error)) <\(navigation.id)>")
         scheduleRetryAfterError(DescopeError.networkError.with(cause: error))
     }
 
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation) {
-        logger.info("Webview received response")
+        logger.info("Webview received response <\(navigation.id)>")
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
-        logger.info("Webview finished loading webpage")
+        logger.info("Webview finished loading webpage <\(navigation.id)>")
         delegate?.bridgeDidFinishLoading(self)
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation, withError error: Error) {
-        logger.error("Webview failed loading webpage", error)
+        logger.error("Webview failed loading webpage: \(logger.sanitize(error: error)) <\(navigation.id)>")
         scheduleRetryAfterError(DescopeError.networkError.with(cause: error))
     }
 }
@@ -440,6 +451,21 @@ private struct FlowNativeOptions: Encodable {
     var payload: String {
         guard let data = try? JSONEncoder().encode(self), let value = String(bytes: data, encoding: .utf8) else { return "{}" }
         return value
+    }
+}
+
+private extension WKNavigation {
+    private static var ids: [ObjectIdentifier: Int] = [:]
+    private static var next: Int = 0
+    
+    var id: Int {
+        let key = ObjectIdentifier(self)
+        if let id = WKNavigation.ids[key] {
+            return id
+        }
+        WKNavigation.next += 1
+        WKNavigation.ids[key] = WKNavigation.next
+        return WKNavigation.next
     }
 }
 

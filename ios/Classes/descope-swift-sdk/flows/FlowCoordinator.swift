@@ -290,7 +290,7 @@ public class DescopeFlowCoordinator {
         // keep its own state to ensure it only reports a single failure
         guard state != .failed  else { return }
 
-        logger.error("Flow failed with \(error.code) error", error)
+        logger.error("Flow failed with error: \(logger.sanitize(error: error))")
 
         state = .failed
         stopSessionTimer()
