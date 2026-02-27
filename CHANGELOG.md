@@ -1,3 +1,7 @@
+# 0.9.14
+
+- Bump Component version to 3.56.0 for Flutter web flows
+
 # 0.9.13
 
 - Update Descope iOS native SDK
