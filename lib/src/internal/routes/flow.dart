@@ -17,6 +17,7 @@ import '/src/types/error.dart';
 import '/src/types/flows.dart';
 import '/src/types/responses.dart';
 
+const _webComponentVersion = '3.56.0';
 const _defaultRedirectURL = 'descopeauth://flow';
 const _defaultContainerCss = {
   "background-color": "white",
@@ -189,8 +190,9 @@ class Flow extends DescopeFlow {
   void _addFlowScriptToPage() {
     // when the script version updates, search and remove any preexisting tags (currently none)
     // added only once
-    if (querySelectorAll('.web-component-script-3-8-10').isEmpty) {
-        var script = Element.html('<script src="https://cdn.jsdelivr.net/npm/@descope/web-component@3.8.10" class="web-component-script-3-8-10"></script>', validator: _htmlValidator);
+    final webComponentClass = 'web-component-script-${_webComponentVersion.replaceAll('.', '-')}';
+    if (querySelectorAll('.$webComponentClass').isEmpty) {
+        var script = Element.html('<script src="https://cdn.jsdelivr.net/npm/@descope/web-component@$_webComponentVersion" class="$webComponentClass"></script>', validator: _htmlValidator);
         document.body?.children.add(script);
     }
   }
