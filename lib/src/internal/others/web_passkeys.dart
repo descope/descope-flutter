@@ -1,6 +1,5 @@
-import '/src/internal/others/stubs/stub_html.dart' if (dart.library.js) 'dart:html' hide Platform;
-import '/src/internal/others/stubs/stub_js_util.dart' if (dart.library.js) 'dart:js_util';
-import '/src/internal/others/stubs/stub_package_js.dart' if (dart.library.js) 'package:js/js.dart';
+import '/src/internal/others/stubs/stub_html.dart' if (dart.library.js_interop) 'dart:html' hide Platform;
+import '/src/internal/others/stubs/stub_js_interop.dart' if (dart.library.js_interop) 'dart:js_interop';
 
 import '/src/internal/others/error.dart';
 import '/src/types/error.dart';
@@ -9,7 +8,7 @@ class WebPasskeys {
  bool isSupported() {
     try {
       _setupJs();
-      return descopeIsWebAuthnSupported();
+      return descopeIsWebAuthnSupported().toDart;
     } catch (e) {
       throw DescopeException.passkeyFailed.add(message: e.toString());
     }
@@ -27,9 +26,9 @@ class WebPasskeys {
     try {
       _setupJs();
       if (create) {
-        return await promiseToFuture(descopeWebAuthnCreate(options));
+        return (await descopeWebAuthnCreate(options.toJS).toDart).toDart;
       } else {
-        return await promiseToFuture(descopeWebAuthnGet(options));
+        return (await descopeWebAuthnGet(options.toJS).toDart).toDart;
       }
     } catch (e) {
       throw DescopeException.passkeyFailed.add(message: e.toString());
@@ -44,13 +43,13 @@ void _setupJs() async {
 }
 
 @JS()
-external dynamic descopeIsWebAuthnSupported();
+external JSBoolean descopeIsWebAuthnSupported();
 
 @JS()
-external dynamic descopeWebAuthnCreate(String options);
+external JSPromise<JSString> descopeWebAuthnCreate(JSString options);
 
 @JS()
-external dynamic descopeWebAuthnGet(String options);
+external JSPromise<JSString> descopeWebAuthnGet(JSString options);
 
 const _webauthnScript = """
 
