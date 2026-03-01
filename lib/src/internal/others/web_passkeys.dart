@@ -1,8 +1,8 @@
 import '/src/internal/others/stubs/stub_html.dart' if (dart.library.js_interop) 'dart:html' hide Platform;
 import '/src/internal/others/stubs/stub_js_interop.dart' if (dart.library.js_interop) 'dart:js_interop';
 
-import '/src/internal/others/error.dart';
 import '/src/types/error.dart';
+import '/src/internal/others/error.dart';
 
 class WebPasskeys {
  bool isSupported() {
