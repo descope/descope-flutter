@@ -1,3 +1,8 @@
+# 0.9.15
+
+- Fix web component CDN URL to load browser-compatible bundle for versions >= 3.9.0
+- Migrate from deprecated `package:js` to `dart:js_interop`
+
 # 0.9.14
 
 - Bump Component version to 3.56.0 for Flutter web flows
