@@ -192,7 +192,7 @@ class Flow extends DescopeFlow {
     // added only once
     final webComponentClass = 'web-component-script-${_webComponentVersion.replaceAll('.', '-')}';
     if (querySelectorAll('.$webComponentClass').isEmpty) {
-        var script = Element.html('<script src="https://cdn.jsdelivr.net/npm/@descope/web-component@$_webComponentVersion" class="$webComponentClass"></script>', validator: _htmlValidator);
+        var script = Element.html('<script src="https://cdn.jsdelivr.net/npm/@descope/web-component@$_webComponentVersion/dist/index.js" class="$webComponentClass"></script>', validator: _htmlValidator);
         document.body?.children.add(script);
     }
   }
