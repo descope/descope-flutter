@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.17](https://github.com/descope/descope-flutter/compare/descope-v0.9.16...descope-v0.9.17) (2026-03-01)
+
+
+### Bug Fixes
+
+* add app-token ([#185](https://github.com/descope/descope-flutter/issues/185)) ([8b94392](https://github.com/descope/descope-flutter/commit/8b94392b8892314bc92dace9667712c1f2759791))
+* Document correct minimum version ([#181](https://github.com/descope/descope-flutter/issues/181)) ([39f3be3](https://github.com/descope/descope-flutter/commit/39f3be3b3893ffa8e64c566c9448b5b1bbe5ba5d))
+* release-please to update in-code version ([2d29417](https://github.com/descope/descope-flutter/commit/2d29417da972073d94569fc85996f045d5bbefd0))
+
 ## [0.9.16](https://github.com/descope/descope-flutter/compare/descope-v0.9.15...descope-v0.9.16) (2026-03-01)
 
 
