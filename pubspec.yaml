@@ -7,8 +7,8 @@ issue_tracker: https://github.com/descope/descope-flutter/issues
 documentation: https://docs.descope.com/
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=1.17.0"
+  sdk: ">=3.1.0 <4.0.0"
+  flutter: ">=3.13.0"
 
 dependencies:
   cryptography: ^2.5.0
