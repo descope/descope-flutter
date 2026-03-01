@@ -2,6 +2,7 @@
 
 - Fix web component CDN URL to load browser-compatible bundle for versions >= 3.9.0
 - Migrate from deprecated `package:js` to `dart:js_interop`
+- Minimum Dart and Flutter versions raised to 3.3.0 and 3.19.0 respectively
 
 # 0.9.14
 
