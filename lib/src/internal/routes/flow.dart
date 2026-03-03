@@ -48,7 +48,7 @@ class Flow extends DescopeFlow {
   final _htmlValidator = NodeValidatorBuilder.common()
     ..allowElement('style')
     ..allowElement('script', attributes: ['src'])
-    ..allowElement(_webComponentTag, attributes: ['project-id', 'flow-id', 'base-url', 'locale', 'debug']);
+    ..allowElement(_webComponentTag, attributes: ['project-id', 'flow-id', 'base-url', 'style-id', 'locale', 'debug']);
 
   final DescopeClient client;
   _FlowRunner? _current;
@@ -137,7 +137,7 @@ class Flow extends DescopeFlow {
     if (flowId == null) throw DescopeException.flowSetup.add(message: 'Web flows require a flow ID');
 
     final String? styleId = runner._options.web?.styleId;
-    final String styleAttr = (styleId != null && styleId.isNotEmpty) ? ' style-id="$styleId"' : '';
+    final String styleAttr = (styleId != null && styleId.isNotEmpty) ? 'style-id="$styleId"' : '';
 
     // inject style and wc script into page
     _addFlowStyleToPage(runner);
