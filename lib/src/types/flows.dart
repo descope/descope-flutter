@@ -33,6 +33,7 @@ class DescopeMobileFlowOptions {
 class DescopeWebFlowOptions {
   String flowId;
   Map<String, String>? flowContainerCss;
+  String? styleId;
 
-  DescopeWebFlowOptions({required this.flowId, this.flowContainerCss});
+  DescopeWebFlowOptions({required this.flowId, this.flowContainerCss, this.styleId});
 }

@@ -136,9 +136,7 @@ class Flow extends DescopeFlow {
     final flowId = runner._options.web?.flowId;
     if (flowId == null) throw DescopeException.flowSetup.add(message: 'Web flows require a flow ID');
 
-    // hacky workaround for getting the style id from the mobile flow url. 
-    final String? mobileUrlString = runner._options.mobile?.flowUrl;
-    final String? styleId = Uri.tryParse(mobileUrlString ?? '')?.queryParameters['style'];
+    final String? styleId = runner._options.web?.styleId;
     final String styleAttr = (styleId != null && styleId.isNotEmpty) ? ' style-id="$styleId"' : '';
 
     // inject style and wc script into page
