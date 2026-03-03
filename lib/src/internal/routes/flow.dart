@@ -136,6 +136,11 @@ class Flow extends DescopeFlow {
     final flowId = runner._options.web?.flowId;
     if (flowId == null) throw DescopeException.flowSetup.add(message: 'Web flows require a flow ID');
 
+    // hacky workaround for getting the style id from the mobile flow url. 
+    final String? mobileUrlString = runner._options.mobile?.flowUrl;
+    final String? styleId = Uri.tryParse(mobileUrlString ?? '')?.queryParameters['style'];
+    final String styleAttr = (styleId != null && styleId.isNotEmpty) ? ' style-id="$styleId"' : '';
+
     // inject style and wc script into page
     _addFlowStyleToPage(runner);
     _addFlowScriptToPage();
@@ -143,7 +148,7 @@ class Flow extends DescopeFlow {
     // create a login container
     var loginContainer = DivElement();
     loginContainer.className = "hidden-container";
-    Element wc = Element.html('<descope-wc project-id=${client.config.projectId} flow-id=$flowId base-url=${client.baseUrl}/>', validator: _htmlValidator);
+    Element wc = Element.html('<descope-wc project-id=${client.config.projectId} flow-id=$flowId $styleAttr base-url=${client.baseUrl}/>', validator: _htmlValidator);
     loginContainer.children.add(wc);
     // loginContainer.children.add(loadingElement);
     document.body?.children.add(loginContainer);
