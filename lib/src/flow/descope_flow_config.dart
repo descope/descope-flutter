@@ -1,3 +1,4 @@
+import '/descope.dart';
 
 /// Provide configurations when embedding a FlowView into your app
 class DescopeFlowConfig {
@@ -49,4 +50,21 @@ class DescopeFlowConfig {
   String? magicLinkRedirect;
 
   DescopeFlowConfig({required this.url, this.androidOAuthNativeProvider, this.iosOAuthNativeProvider, this.oauthRedirect, this.oauthRedirectCustomScheme, this.ssoRedirect, this.ssoRedirectCustomScheme, this.magicLinkRedirect});
+
+  /// Creates a [DescopeFlowConfig] with a URL built from the flow ID, for use with
+  /// Descope's Flow hosting service.
+  ///
+  /// Use the cascade operator to set additional options:
+  ///
+  ///     DescopeFlowConfig.hosted('sign-in')
+  ///       ..androidOAuthNativeProvider = 'google'
+  ///       ..iosOAuthNativeProvider = 'apple'
+  ///
+  /// The optional [sdk] parameter can be provided to use a specific [DescopeSdk] instance
+  /// instead of the [Descope] singleton.
+  factory DescopeFlowConfig.hosted(String flowId, {DescopeSdk? sdk}) {
+    final descope = sdk ?? Descope.sdk;
+    return DescopeFlowConfig(url: '${descope.client.baseUrl}/login/${descope.client.config.projectId}?wide=true&platform=mobile&flow=$flowId');
+  }
+
 }

@@ -347,6 +347,8 @@ class _NativeFlowScreenState extends State<NativeFlowScreen> {
                 child: DescopeFlowView(
                   config: DescopeFlowConfig(
                     url: '<URL for where the flow is hosted, for example: https://api.descope.com/login/[MY_PROJECT_ID]?flow=[MY_FLOW_ID]>',
+                    // If using Descope hosted flows, you can provide the flow ID directly:
+                    // use DescopeFlowConfig.hosted('<FLOW_ID_TO_RUN>') instead of the constructor above
                     // Optional parameters - will be required according to the flow you're using
                     // and the authentication methods it contains
                     androidOAuthNativeProvider: 'google', // an example supporting native Google Sign In on Android

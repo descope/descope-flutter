@@ -93,6 +93,9 @@ class Descope {
   /// Authentication with passwords.
   static DescopePassword get password => _sdk.password;
 
+  /// The underlying [DescopeSdk] object used by the [Descope] singleton.
+  static DescopeSdk get sdk => _sdk;
+
   // The underlying DescopeSdk object used by the Descope singleton.
   static late final DescopeSdk _sdk;
 
