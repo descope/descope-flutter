@@ -43,7 +43,7 @@ class Descope {
   /// the Descope console. Use the optional [configure] function to
   /// finely configure the Descope SDK.
   static void setup(String projectId, [Function(DescopeConfig)? configure]) {
-    _sdk = DescopeSdk(projectId, configure);
+    globalSdk = DescopeSdk(projectId, configure);
   }
 
   /// Manages the storage and lifetime of a [DescopeSession].
@@ -93,11 +93,8 @@ class Descope {
   /// Authentication with passwords.
   static DescopePassword get password => _sdk.password;
 
-  /// The underlying [DescopeSdk] object used by the [Descope] singleton.
-  static DescopeSdk get sdk => _sdk;
-
   // The underlying DescopeSdk object used by the Descope singleton.
-  static late final DescopeSdk _sdk;
+  static DescopeSdk get _sdk => globalSdk;
 
   // This class cannot be instantiated.
   Descope._();

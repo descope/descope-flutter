@@ -1,4 +1,5 @@
-import '/descope.dart';
+import '/src/internal/http/descope_client.dart';
+import '/src/sdk/sdk.dart';
 
 /// Provide configurations when embedding a FlowView into your app
 class DescopeFlowConfig {
@@ -63,8 +64,9 @@ class DescopeFlowConfig {
   /// The optional [sdk] parameter can be provided to use a specific [DescopeSdk] instance
   /// instead of the [Descope] singleton.
   factory DescopeFlowConfig.hosted(String flowId, {DescopeSdk? sdk}) {
-    final descope = sdk ?? Descope.sdk;
-    return DescopeFlowConfig(url: '${descope.client.baseUrl}/login/${descope.client.config.projectId}?wide=true&platform=mobile&flow=$flowId');
+    final config = (sdk ?? globalSdk).config;
+    final baseUrl = config.baseUrl ?? baseUrlForProjectId(config.projectId);
+    return DescopeFlowConfig(url: '$baseUrl/login/${config.projectId}?wide=true&platform=mobile&flow=$flowId');
   }
 
 }

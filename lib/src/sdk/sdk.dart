@@ -28,9 +28,6 @@ class DescopeSdk {
   /// The configuration of the [DescopeSdk] instance.
   final DescopeConfig config;
 
-  /// The HTTP client used for Descope API calls.
-  final DescopeClient client;
-
   /// Authenticate using an authentication flow
   final DescopeFlow flow;
 
@@ -76,9 +73,12 @@ class DescopeSdk {
     NativeLogBridge.pipeNativeLogs(config.logger);
     // init auth methods
     final client = DescopeClient(config);
-    return DescopeSdk._internal(config, client, Flow(client), Auth(client), Otp(client), Totp(client), MagicLink(client), EnchantedLink(client), OAuth(client), Sso(client), Passkey(client), Password(client));
+    return DescopeSdk._internal(config, Flow(client), Auth(client), Otp(client), Totp(client), MagicLink(client), EnchantedLink(client), OAuth(client), Sso(client), Passkey(client), Password(client));
   }
 
-  DescopeSdk._internal(this.config, this.client, this.flow, this.auth, this.otp, this.totp, this.magicLink, this.enchantedLink, this.oauth, this.sso, this.passkey, this.password) :
+  DescopeSdk._internal(this.config, this.flow, this.auth, this.otp, this.totp, this.magicLink, this.enchantedLink, this.oauth, this.sso, this.passkey, this.password) :
     sessionManager = DescopeSessionManager(SessionStorage(projectId: config.projectId), SessionLifecycle(auth));
 }
+
+// The DescopeSdk object used by the Descope singleton.
+late final DescopeSdk globalSdk;
