@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/descope/descope-flutter/compare/v0.9.18...v0.10.0) (2026-03-11)
+
+
+### Features
+
+* Add a hosted factory to descope flow config ([#193](https://github.com/descope/descope-flutter/issues/193)) ([1f4e726](https://github.com/descope/descope-flutter/commit/1f4e726f35695599d11edd43679d99125328aec9))
+
 ## [0.9.18](https://github.com/descope/descope-flutter/compare/v0.9.17...v0.9.18) (2026-03-01)
 
 
