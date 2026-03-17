@@ -71,7 +71,9 @@ class DescopeSessionManager {
   /// with behaviors that are different from the defaults. You can either extend
   /// or customize the [SessionStorage] and [SessionLifecycle] classes, or supply
   /// your own implementation of the respective abstract classes.
-  DescopeSessionManager(this.storage, this.lifecycle);
+  DescopeSessionManager(this.storage, this.lifecycle) {
+    lifecycle.onRefresh = _onLifecycleRefresh;
+  }
 
   /// The active [DescopeSession] managed by this object.
   DescopeSession? get session => _session;
@@ -188,6 +190,13 @@ class DescopeSessionManager {
     final session = _session;
     if (session != null) {
       session.updateUser(user);
+      storage.saveSession(session);
+    }
+  }
+
+  void _onLifecycleRefresh() {
+    final session = _session;
+    if (session != null) {
       storage.saveSession(session);
     }
   }
