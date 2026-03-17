@@ -165,7 +165,7 @@ class SessionLifecycle with WidgetsBindingObserver implements DescopeSessionLife
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _resetTimer();
-      _periodicRefresh();
+      unawaited(_periodicRefresh());
     } else if (state == AppLifecycleState.paused) {
       _stopPeriodicTimer();
     }
