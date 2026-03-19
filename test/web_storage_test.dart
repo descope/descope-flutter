@@ -20,22 +20,22 @@ void main() {
       expect(window.localStorage, isEmpty);
     });
 
-    test('loadItem migrates from localStorage to sessionStorage', () async {
+    test('loadItem falls back to localStorage without clearing it', () async {
       window.localStorage['key'] = 'legacy';
       final result = await store.loadItem('key');
       expect(result, 'legacy');
-      expect(window.sessionStorage['key'], 'legacy');
-      expect(window.localStorage.containsKey('key'), isFalse);
+      expect(window.localStorage.containsKey('key'), isTrue); // not cleared on load
     });
 
     test('loadItem returns null when nothing is stored', () async {
       expect(await store.loadItem('key'), isNull);
     });
 
-    test('saveItem writes to sessionStorage only', () async {
+    test('saveItem writes to sessionStorage and clears localStorage', () async {
+      window.localStorage['key'] = 'legacy';
       await store.saveItem(key: 'key', data: 'value');
       expect(window.sessionStorage['key'], 'value');
-      expect(window.localStorage.containsKey('key'), isFalse);
+      expect(window.localStorage.containsKey('key'), isFalse); // cleared on save
     });
 
     test('removeItem clears both sessionStorage and localStorage', () async {
