@@ -1,6 +1,7 @@
 // stub window & document
 class StubWindow {
   final localStorage = <String, String>{};
+  final sessionStorage = <String, String>{};
   final navigator = StubNavigator();
   String? origin = "";
 }
