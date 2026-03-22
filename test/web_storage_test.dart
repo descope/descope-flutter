@@ -20,11 +20,12 @@ void main() {
       expect(window.localStorage, isEmpty);
     });
 
-    test('loadItem falls back to localStorage without clearing it', () async {
+    test('loadItem falls back to localStorage and copies to sessionStorage', () async {
       window.localStorage['key'] = 'legacy';
       final result = await store.loadItem('key');
       expect(result, 'legacy');
-      expect(window.localStorage.containsKey('key'), isTrue); // not cleared on load
+      expect(window.sessionStorage['key'], 'legacy'); // copied to sessionStorage on load
+      expect(window.localStorage.containsKey('key'), isTrue); // not cleared until next save
     });
 
     test('loadItem returns null when nothing is stored', () async {

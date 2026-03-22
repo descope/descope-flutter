@@ -137,8 +137,12 @@ class SessionStorageWebStore implements SessionStorageStore {
     // try the new location first
     var value = window.sessionStorage[key];
     if (value != null) return value;
-    // fall back to the legacy location
-    return window.localStorage[key];
+    // fall back to the legacy location and copy to sessionStorage
+    value = window.localStorage[key];
+    if (value != null) {
+      window.sessionStorage[key] = value;
+    }
+    return value;
   }
 
   @override
