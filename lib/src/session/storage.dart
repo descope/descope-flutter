@@ -134,17 +134,27 @@ class SessionStorageWebStore implements SessionStorageStore {
 
   @override
   Future<String?> loadItem(String key) async {
-    return window.localStorage[key];
+    // try the new location first
+    var value = window.sessionStorage[key];
+    if (value != null) return value;
+    // fall back to the legacy location and copy to sessionStorage
+    value = window.localStorage[key];
+    if (value != null) {
+      window.sessionStorage[key] = value;
+    }
+    return value;
   }
 
   @override
   Future<void> removeItem(String key) async {
+    window.sessionStorage.remove(key);
     window.localStorage.remove(key);
   }
 
   @override
   Future<void> saveItem({required String key, required String data}) async {
-    window.localStorage[key] = data;
+    window.sessionStorage[key] = data;
+    window.localStorage.remove(key); // clean up legacy data on next save
   }
 }
 
