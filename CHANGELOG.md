@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.10.0](https://github.com/descope/descope-flutter/compare/v0.9.18...v0.10.0) (2026-03-24)
+
+
+### Features
+
+* Add a hosted factory to descope flow config ([#193](https://github.com/descope/descope-flutter/issues/193)) ([1f4e726](https://github.com/descope/descope-flutter/commit/1f4e726f35695599d11edd43679d99125328aec9))
+* Add automatic periodic session refresh ([#197](https://github.com/descope/descope-flutter/issues/197)) ([3b12b7b](https://github.com/descope/descope-flutter/commit/3b12b7b4c2d73bb7f8e5478ed0495a63ecf89fae))
+
+
+### Bug Fixes
+
+* store web session tokens in sessionStorage instead of localStorage ([#198](https://github.com/descope/descope-flutter/issues/198)) ([b284fb7](https://github.com/descope/descope-flutter/commit/b284fb7ac994f71d66994cbb7e077c7e1375f554))
+
 ## [0.9.18](https://github.com/descope/descope-flutter/compare/v0.9.17...v0.9.18) (2026-03-01)
 
 
