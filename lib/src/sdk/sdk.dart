@@ -77,7 +77,7 @@ class DescopeSdk {
   }
 
   DescopeSdk._internal(this.config, this.flow, this.auth, this.otp, this.totp, this.magicLink, this.enchantedLink, this.oauth, this.sso, this.passkey, this.password) :
-    sessionManager = DescopeSessionManager(SessionStorage(projectId: config.projectId), SessionLifecycle(auth));
+    sessionManager = DescopeSessionManager(SessionStorage(projectId: config.projectId), SessionLifecycle(auth, config.logger));
 }
 
 // The DescopeSdk object used by the Descope singleton.
