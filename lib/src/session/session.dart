@@ -32,11 +32,9 @@ class DescopeSession {
   DescopeToken _sessionToken;
   DescopeToken _refreshToken;
   DescopeUser _user;
-  String? externalToken;
 
   /// Creates a new [DescopeSession] object from tokens.
-  factory DescopeSession(
-      DescopeToken sessionToken, DescopeToken refreshToken, DescopeUser user) {
+  factory DescopeSession(DescopeToken sessionToken, DescopeToken refreshToken, DescopeUser user) {
     // for web only - refresh token might be available via cookie only
     if (sessionToken.jwt == refreshToken.jwt) {
       refreshToken = WebRefreshToken(sessionToken);
@@ -48,26 +46,17 @@ class DescopeSession {
   ///
   /// Use this initializer to create a [DescopeSession] after the user completes
   /// a sign in or sign up flow in the application.
-  factory DescopeSession.fromAuthenticationResponse(
-      AuthenticationResponse authenticationResponse) {
-    final session = DescopeSession(
-      authenticationResponse.sessionToken,
-      authenticationResponse.refreshToken,
-      authenticationResponse.user,
-    );
-    session.externalToken = authenticationResponse.externalToken;
-    return session;
+  factory DescopeSession.fromAuthenticationResponse(AuthenticationResponse authenticationResponse) {
+    return DescopeSession(authenticationResponse.sessionToken, authenticationResponse.refreshToken, authenticationResponse.user);
   }
 
   /// Creates a new [DescopeSession] object from two JWT strings.
   ///
   /// This constructor can be used to manually recreate a user's [DescopeSession] after
   /// the application is relaunched if not using a `DescopeSessionManager` for this.
-  factory DescopeSession.fromJwt(
-      String sessionJwt, String refreshJwt, DescopeUser user) {
+  factory DescopeSession.fromJwt(String sessionJwt, String refreshJwt, DescopeUser user) {
     final sessionToken = Token.decode(sessionJwt);
-    return DescopeSession._internal(sessionToken,
-        refreshJwt.isNotEmpty ? Token.decode(refreshJwt) : sessionToken, user);
+    return DescopeSession._internal(sessionToken, refreshJwt.isNotEmpty ? Token.decode(refreshJwt) : sessionToken, user);
   }
 
   DescopeSession._internal(this._sessionToken, this._refreshToken, this._user);
@@ -98,13 +87,11 @@ class DescopeSession {
 
   /// Returns the list of permissions granted for the user. Pass `null` for
   /// the [tenant] parameter if the user isn't associated with any tenant.
-  List<String> permissions([String? tenant]) =>
-      _sessionToken.getPermissions(tenant: tenant);
+  List<String> permissions([String? tenant]) => _sessionToken.getPermissions(tenant: tenant);
 
   /// Returns the list of roles for the user. Pass `null` for the [tenant]
   /// parameter if the user isn't associated with any tenant.
-  List<String> roles([String? tenant]) =>
-      _sessionToken.getRoles(tenant: tenant);
+  List<String> roles([String? tenant]) => _sessionToken.getRoles(tenant: tenant);
 
   // Updating the session manually when not using a DescopeSessionManager
 
@@ -142,15 +129,11 @@ class DescopeSession {
     if (identical(this, other)) {
       return true;
     }
-    return other is DescopeSession &&
-        other.sessionJwt == sessionJwt &&
-        other.refreshJwt == refreshJwt &&
-        other.user == user &&
-        other.externalToken == externalToken;
+    return other is DescopeSession && other.sessionJwt == sessionJwt && other.refreshJwt == refreshJwt && other.user == user;
   }
 
   @override
-  int get hashCode => Object.hash(sessionJwt, refreshJwt, user, externalToken);
+  int get hashCode => Object.hash(sessionJwt, refreshJwt, user);
 
   @override
   String toString() {
