@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1](https://github.com/descope/descope-flutter/compare/v0.10.0...v0.10.1) (2026-04-06)
+
+
+### Bug Fixes
+
+* Web passkey compilation ([#205](https://github.com/descope/descope-flutter/issues/205)) ([28d17cc](https://github.com/descope/descope-flutter/commit/28d17cc3a46e30dfec8f396e7e9ba229cfc07a3d))
+
 ## [0.10.0](https://github.com/descope/descope-flutter/compare/v0.9.18...v0.10.0) (2026-03-24)
 
 
