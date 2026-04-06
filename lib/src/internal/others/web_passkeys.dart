@@ -1,4 +1,4 @@
-import '/src/internal/others/stubs/stub_html.dart' if (dart.library.js) 'dart:html' hide Platform;
+import '/src/internal/others/stubs/stub_html.dart' if (dart.library.js_interop) 'dart:html' hide Platform;
 import '/src/internal/others/stubs/stub_js_interop.dart' if (dart.library.js_interop) 'dart:js_interop';
 
 import '/src/types/error.dart';
