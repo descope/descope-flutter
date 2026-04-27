@@ -127,6 +127,7 @@ class _DescopeFlowViewState extends State<DescopeFlowView> {
       'ssoRedirect': widget.config.ssoRedirect,
       'ssoRedirectCustomScheme': widget.config.ssoRedirectCustomScheme,
       'magicLinkRedirect': widget.config.magicLinkRedirect,
+      'clientInputs': widget.config.clientInputs,
       'sdkVersion': DescopeSdk.version,
     };
 

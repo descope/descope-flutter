@@ -58,6 +58,9 @@ class DescopeFlowViewWrapper: DescopeFlowView, DescopeFlowViewDelegate {
         if let magicLinkRedirect = config["magicLinkRedirect"] as? String {
             descopeFlow.magicLinkRedirect = magicLinkRedirect
         }
+        if let clientInputs = config["clientInputs"] as? [String: Any] {
+            descopeFlow.clientInputs = clientInputs
+        }
 
         descopeFlow.hooks = [
             .runJavaScript(on: .loaded, code: """
