@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '/src/types/responses.dart';
 import '/src/types/user.dart';
 import 'lifecycle.dart';
@@ -242,13 +244,31 @@ class DescopeSessionManager {
 
   void _notifyTokens(DescopeSession session) {
     for (final listener in List<DescopeSessionManagerListener>.from(_listeners)) {
-      listener.onUpdateTokens(session);
+      try {
+        listener.onUpdateTokens(session);
+      } catch (exception, stack) {
+        FlutterError.reportError(FlutterErrorDetails(
+          exception: exception,
+          stack: stack,
+          library: 'descope_flutter',
+          context: ErrorDescription('while notifying DescopeSessionManagerListener.onUpdateTokens'),
+        ));
+      }
     }
   }
 
   void _notifyUser(DescopeSession session) {
     for (final listener in List<DescopeSessionManagerListener>.from(_listeners)) {
-      listener.onUpdateUser(session);
+      try {
+        listener.onUpdateUser(session);
+      } catch (exception, stack) {
+        FlutterError.reportError(FlutterErrorDetails(
+          exception: exception,
+          stack: stack,
+          library: 'descope_flutter',
+          context: ErrorDescription('while notifying DescopeSessionManagerListener.onUpdateUser'),
+        ));
+      }
     }
   }
 }
