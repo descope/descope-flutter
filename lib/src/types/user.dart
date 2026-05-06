@@ -125,11 +125,17 @@ class DescopeUser {
         other.isVerifiedPhone == isVerifiedPhone &&
         other.givenName == givenName &&
         other.middleName == middleName &&
-        other.familyName == familyName;
+        other.familyName == familyName &&
+        other.hasPassword == hasPassword &&
+        other.status == status &&
+        listEquals(other.roleNames, roleNames) &&
+        listEquals(other.ssoAppIds, ssoAppIds) &&
+        listEquals(other.oauthProviders, oauthProviders) &&
+        mapEquals(other.customAttributes, customAttributes);
   }
 
   @override
   int get hashCode {
-    return Object.hash(userId, loginIds, createdAt, name, picture, email, isVerifiedEmail, phone, isVerifiedPhone, givenName, middleName, familyName);
+    return Object.hash(userId, loginIds, createdAt, name, picture, email, isVerifiedEmail, phone, isVerifiedPhone, givenName, middleName, familyName, hasPassword, status, roleNames, ssoAppIds, oauthProviders, customAttributes);
   }
 }

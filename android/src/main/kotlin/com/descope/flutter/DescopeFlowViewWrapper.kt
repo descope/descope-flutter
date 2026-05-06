@@ -7,6 +7,7 @@ import com.descope.android.DescopeFlow
 import com.descope.android.DescopeFlowHook
 import com.descope.android.DescopeFlowView
 import com.descope.android.runJavaScript
+import com.descope.session.DescopeSession
 import com.descope.types.AuthenticationResponse
 import com.descope.types.DescopeException
 import com.descope.types.DescopeUser
@@ -38,9 +39,12 @@ class DescopeFlowViewWrapper(
         setMethodCallHandler(this@DescopeFlowViewWrapper)
     }
 
+    private var hostSession: DescopeSession? = makeHostSession((args as? Map<*, *>)?.get("session") as? Map<*, *>)
+
     private val flowView = DescopeFlowView(context).apply {
         // init DescopeFlow from args
         val descopeFlow = args.toDescopeFlow()
+        descopeFlow.sessionProvider = { hostSession }
 
         // pipe listener callbacks through a flutter channel
         listener = object : DescopeFlowView.Listener {
@@ -78,6 +82,7 @@ class DescopeFlowViewWrapper(
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "resumeFromDeepLink" -> resumeFromDeepLink(call, result)
+            "updateSession" -> updateSession(call, result)
             else -> result.notImplemented()
         }
     }
@@ -89,6 +94,24 @@ class DescopeFlowViewWrapper(
             result.success(url)
         } catch (ignored: Exception) {
             result.error("INVALIDARGS", "url argument is invalid", null)
+        }
+    }
+
+    private fun updateSession(call: MethodCall, result: Result) {
+        val sessionJwt = call.argument<String>("sessionJwt")
+        val refreshJwt = call.argument<String>("refreshJwt")
+        hostSession = makeHostSession(mapOf("sessionJwt" to sessionJwt, "refreshJwt" to refreshJwt))
+        result.success(null)
+    }
+
+    private fun makeHostSession(map: Map<*, *>?): DescopeSession? {
+        val sessionJwt = map?.get("sessionJwt") as? String
+        val refreshJwt = map?.get("refreshJwt") as? String
+        if (sessionJwt.isNullOrEmpty() || refreshJwt.isNullOrEmpty()) return null
+        return try {
+            DescopeSession(sessionJwt, refreshJwt, DescopeUser.placeholder)
+        } catch (_: Exception) {
+            null
         }
     }
 
