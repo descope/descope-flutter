@@ -8,7 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '/src/sdk/sdk.dart';
+import '/src/session/manager.dart';
+import '/src/session/session.dart';
 import '/src/types/error.dart';
+import '/src/types/responses.dart';
 import '/src/flow/descope_flow_callbacks.dart';
 import '/src/flow/descope_flow_config.dart';
 
@@ -88,6 +91,22 @@ class DescopeFlowController {
 /// `Client Secret` should be set to the values of your `Web application` OAuth client,
 /// rather than those from the `Android` OAuth client.
 /// For more details about configuring your app see the [Credential Manager documentation](https://developer.android.com/identity/sign-in/credential-manager).
+///
+/// **Authenticated Flows**
+///
+/// This is used when running a flow that expects the user to already be signed in.
+/// For example, a flow to update a user's email or account recovery details, or that
+/// does step-up authentication.
+///
+/// The default behavior is to check whether the [DescopeSessionManager] is currently
+/// managing a valid session, and forward it to the flow if that's the case.
+///
+/// **Note**: The default behavior checks the [DescopeSessionManager] from the [Descope]
+/// singleton, or the one from the config's [DescopeFlowConfig.sdk] property if it is set.
+///
+/// **Important**: The session may be read multiple times to ensure that the flow uses
+/// the newest tokens, even if the session is refreshed while the flow is running.
+/// This is especially important for projects that use refresh token rotation.
 class DescopeFlowView extends StatefulWidget {
   final DescopeFlowConfig config;
   final DescopeFlowCallbacks? callbacks;
@@ -104,12 +123,13 @@ class DescopeFlowView extends StatefulWidget {
   State<DescopeFlowView> createState() => _DescopeFlowViewState();
 }
 
-class _DescopeFlowViewState extends State<DescopeFlowView> {
+class _DescopeFlowViewState extends State<DescopeFlowView> implements DescopeSessionManagerListener {
 
   static const String _viewType = 'descope_flutter/descope_flow_view';
 
   MethodChannel? _channel;
   DescopeFlowController? get _controller => _isMobilePlatform() ? widget.controller : null;
+  DescopeSdk get _sdk => widget.config.sdk ?? globalSdk;
 
   // State implementation
 
@@ -118,6 +138,7 @@ class _DescopeFlowViewState extends State<DescopeFlowView> {
     // only supported on mobile platforms
     if (_rejectNonMobilePlatform()) return const SizedBox.shrink();
 
+    final activeSession = _sdk.sessionManager.session;
     final clientInputs = widget.config.clientInputs;
     final params = <String, dynamic>{
       'url': widget.config.url,
@@ -130,6 +151,11 @@ class _DescopeFlowViewState extends State<DescopeFlowView> {
       'magicLinkRedirect': widget.config.magicLinkRedirect,
       'clientInputs': clientInputs == null ? null : (Map.of(clientInputs)..removeWhere((_, v) => v == null)),
       'sdkVersion': DescopeSdk.version,
+      if (activeSession != null)
+        'session': {
+          'sessionJwt': activeSession.sessionJwt,
+          'refreshJwt': activeSession.refreshJwt,
+        },
     };
 
     if (defaultTargetPlatform == TargetPlatform.android) {
@@ -155,13 +181,26 @@ class _DescopeFlowViewState extends State<DescopeFlowView> {
   void initState() {
     super.initState();
     _controller?._attach(this);
+    _sdk.sessionManager.addListener(this);
   }
 
   @override
   void dispose() {
+    _sdk.sessionManager.removeListener(this);
     _controller?._detach();
     super.dispose();
   }
+
+  @override
+  void onUpdateTokens(DescopeSession session) {
+    _channel?.invokeMethod('updateSession', {
+      'sessionJwt': session.sessionJwt,
+      'refreshJwt': session.refreshJwt,
+    });
+  }
+
+  @override
+  void onUpdateUser(DescopeSession session) {}
 
   // Internal
 
@@ -176,7 +215,19 @@ class _DescopeFlowViewState extends State<DescopeFlowView> {
         case 'onSuccess':
           try {
             final payload = _coercePayload(call.arguments);
-            final authenticationResponse = JWTServerResponse.fromJson(payload).toAuthenticationResponse();
+            var authenticationResponse = JWTServerResponse.fromJson(payload).toAuthenticationResponse();
+            if (authenticationResponse.user.userId.isEmpty) {
+              final activeUser = _sdk.sessionManager.session?.user;
+              if (activeUser != null) {
+                authenticationResponse = AuthenticationResponse(
+                  authenticationResponse.sessionToken,
+                  authenticationResponse.refreshToken,
+                  authenticationResponse.isFirstAuthentication,
+                  activeUser,
+                  authenticationResponse.externalToken,
+                );
+              }
+            }
             widget.callbacks?.onSuccess?.call(authenticationResponse);
           } catch (e) {
             widget.callbacks?.onError?.call(DescopeException.flowFailed.add(message: "Unexpected success payload", cause: e));

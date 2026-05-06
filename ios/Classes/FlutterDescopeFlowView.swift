@@ -46,10 +46,14 @@ class DescopeFlowViewWrapper: DescopeFlowView, DescopeFlowViewDelegate {
       }
     }
 
+    private var hostSession: DescopeSession?
+
     func start(_ config: [String : Any]) {
         delegate = self
         guard let url = config["url"] as? String else { return }
         guard let sdkVersion = config["sdkVersion"] as? String else { return }
+
+        hostSession = makeHostSession(from: config["session"] as? [String: Any])
 
         let descopeFlow = DescopeFlow(url: url)
         if let oauthNativeProvider = config["iosOAuthNativeProvider"] as? String {
@@ -69,6 +73,8 @@ class DescopeFlowViewWrapper: DescopeFlowView, DescopeFlowViewDelegate {
             """),
         ]
 
+        descopeFlow.sessionProvider = { [weak self] in self?.hostSession }
+
         start(flow: descopeFlow)
     }
 
@@ -77,6 +83,8 @@ class DescopeFlowViewWrapper: DescopeFlowView, DescopeFlowViewDelegate {
         switch call.method {
         case "resumeFromDeepLink":
             resumeFromDeepLink(call: call, result: result)
+        case "updateSession":
+            updateSession(call: call, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -86,6 +94,19 @@ class DescopeFlowViewWrapper: DescopeFlowView, DescopeFlowViewDelegate {
         guard let args = call.arguments as? [String: Any], let urlString = args["url"] as? String, let url = URL(string: urlString) else { return result(FlutterError(code: "MISSINGARGS", message: "'url' is required for resumeFromDeepLink", details: nil)) }
         Descope.handleURL(url)
         result(urlString)
+    }
+
+    private func updateSession(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        hostSession = makeHostSession(from: call.arguments as? [String: Any])
+        result(nil)
+    }
+
+    private func makeHostSession(from dict: [String: Any]?) -> DescopeSession? {
+        guard let dict,
+              let sessionJwt = dict["sessionJwt"] as? String,
+              let refreshJwt = dict["refreshJwt"] as? String,
+              !sessionJwt.isEmpty, !refreshJwt.isEmpty else { return nil }
+        return try? DescopeSession(sessionJwt: sessionJwt, refreshJwt: refreshJwt, user: .placeholder)
     }
 
     // DescopeFlowViewDelegate

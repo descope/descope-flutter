@@ -56,7 +56,10 @@ class DescopeFlowConfig {
   /// during execution. The values must be valid JSON types.
   Map<String, dynamic>? clientInputs;
 
-  DescopeFlowConfig({required this.url, this.androidOAuthNativeProvider, this.iosOAuthNativeProvider, this.oauthRedirect, this.oauthRedirectCustomScheme, this.ssoRedirect, this.ssoRedirectCustomScheme, this.magicLinkRedirect, this.clientInputs});
+  /// Provide an instance of [DescopeSdk] if a custom instance was initialized. Leave `null` to use [Descope]
+  DescopeSdk? sdk;
+
+  DescopeFlowConfig({required this.url, this.androidOAuthNativeProvider, this.iosOAuthNativeProvider, this.oauthRedirect, this.oauthRedirectCustomScheme, this.ssoRedirect, this.ssoRedirectCustomScheme, this.magicLinkRedirect, this.clientInputs, this.sdk});
 
   /// Creates a [DescopeFlowConfig] with a URL built from the flow ID, for use with
   /// Descope's Flow hosting service.
@@ -70,9 +73,9 @@ class DescopeFlowConfig {
   /// The optional [sdk] parameter can be provided to use a specific [DescopeSdk] instance
   /// instead of the [Descope] singleton.
   factory DescopeFlowConfig.hosted(String flowId, {DescopeSdk? sdk}) {
-    final config = (sdk ?? globalSdk).config;
-    final baseUrl = config.baseUrl ?? baseUrlForProjectId(config.projectId);
-    return DescopeFlowConfig(url: '$baseUrl/login/${config.projectId}?wide=true&platform=mobile&flow=$flowId');
+    final descope = sdk ?? globalSdk;
+    final baseUrl = descope.config.baseUrl ?? baseUrlForProjectId(descope.config.projectId);
+    return DescopeFlowConfig(url: '$baseUrl/login/${descope.config.projectId}?wide=true&platform=mobile&flow=$flowId', sdk: sdk);
   }
 
 }

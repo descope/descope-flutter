@@ -4,6 +4,16 @@ import 'lifecycle.dart';
 import 'session.dart';
 import 'storage.dart';
 
+/// A set of listener methods for events about the session managed by a [DescopeSessionManager].
+abstract class DescopeSessionManagerListener {
+  /// Called after the session tokens are updated due to a successful refresh or by
+  /// a call to [DescopeSessionManager.updateTokens].
+  void onUpdateTokens(DescopeSession session);
+
+  /// Called after the session is updated via [DescopeSessionManager.updateUser]
+  void onUpdateUser(DescopeSession session);
+}
+
 /// The `DescopeSessionManager` class is used to manage an authenticated
 /// user session for an application.
 ///
@@ -120,9 +130,16 @@ class DescopeSessionManager {
   /// unless they use custom `storage` objects they might overwrite
   /// each other's saved sessions.
   void manageSession(DescopeSession session) {
+    final previous = _session;
     _session = session;
     lifecycle.session = session;
     storage.saveSession(session);
+    if (previous?.sessionJwt != session.sessionJwt || previous?.refreshJwt != session.refreshJwt) {
+      _notifyTokens(session);
+    }
+    if (previous?.user != session.user) {
+      _notifyUser(session);
+    }
   }
 
   /// Clears any active [DescopeSession] from this manager.
@@ -153,9 +170,26 @@ class DescopeSessionManager {
   Future<void> refreshSessionIfNeeded() async {
     final session = _session;
     if (session != null) {
+      final beforeSession = session.sessionJwt;
+      final beforeRefresh = session.refreshJwt;
       await lifecycle.refreshSessionIfNeeded();
       await storage.saveSession(session);
+      if (beforeSession != session.sessionJwt || beforeRefresh != session.refreshJwt) {
+        _notifyTokens(session);
+      }
     }
+  }
+
+  /// Adds a listener object to the session manager.
+  void addListener(DescopeSessionManagerListener listener) {
+    if (!_listeners.contains(listener)) {
+      _listeners.add(listener);
+    }
+  }
+
+  /// Removes a listener object that was previously added.
+  void removeListener(DescopeSessionManagerListener listener) {
+    _listeners.remove(listener);
   }
 
   /// Updates the active session's underlying JWTs.
@@ -175,6 +209,7 @@ class DescopeSessionManager {
     if (session != null) {
       session.updateTokens(refreshResponse);
       storage.saveSession(session);
+      _notifyTokens(session);
     }
   }
 
@@ -191,6 +226,7 @@ class DescopeSessionManager {
     if (session != null) {
       session.updateUser(user);
       storage.saveSession(session);
+      _notifyUser(session);
     }
   }
 
@@ -198,6 +234,21 @@ class DescopeSessionManager {
     final session = _session;
     if (session != null) {
       storage.saveSession(session);
+      _notifyTokens(session);
+    }
+  }
+
+  final List<DescopeSessionManagerListener> _listeners = [];
+
+  void _notifyTokens(DescopeSession session) {
+    for (final listener in List<DescopeSessionManagerListener>.from(_listeners)) {
+      listener.onUpdateTokens(session);
+    }
+  }
+
+  void _notifyUser(DescopeSession session) {
+    for (final listener in List<DescopeSessionManagerListener>.from(_listeners)) {
+      listener.onUpdateUser(session);
     }
   }
 }
