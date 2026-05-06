@@ -118,6 +118,7 @@ class _DescopeFlowViewState extends State<DescopeFlowView> {
     // only supported on mobile platforms
     if (_rejectNonMobilePlatform()) return const SizedBox.shrink();
 
+    final clientInputs = widget.config.clientInputs;
     final params = <String, dynamic>{
       'url': widget.config.url,
       'androidOAuthNativeProvider': widget.config.androidOAuthNativeProvider,
@@ -127,6 +128,7 @@ class _DescopeFlowViewState extends State<DescopeFlowView> {
       'ssoRedirect': widget.config.ssoRedirect,
       'ssoRedirectCustomScheme': widget.config.ssoRedirectCustomScheme,
       'magicLinkRedirect': widget.config.magicLinkRedirect,
+      'clientInputs': clientInputs == null ? null : (Map.of(clientInputs)..removeWhere((_, v) => v == null)),
       'sdkVersion': DescopeSdk.version,
     };
 

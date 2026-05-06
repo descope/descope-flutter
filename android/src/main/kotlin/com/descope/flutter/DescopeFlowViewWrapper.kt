@@ -105,6 +105,11 @@ fun Any?.toDescopeFlow(): DescopeFlow {
         (map["ssoRedirect"] as? String)?.let { ssoRedirect = it }
         (map["ssoRedirectCustomScheme"] as? String)?.let { ssoRedirectCustomScheme = it }
         (map["magicLinkRedirect"] as? String)?.let { magicLinkRedirect = it }
+        (map["clientInputs"] as? Map<*, *>)?.let { src ->
+            val target = HashMap<String, Any>(src.size)
+            src.forEach { (k, v) -> if (k is String && v != null) target[k] = v }
+            clientInputs = target
+        }
         hooks = listOf(
             runJavaScript(DescopeFlowHook.Event.Loaded, """
                 window.descopeBridge.hostInfo.sdkName = 'flutter'

@@ -50,7 +50,13 @@ class DescopeFlowConfig {
   /// overriding whatever is configured in the flow or project
   String? magicLinkRedirect;
 
-  DescopeFlowConfig({required this.url, this.androidOAuthNativeProvider, this.iosOAuthNativeProvider, this.oauthRedirect, this.oauthRedirectCustomScheme, this.ssoRedirect, this.ssoRedirectCustomScheme, this.magicLinkRedirect});
+  /// An optional map of client inputs that will be provided to the flow.
+  ///
+  /// These values can be used in the flow editor to customize the flow's behavior
+  /// during execution. The values must be valid JSON types.
+  Map<String, dynamic>? clientInputs;
+
+  DescopeFlowConfig({required this.url, this.androidOAuthNativeProvider, this.iosOAuthNativeProvider, this.oauthRedirect, this.oauthRedirectCustomScheme, this.ssoRedirect, this.ssoRedirectCustomScheme, this.magicLinkRedirect, this.clientInputs});
 
   /// Creates a [DescopeFlowConfig] with a URL built from the flow ID, for use with
   /// Descope's Flow hosting service.
