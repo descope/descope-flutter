@@ -128,7 +128,6 @@ class _DescopeFlowViewState extends State<DescopeFlowView> implements DescopeSes
   static const String _viewType = 'descope_flutter/descope_flow_view';
 
   MethodChannel? _channel;
-  DescopeSessionManager? _subscribedManager;
   DescopeFlowController? get _controller => _isMobilePlatform() ? widget.controller : null;
   DescopeSdk get _sdk => widget.config.sdk ?? globalSdk;
 
@@ -182,32 +181,14 @@ class _DescopeFlowViewState extends State<DescopeFlowView> implements DescopeSes
   void initState() {
     super.initState();
     _controller?._attach(this);
-    _subscribeToSessionManager();
-  }
-
-  @override
-  void didUpdateWidget(DescopeFlowView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    final currentManager = _sdk.sessionManager;
-    if (!identical(currentManager, _subscribedManager)) {
-      _subscribedManager?.removeListener(this);
-      _subscribedManager = currentManager;
-      currentManager.addListener(this);
-    }
+    _sdk.sessionManager.addListener(this);
   }
 
   @override
   void dispose() {
-    _subscribedManager?.removeListener(this);
-    _subscribedManager = null;
+    _sdk.sessionManager.removeListener(this);
     _controller?._detach();
     super.dispose();
-  }
-
-  void _subscribeToSessionManager() {
-    final manager = _sdk.sessionManager;
-    _subscribedManager = manager;
-    manager.addListener(this);
   }
 
   @override
