@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.11.0](https://github.com/descope/descope-flutter/compare/v0.10.1...v0.11.0) (2026-05-13)
+
+
+### Features
+
+* Add `clientInputs` to allow passing parameters into a flow ([#211](https://github.com/descope/descope-flutter/issues/211)) ([f3f8779](https://github.com/descope/descope-flutter/commit/f3f87790cb54c6e63d913f9bf22b277093b3b467))
+* support authenticated flows in DescopeFlowView ([#215](https://github.com/descope/descope-flutter/issues/215)) ([320860f](https://github.com/descope/descope-flutter/commit/320860fa465f695afabbf60209eda54dfed489b1))
+
 ## [0.10.1](https://github.com/descope/descope-flutter/compare/v0.10.0...v0.10.1) (2026-04-06)
 
 
