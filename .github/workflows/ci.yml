@@ -2,6 +2,9 @@ name: CI
 
 on: pull_request
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build and Test
@@ -19,3 +22,33 @@ jobs:
         run: dart analyze
       - name: Test
         run: flutter test
+
+  build-ios:
+    name: Build iOS (${{ matrix.integration }})
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - integration: CocoaPods
+            spm_flag: '--no-enable-swift-package-manager'
+          - integration: SwiftPM
+            spm_flag: '--enable-swift-package-manager'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Prepare
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: 'stable'
+      - name: Select native integration
+        run: flutter config ${{ matrix.spm_flag }}
+      - name: Generate example platform files
+        working-directory: example
+        run: flutter create --platforms=ios --project-name=descope_example .
+      - name: Dependencies
+        working-directory: example
+        run: flutter pub get
+      - name: Build
+        working-directory: example
+        run: flutter build ios --debug --no-codesign

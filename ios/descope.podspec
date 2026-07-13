@@ -13,7 +13,7 @@ A new Flutter plugin project.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Descope' => 'support@descope.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'descope/Sources/descope/**/*.swift'
   s.dependency 'Flutter'
   s.platform = :ios, '13.0'
 
