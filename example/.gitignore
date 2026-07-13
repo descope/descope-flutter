@@ -1,0 +1,8 @@
+# Minimal example app for native plugin CI builds.
+# Only pubspec.yaml and lib/ are committed; the platform folders are
+# regenerated with `flutter create` at build time. Ignore everything else.
+*
+!.gitignore
+!pubspec.yaml
+!lib/
+!lib/**

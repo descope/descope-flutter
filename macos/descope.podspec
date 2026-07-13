@@ -14,7 +14,7 @@ A new Flutter plugin project.
   s.author           = { 'Descope' => 'support@descope.com' }
 
   s.source           = { :path => '.' }
-  s.source_files     = 'Classes/**/*'
+  s.source_files     = 'descope/Sources/descope/**/*.swift'
   s.dependency 'FlutterMacOS'
 
   s.platform = :osx, '10.11'
