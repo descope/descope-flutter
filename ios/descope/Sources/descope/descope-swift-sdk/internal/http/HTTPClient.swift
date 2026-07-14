@@ -85,20 +85,22 @@ class HTTPClient {
         }
 
         if let error = DescopeError(httpStatusCode: response.statusCode) {
+            let cfray = response.value(forHTTPHeaderField: "cf-ray")
+            let trace = cfray.map { " [CF-Ray: \($0)]" } ?? ""
             if let responseError = errorForResponseData(data) {
                 if logger.isUnsafeEnabled {
-                    logger.error("Network call failed with server error", request.url, responseError)
+                    logger.error("Network call failed with server error\(trace)", request.url, responseError)
                 } else {
-                    logger.error("Network call to \(route) failed with \(responseError.code) server error")
+                    logger.error("Network call to \(route) failed with \(responseError.code) server error\(trace)")
                 }
-                throw responseError
+                throw responseError.with(traceId: cfray)
             }
             if logger.isUnsafeEnabled {
-                logger.error("Network call failed with \(response.statusCode) http error", request.url, error)
+                logger.error("Network call failed with \(response.statusCode) http error\(trace)", request.url, error)
             } else {
-                logger.error("Network call to \(route) failed with \(response.statusCode) http error")
+                logger.error("Network call to \(route) failed with \(response.statusCode) http error\(trace)")
             }
-            throw error
+            throw error.with(traceId: cfray)
         }
         
         if logger.isUnsafeEnabled {

@@ -479,6 +479,33 @@ public protocol DescopeEnchantedLink: Sendable {
 }
 
 
+/// Authenticate users using push notifications.
+///
+/// The push notification authentication works by registering the user's device
+/// via APNs (Apple Push Notification service) and then completing authentication
+/// transactions by approving or denying them.
+public protocol DescopePush: Sendable {
+    /// Registers an APNs device token for push authentication.
+    ///
+    /// The user must have an active ``DescopeSession`` whose `refreshJwt` should be
+    /// passed as a parameter to this function.
+    ///
+    /// - Parameters:
+    ///   - token: The APNs device token to register.
+    ///   - development: Whether the token is for the development or production APNs environment.
+    ///   - refreshJwt: The `refreshJwt` from an active ``DescopeSession``.
+    func enroll(token: String, development: Bool, refreshJwt: String) async throws(DescopeError)
+
+    /// Completes a push authentication transaction by approving or denying it.
+    ///
+    /// - Parameters:
+    ///   - transactionId: The ID of the push authentication transaction.
+    ///   - approved: Whether the authentication request is approved or denied.
+    ///   - refreshJwt: The `refreshJwt` from an active ``DescopeSession``.
+    func finish(transactionId: String, approved: Bool, refreshJwt: String) async throws(DescopeError)
+}
+
+
 /// Authenticate a user using an OAuth provider.
 ///
 /// Use the Descope console to configure which authentication provider you'd like to support.

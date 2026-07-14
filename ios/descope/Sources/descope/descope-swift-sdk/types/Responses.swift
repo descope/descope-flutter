@@ -10,6 +10,7 @@ public struct AuthenticationResponse: Sendable {
     public var refreshToken: DescopeToken
     public var user: DescopeUser
     public var isFirstAuthentication: Bool
+    public var externalToken: String?
 }
 
 /// Returned from the ``DescopeAuth/refreshSession(refreshJwt:)`` call.

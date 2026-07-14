@@ -144,12 +144,14 @@ fun Any?.toDescopeFlow(): DescopeFlow {
 
 // Utilities
 
-private fun AuthenticationResponse.toMap(): Map<String, Any> = mutableMapOf(
+private fun AuthenticationResponse.toMap(): Map<String, Any> = mutableMapOf<String, Any>(
     "sessionJwt" to sessionToken.jwt,
     "refreshJwt" to refreshToken.jwt,
     "user" to user.toMap(),
     "firstSeen" to isFirstAuthentication
-)
+).apply {
+    externalToken?.let { put("externalToken", it) }
+}
 
 private fun DescopeUser.toMap() = mutableMapOf<String, Any>().apply {
     put("userId", userId)

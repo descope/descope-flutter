@@ -61,7 +61,7 @@ public class DescopeFlowCoordinator {
     /// The flow that's currently running in the ``DescopeFlowCoordinator``.
     public private(set) var flow: DescopeFlow? {
         didSet {
-            sdk.resume = resumeClosure
+            sdk.resume = makeResumeClosure(self)
             logger = sdk.config.logger
             bridge.flow = flow
             bridge.logger = logger
@@ -232,7 +232,7 @@ public class DescopeFlowCoordinator {
 
     // Resume
 
-    private func resume(_ url: URL) -> Bool {
+    func resume(_ url: URL) -> Bool {
         guard state == .ready else {
             logger.debug("Ignoring resume URL", state)
             return false
@@ -240,10 +240,6 @@ public class DescopeFlowCoordinator {
         logger.info("Received URL for resuming flow", url)
         sendResponse(.magicLink(url: url.absoluteString))
         return true
-    }
-
-    private lazy var resumeClosure: DescopeSDK.ResumeClosure = { [weak self] url in
-        return self?.resume(url) ?? false
     }
 
     // Events
@@ -447,5 +443,11 @@ private class WebViewLayoutObserver: NSObject {
                 handler()
             }
         })
+    }
+}
+
+private func makeResumeClosure(_ coordinator: DescopeFlowCoordinator) -> DescopeSDK.ResumeClosure {
+    return { [weak coordinator] url in
+        return coordinator?.resume(url) ?? false
     }
 }
