@@ -6,16 +6,21 @@ extension DescopeSDK {
 }
 
 extension DescopeError {
-    func with(desc: String) -> DescopeError {
-        return DescopeError(code: code, desc: desc, message: message, cause: cause)
-    }
-    
-    func with(message: String) -> DescopeError {
-        return DescopeError(code: code, desc: desc, message: message, cause: cause)
-    }
-    
-    func with(cause: Error) -> DescopeError {
-        return DescopeError(code: code, desc: desc, message: message, cause: cause)
+    func with(desc: String? = nil, message: String? = nil, cause: Error? = nil, traceId: String? = nil) -> DescopeError {
+        var error = self
+        if let desc, !desc.isEmpty {
+            error.desc = desc
+        }
+        if let message, !message.isEmpty {
+            error.message = message
+        }
+        if let cause {
+            error.cause = cause
+        }
+        if let traceId, !traceId.isEmpty {
+            error.traceId = traceId
+        }
+        return error
     }
 }
 
@@ -224,6 +229,7 @@ extension AuthenticationResponse: Codable {
         case refreshToken = "refreshJwt"
         case user
         case isFirstAuthentication
+        case externalToken
     }
 
     public init(from decoder: Decoder) throws {
@@ -232,6 +238,7 @@ extension AuthenticationResponse: Codable {
         refreshToken = try Token(jwt: values.decode(String.self, forKey: .refreshToken))
         user = try values.decode(DescopeUser.self, forKey: .user)
         isFirstAuthentication = try values.decode(Bool.self, forKey: .isFirstAuthentication)
+        externalToken = try values.decodeIfPresent(String.self, forKey: .externalToken)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -240,6 +247,7 @@ extension AuthenticationResponse: Codable {
         try values.encode(refreshToken.jwt, forKey: .refreshToken)
         try values.encode(user, forKey: .user)
         try values.encode(isFirstAuthentication, forKey: .isFirstAuthentication)
+        try values.encodeIfPresent(externalToken, forKey: .externalToken)
     }
 }
 

@@ -63,6 +63,16 @@ public struct DescopeError: Error {
     /// call. When a ``DescopeError/passkeyFailed`` error is thrown the ``cause`` property
     /// will often contain an instance of AuthorizationError.
     public var cause: Error?
+
+    /// An optional trace identifier for a failed network request.
+    ///
+    /// When the Descope server is accessed through its CDN (the default), this holds the
+    /// value of the `CF-Ray` response header of the failed request. You can log this value
+    /// or send it to Descope support to help trace and diagnose server errors.
+    ///
+    /// This is `nil` for errors that aren't associated with a server response, such as
+    /// ``DescopeError/networkError``, or when the response didn't include the header.
+    public var traceId: String?
 }
 
 /// A list of common ``DescopeError`` values that can be thrown by the Descope SDK.
@@ -142,6 +152,9 @@ extension DescopeError: CustomStringConvertible {
         }
         if let cause {
             str += ", cause: {\(cause)}"
+        }
+        if let traceId {
+            str += ", traceId: \"\(traceId)\""
         }
         str += ")"
         return str

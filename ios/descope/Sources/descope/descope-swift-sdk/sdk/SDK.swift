@@ -30,6 +30,9 @@ public class DescopeSDK {
     /// Provides functions for authentication with enchanted links.
     public let enchantedLink: DescopeEnchantedLink
     
+    /// Provides functions for authentication with push notifications.
+    public let push: DescopePush
+    
     /// Provides functions for authentication with OAuth.
     public let oauth: DescopeOAuth
     
@@ -124,6 +127,7 @@ public class DescopeSDK {
         self.password = Password(client: client)
         self.magicLink = MagicLink(client: client)
         self.enchantedLink = EnchantedLink(client: client)
+        self.push = Push(client: client)
         self.oauth = OAuth(client: client)
         self.sso = SSO(client: client)
         self.accessKey = AccessKey(client: client)
@@ -143,7 +147,7 @@ public extension DescopeSDK {
     static let name = "DescopeKit"
     
     /// The Descope SDK version
-    static let version = "0.10.5"
+    static let version = "0.11.1"
 }
 
 // Internal

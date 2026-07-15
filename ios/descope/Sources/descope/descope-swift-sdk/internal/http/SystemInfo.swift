@@ -1,4 +1,7 @@
 import Foundation
+#if os(iOS)
+import UIKit
+#endif
 
 enum SystemInfo {
     static let osName = makeOSName()
@@ -31,26 +34,28 @@ private func makeAppVersion() -> String? {
     return "\(version).\(build)"
 }
 
-private func makeDevice() -> String? {
+private func makeDevice() -> String {
     #if targetEnvironment(simulator)
     return "Simulator"
     #else
     // use different ioctl name according to os
     #if os(iOS)
     let ioctl = "hw.machine"
+    let fallback = UIDevice.current.userInterfaceIdiom == .pad ? "iPad" : "iPhone"
     #else
     let ioctl = "hw.model"
+    let fallback = "Mac"
     #endif
 
     // get the size of the value first
     var size = 0
-    guard sysctlbyname(ioctl, nil, &size, nil, 0) == 0, size > 0 else { return nil }
+    guard sysctlbyname(ioctl, nil, &size, nil, 0) == 0, size > 0 else { return fallback }
 
     // create an appropriately sized array and call again to retrieve the value
     var chars = [CChar](repeating: 0, count: size)
-    guard sysctlbyname(ioctl, &chars, &size, nil, 0) == 0 else { return nil }
+    guard sysctlbyname(ioctl, &chars, &size, nil, 0) == 0 else { return fallback }
 
     // the device model, e.g., "MacBookPro18,4" or "iPhone17,2"
-    return String(utf8String: chars)
+    return String(utf8String: chars) ?? fallback
     #endif
 }

@@ -224,7 +224,10 @@ extension FlowBridge {
             }
         case .failure:
             logger.error("Bridge received failure event", message.body)
-            if let dict = message.body as? [String: Any], let error = DescopeError(errorResponse: dict) {
+            if let dict = message.body as? [String: Any], var error = DescopeError(errorResponse: dict) {
+                if error.code == "E102122" { // convert server-side flow aborted error to client-side flow cancelled error
+                    error = DescopeError.flowCancelled.with(message: error.message)
+                }
                 delegate?.bridgeDidFailAuthentication(self, error: error)
             } else if let reason = message.body as? String, !reason.isEmpty {
                 delegate?.bridgeDidFailAuthentication(self, error: DescopeError.flowFailed.with(message: reason))
@@ -286,7 +289,7 @@ extension FlowBridge: WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation, withError error: Error) {
-        var error = error as NSError
+        let error = error as NSError
         
         // Ignore navigation cancellations that are an expected part of the navigation lifecycle
         // due to, e.g., redirects,
@@ -367,7 +370,7 @@ private extension FlowBridgeRequest {
             guard let start = payload["start"] as? [String: Any] else { return nil }
             guard let clientId = start["clientId"] as? String, let stateId = start["stateId"] as? String, let nonce = start["nonce"] as? String, let implicit = start["implicit"] as? Bool else { return nil }
             self = .oauthNative(clientId: clientId, stateId: stateId, nonce: nonce, implicit: implicit)
-        case "oauthWeb", "sso":
+        case "oauthWeb", "sso", "externalAuth":
             guard let startString = payload["startUrl"] as? String, let startURL = URL(string: startString) else { return nil }
             var finishURL: URL?
             if let str = payload["finishUrl"] as? String, !str.isEmpty, let url = URL(string: str) {
@@ -446,6 +449,7 @@ private struct FlowNativeOptions: Encodable {
     var oauthProvider = ""
     var oauthRedirect = WebAuth.redirectURL
     var ssoRedirect = WebAuth.redirectURL
+    var externalAuthRedirect = WebAuth.redirectURL
     var magicLinkRedirect = ""
 
     var payload: String {
@@ -501,7 +505,7 @@ window.descopeBridge = {
         platformVersion: \(SystemInfo.osVersion.javaScriptLiteralString()),
         appName: \(SystemInfo.appName?.javaScriptLiteralString() ?? "''"),
         appVersion: \(SystemInfo.appVersion?.javaScriptLiteralString() ?? "''"), 
-        device: \(SystemInfo.device?.javaScriptLiteralString() ?? "''"),
+        device: \(SystemInfo.device.javaScriptLiteralString()),
         webauthn: true,
     },
 
