@@ -307,25 +307,40 @@ public class DescopeFlowCoordinator {
     }
 
     // Authentication
-
-    private func handleAuthentication(_ data: Data) {
-        logger.info("Finishing flow authentication")
-        Task {
-            guard let authResponse = await parseAuthentication(data) else { return }
-            handleSuccess(authResponse)
+    
+    private func handleData(_ data: Data?) async {
+        let jwtResponse = await parseJWTResponse(data)
+        if let jwtResponse {
+            do {
+                let authResponse = try jwtResponse.convert()
+                logger.debug("Finishing flow with an authentication response", data)
+                return handleSuccess(authResponse)
+            } catch {
+                logger.debug("Finishing flow with a partial authentication response")
+            }
         }
+
+        if let session = flow?.providedSession {
+            if jwtResponse == nil {
+                logger.info("Finishing flow authentication without an authentication response")
+            }
+            return handleSuccess(AuthenticationResponse(sessionToken: session.sessionToken, refreshToken: session.refreshToken, user: session.user, isFirstAuthentication: false, flowOutput: jwtResponse?.flowOutput ?? [:]))
+        }
+        
+        logger.error("Couldn't find session to finish flow", flow?.sessionProvider == nil ? "nil provider" : "custom provider")
+        handleError(DescopeError.flowFailed.with(message: "No valid authentication tokens found"))
     }
 
-    private func parseAuthentication(_ data: Data) async -> AuthenticationResponse? {
+    private func parseJWTResponse(_ data: Data?) async -> DescopeClient.JWTResponse? {
+        guard let data, let webView else { return nil }
         do {
-            guard let webView else { return nil }
             var jwtResponse = try JSONDecoder().decode(DescopeClient.JWTResponse.self, from: data)
             let cookies = await webView.configuration.websiteDataStore.httpCookieStore.cookies(for: jwtResponse.cookieDomain, at: webView.url)
             try jwtResponse.setValues(from: data, cookies: cookies, refreshCookieName: bridge.attributes.refreshCookieName)
-            return try jwtResponse.convert()
+            return jwtResponse
         } catch {
+            // should never happen because all JWTResponse fields are optional
             logger.error("Unexpected error parsing authentication response", error, String(bytes: data, encoding: .utf8))
-            handleError(DescopeError.flowFailed.with(message: "No valid authentication response found"))
             return nil
         }
     }
@@ -401,13 +416,8 @@ extension DescopeFlowCoordinator: FlowBridgeDelegate {
     }
 
     func bridgeDidFinish(_ bridge: FlowBridge, data: Data?) {
-        if let data {
-            handleAuthentication(data)
-        } else if let session = flow?.providedSession {
-            handleSuccess(AuthenticationResponse(sessionToken: session.sessionToken, refreshToken: session.refreshToken, user: session.user, isFirstAuthentication: false))
-        } else {
-            logger.error("Couldn't find session to finish flow", flow?.sessionProvider == nil ? "nil provider" : "custom provider")
-            handleError(DescopeError.flowFailed.with(message: "No valid authentication tokens found"))
+        Task { @MainActor in
+            await handleData(data)
         }
     }
 }

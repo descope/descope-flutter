@@ -227,9 +227,10 @@ extension AuthenticationResponse: Codable {
     enum CodingKeys: String, CodingKey {
         case sessionToken = "sessionJwt"
         case refreshToken = "refreshJwt"
+        case externalToken
         case user
         case isFirstAuthentication
-        case externalToken
+        case flowOutput
     }
 
     public init(from decoder: Decoder) throws {
@@ -239,6 +240,11 @@ extension AuthenticationResponse: Codable {
         user = try values.decode(DescopeUser.self, forKey: .user)
         isFirstAuthentication = try values.decode(Bool.self, forKey: .isFirstAuthentication)
         externalToken = try values.decodeIfPresent(String.self, forKey: .externalToken)
+        if let value = try values.decodeIfPresent(String.self, forKey: .flowOutput) {
+            flowOutput = (try? JSONSerialization.jsonObject(with: Data(value.utf8))) as? [String: Any] ?? [:]
+        } else {
+            flowOutput = [:]
+        }
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -248,6 +254,11 @@ extension AuthenticationResponse: Codable {
         try values.encode(user, forKey: .user)
         try values.encode(isFirstAuthentication, forKey: .isFirstAuthentication)
         try values.encodeIfPresent(externalToken, forKey: .externalToken)
+        if !flowOutput.isEmpty, JSONSerialization.isValidJSONObject(flowOutput) {
+            let data = try JSONSerialization.data(withJSONObject: flowOutput)
+            let value = String(bytes: data, encoding: .utf8)
+            try values.encodeIfPresent(value, forKey: .flowOutput)
+        }
     }
 }
 

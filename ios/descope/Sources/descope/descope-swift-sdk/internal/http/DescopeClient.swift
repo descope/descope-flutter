@@ -443,11 +443,18 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
         var sessionJwt: String?
         var refreshJwt: String?
         var user: UserResponse?
-        var firstSeen: Bool
+        var firstSeen: Bool?
         var cookieDomain: String?
         var cookieName: String?
         var sessionCookieName: String?
         var externalToken: String?
+        var flowOutput: [String: Any]?
+
+        // we enumerate the properties explicitly to skip over flowOutput, whose
+        // arbitrary JSON object is populated separately in setValues below
+        enum CodingKeys: String, CodingKey {
+            case sessionJwt, refreshJwt, user, firstSeen, cookieDomain, cookieName, sessionCookieName, externalToken
+        }
 
         mutating func setValues(from data: Data, response: HTTPURLResponse) throws {
             guard let url = response.url, let fields = response.allHeaderFields as? [String: String] else { return }
@@ -462,6 +469,9 @@ final class DescopeClient: HTTPClient, @unchecked Sendable {
             let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] ?? [:]
             if let dict = json["user"] as? [String: Any] {
                 user?.setCustomAttributes(from: dict)
+            }
+            if let output = json["flowOutput"] as? [String: Any], !output.isEmpty {
+                flowOutput = output
             }
             if sessionJwt == nil || sessionJwt == "" {
                 let name = (sessionCookieName == "" ? nil : sessionCookieName) ?? DescopeClient.sessionCookieName
