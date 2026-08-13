@@ -391,6 +391,19 @@ class _NativeFlowScreenState extends State<NativeFlowScreen> {
 }
 ```
 
+### Flow Output
+
+Flows can return custom data by setting a flow output in the Descope console. When present,
+it's available on the `flowOutput` field of the `AuthenticationResponse` the flow finishes with.
+The map is empty for authentications that don't originate from a flow.
+
+```dart
+onSuccess: (AuthenticationResponse res) {
+  final orgId = res.flowOutput['organizationId'] as String?;
+  // ...
+},
+```
+
 ## Authentication Methods
 
 We can authenticate users by using any combination of the authentication methods

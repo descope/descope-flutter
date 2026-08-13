@@ -20,7 +20,12 @@ class AuthenticationResponse {
   /// A value for an external token if the authentication returns it.
   final String? externalToken;
 
-  AuthenticationResponse(this.sessionToken, this.refreshToken, this.isFirstAuthentication, this.user, this.externalToken);
+  /// Custom data returned from a flow's output, when running a flow that sets it.
+  ///
+  /// This is always empty for non-flow authentications.
+  final Map<String, dynamic> flowOutput;
+
+  AuthenticationResponse(this.sessionToken, this.refreshToken, this.isFirstAuthentication, this.user, this.externalToken, this.flowOutput);
 }
 
 /// Returned from the refreshSession call.

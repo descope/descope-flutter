@@ -151,6 +151,7 @@ private fun AuthenticationResponse.toMap(): Map<String, Any> = mutableMapOf<Stri
     "firstSeen" to isFirstAuthentication
 ).apply {
     externalToken?.let { put("externalToken", it) }
+    if (flowOutput.isNotEmpty()) put("flowOutput", flowOutput)
 }
 
 private fun DescopeUser.toMap() = mutableMapOf<String, Any>().apply {

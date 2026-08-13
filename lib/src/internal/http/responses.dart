@@ -15,8 +15,9 @@ class JWTServerResponse {
   UserResponse? user;
   bool firstSeen;
   String? externalToken;
+  Map<String, dynamic>? flowOutput;
 
-  JWTServerResponse(this.sessionJwt, this.refreshJwt, this.user, this.firstSeen, this.externalToken);
+  JWTServerResponse(this.sessionJwt, this.refreshJwt, this.user, this.firstSeen, this.externalToken, this.flowOutput);
   static var fromJson = _$JWTServerResponseFromJson;
   static var decoder = _parseHeaders(fromJson, (response, headers) {
     final cookies = _cookiesFromHeaders(headers);
@@ -52,6 +53,7 @@ class UserResponse {
   String status;
   List<String> roleNames;
   List<String> ssoAppIds;
+  @JsonKey(name: 'OAuth')
   Map<String, bool>? oauth;
 
   UserResponse(this.userId, this.loginIds, this.name, this.picture, this.email, this.verifiedEmail, this.phone, this.verifiedPhone, this.createdTime, this.customAttributes, this.givenName, this.middleName, this.familyName, this.password, this.status, this.roleNames, this.ssoAppIds, this.oauth);
