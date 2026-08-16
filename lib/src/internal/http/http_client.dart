@@ -156,7 +156,7 @@ class _DefaultNetworkClient extends DescopeNetworkClient {
   Future<http.Response> sendRequest(http.Request request) async {
     final stream = await _client.send(request);
     try {
-      return http.Response.fromStream(stream);
+      return await http.Response.fromStream(stream);
     } catch (e) {
       throw InternalErrors.httpError.add(desc: invalidResponse);
     }

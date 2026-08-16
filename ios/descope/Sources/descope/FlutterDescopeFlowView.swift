@@ -164,6 +164,13 @@ class DescopeFlowViewWrapper: DescopeFlowView, DescopeFlowViewDelegate {
             user["customAttributes"] = [:]
         }
 
+        // flow output is serialized as a JSON string, and is omitted when empty
+        if let value = dict["flowOutput"] as? String, let json = try? JSONSerialization.jsonObject(with: Data(value.utf8)) {
+            dict["flowOutput"] = json as? [String: Any] ?? [:]
+        } else {
+            dict.removeValue(forKey: "flowOutput")
+        }
+
         dict["user"] = user
         self.channel?.invokeMethod("onSuccess", arguments: dict)
     }

@@ -225,6 +225,7 @@ class _DescopeFlowViewState extends State<DescopeFlowView> implements DescopeSes
                   authenticationResponse.isFirstAuthentication,
                   activeUser,
                   authenticationResponse.externalToken,
+                  authenticationResponse.flowOutput,
                 );
               }
             }

@@ -5,12 +5,13 @@ import UIKit
 #endif
 
 /// Returned from user authentication calls.
-public struct AuthenticationResponse: Sendable {
+public struct AuthenticationResponse: @unchecked Sendable {
     public var sessionToken: DescopeToken
     public var refreshToken: DescopeToken
+    public var externalToken: String?
     public var user: DescopeUser
     public var isFirstAuthentication: Bool
-    public var externalToken: String?
+    public var flowOutput: [String: Any]
 }
 
 /// Returned from the ``DescopeAuth/refreshSession(refreshJwt:)`` call.
