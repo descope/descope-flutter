@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.11.0](https://github.com/descope/descope-flutter/compare/v0.10.1...v0.11.0) (2026-08-16)
+
+
+### Features
+
+* Add `clientInputs` to allow passing parameters into a flow ([#211](https://github.com/descope/descope-flutter/issues/211)) ([f3f8779](https://github.com/descope/descope-flutter/commit/f3f87790cb54c6e63d913f9bf22b277093b3b467))
+* add Swift Package Manager support for iOS and macOS ([#224](https://github.com/descope/descope-flutter/issues/224)) ([54ee59b](https://github.com/descope/descope-flutter/commit/54ee59b44b6ffe110b00c42b087149fce2a0fbf4))
+* bump native SDKs and surface externalToken from flows ([#225](https://github.com/descope/descope-flutter/issues/225)) ([006567e](https://github.com/descope/descope-flutter/commit/006567ea2680a896e25c10c6c4a6b90dbd382730))
+* support authenticated flows in DescopeFlowView ([#215](https://github.com/descope/descope-flutter/issues/215)) ([320860f](https://github.com/descope/descope-flutter/commit/320860fa465f695afabbf60209eda54dfed489b1))
+* surface flowOutput from flows ([#229](https://github.com/descope/descope-flutter/issues/229)) ([d77d482](https://github.com/descope/descope-flutter/commit/d77d482213b44e93b42f0b0f63b9c40a3c757084))
+
 ## [0.10.1](https://github.com/descope/descope-flutter/compare/v0.10.0...v0.10.1) (2026-04-06)
 
 
