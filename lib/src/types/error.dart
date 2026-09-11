@@ -43,6 +43,19 @@ class DescopeException implements Exception {
   static const flowCancelled = DescopeException._sdkError(code: 'F100002', desc: 'Flow cancelled');
   static const flowSetup = DescopeException._sdkError(code: 'F100003', desc: 'Flow setup error');
 
+  /// Thrown when a flow task fails inside a scriptlet with automatic error handling.
+  ///
+  /// The flow's web component swallows this kind of failure itself (showing an inline error banner
+  /// on the current step) instead of ending the flow, so this error is only surfaced as a best-effort
+  /// signal derived from the flow's console output. The [message] carries the original thrown text,
+  /// so apps that need to detect a specific failure can pattern-match their own marker inside it.
+  ///
+  /// This error is only ever received as a passthrough from the native iOS/Android SDKs, which each
+  /// use their own platform-specific [code] for it, so — like the other flow errors above — this
+  /// constant's [code] won't match what's actually delivered to [DescopeFlowCallbacks.onError] and
+  /// can't be used for equality checks. Match on [message] content instead.
+  static const flowScriptletFailed = DescopeException._sdkError(code: 'F100004', desc: 'Flow scriptlet failed');
+
   static const passkeyFailed = DescopeException._sdkError(code: 'F110001', desc: 'Passkey authentication failed');
   static const passkeyCancelled = DescopeException._sdkError(code: 'F110002', desc: 'Passkey authentication cancelled');
 

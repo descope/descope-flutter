@@ -18,6 +18,10 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        // Interim source: descope-kotlin fork's onError fix, until descope/descope-kotlin#362
+        // merges & releases officially — see the dependency below and
+        // docs/task_spec_sso_onerror_sdk_patch.md in moma_2.
+        maven { url 'https://jitpack.io' }
     }
 }
 
@@ -51,7 +55,11 @@ android {
         implementation "androidx.browser:browser:1.8.0"
         implementation "androidx.security:security-crypto:1.1.0"
         implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
-        implementation "com.descope:descope-kotlin:0.20.0"
+        // Interim fork (fix/flow-scriptlet-onerror @ script972/descope-kotlin), built via JitPack,
+        // pending upstream PR descope/descope-kotlin#362. Revert to the official coordinate above
+        // once that merges & releases. Coordinate matches what the module's own Maven publication
+        // declares (groupId/artifactId), not the JitPack default of com.github.<user>.<repo>:<module>.
+        implementation "com.github.script972:descope-kotlin:b4d5eb6f6635025db54fec2b1197fa7d1183a457"
     }
 
     testOptions {
