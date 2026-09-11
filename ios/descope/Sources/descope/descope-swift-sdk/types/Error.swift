@@ -100,6 +100,14 @@ extension DescopeError {
 
     public static let flowFailed = DescopeError.sdkError("S100001", "Flow failed to run")
     public static let flowCancelled = DescopeError.sdkError("S100002", "Flow cancelled")
+
+    /// Thrown when a flow task fails inside a scriptlet with automatic error handling.
+    ///
+    /// The flow's web component swallows this kind of failure itself (showing an inline error banner
+    /// on the current step) instead of ending the flow, so this error is only surfaced as a best-effort
+    /// signal derived from the flow's console output. The ``message`` carries the original thrown text,
+    /// so apps that need to detect a specific failure can pattern-match their own marker inside it.
+    public static let flowScriptletFailed = DescopeError.sdkError("S100003", "Flow scriptlet failed")
     
     public static let passkeyFailed = DescopeError.sdkError("S110001", "Passkey authentication failed")
     public static let passkeyCancelled = DescopeError.sdkError("S110002", "Passkey authentication cancelled")

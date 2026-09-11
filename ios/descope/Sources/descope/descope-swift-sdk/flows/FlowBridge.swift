@@ -185,6 +185,12 @@ extension FlowBridge {
             guard let json = message.body as? [String: Any], let tag = json["tag"] as? String, let message = json["message"] as? String else { return }
             if tag == "fail" {
                 logger.error("Bridge encountered script error in webpage", message)
+            } else if tag == "error", let scriptletMessage = FlowBridge.scriptletFailureMessage(from: message) {
+                // The web component handles some task failures (errorHandlingType: Automatic) itself,
+                // showing an inline error banner instead of dispatching an 'error'/'failure' event, so
+                // this is the only point where such a failure can be detected and surfaced to the app.
+                logger.error("Bridge detected an automatically-handled scriptlet failure", message)
+                delegate?.bridgeDidFailAuthentication(self, error: DescopeError.flowScriptletFailed.with(message: scriptletMessage))
             } else if logger.isUnsafeEnabled && !message.contains("Fetched theme") {
                 let logMessage = "Webview console.\(tag): \(message)"
                 switch tag {
@@ -245,6 +251,26 @@ extension FlowBridge {
         case nil:
             logger.error("Bridge received unexpected message", message.name)
         }
+    }
+
+    /// Detects whether a `console.error` message logged by the web component is its generic report
+    /// of a task that failed inside a scriptlet with `errorHandlingType: Automatic`, and if so, returns
+    /// the original thrown text.
+    ///
+    /// The web component doesn't dispatch an `'error'` event for this case (see `bridgeDidFailAuthentication`
+    /// callers above for the events that do), it only logs a message in a well-known but otherwise
+    /// undocumented shape, e.g.:
+    ///
+    ///     [Descope] [E181001]: Failed to execute script Unexpected error occurred - Error: <message> at <line>:<col> {}
+    ///
+    /// This matches on that shape rather than on any specific error text, so it isn't tied to what a
+    /// particular scriptlet happens to throw.
+    static func scriptletFailureMessage(from message: String) -> String? {
+        guard message.hasPrefix("[Descope] ["), message.contains("]: Failed to execute script") else { return nil }
+        guard let errorRange = message.range(of: "Error: ") else { return message }
+        let remainder = message[errorRange.upperBound...]
+        guard let atRange = remainder.range(of: " at ", options: .backwards) else { return String(remainder) }
+        return String(remainder[..<atRange.lowerBound])
     }
 }
 

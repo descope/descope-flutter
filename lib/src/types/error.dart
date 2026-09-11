@@ -43,6 +43,18 @@ class DescopeException implements Exception {
   static const flowCancelled = DescopeException._sdkError(code: 'F100002', desc: 'Flow cancelled');
   static const flowSetup = DescopeException._sdkError(code: 'F100003', desc: 'Flow setup error');
 
+  /// Thrown when a flow task fails inside a scriptlet with automatic error handling.
+  ///
+  /// The flow's web component swallows this kind of failure itself (showing an inline error banner
+  /// on the current step) instead of ending the flow, so this error is only surfaced as a best-effort
+  /// signal derived from the flow's console output. The [message] carries the original thrown text,
+  /// so apps that need to detect a specific failure can pattern-match their own marker inside it.
+  ///
+  /// Unlike the other flow errors above, this is delivered to [DescopeFlowCallbacks.onError] with the
+  /// same [code] the native iOS/Android SDKs use for it (rather than a Flutter-specific code), since
+  /// it's only ever received as a passthrough from the native side and never thrown directly by Dart code.
+  static const flowScriptletFailed = DescopeException._sdkError(code: 'S100003', desc: 'Flow scriptlet failed');
+
   static const passkeyFailed = DescopeException._sdkError(code: 'F110001', desc: 'Passkey authentication failed');
   static const passkeyCancelled = DescopeException._sdkError(code: 'F110002', desc: 'Passkey authentication cancelled');
 
