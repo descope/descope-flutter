@@ -57,8 +57,9 @@ android {
         implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
         // Interim fork (fix/flow-scriptlet-onerror @ script972/descope-kotlin), built via JitPack,
         // pending upstream PR descope/descope-kotlin#362. Revert to the official coordinate above
-        // once that merges & releases.
-        implementation "com.github.script972.descope-kotlin:descopesdk:042ed3540244795ed1b45fa5a1a1a0e85e5e549c"
+        // once that merges & releases. Coordinate matches what the module's own Maven publication
+        // declares (groupId/artifactId), not the JitPack default of com.github.<user>.<repo>:<module>.
+        implementation "com.github.script972:descope-kotlin:b4d5eb6f6635025db54fec2b1197fa7d1183a457"
     }
 
     testOptions {
