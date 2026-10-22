@@ -131,6 +131,9 @@ class DescopeFlowViewWrapper: DescopeFlowView, DescopeFlowViewDelegate {
         if let message = error.message {
             errorInfo["message"] = message
         }
+        if let traceId = error.traceId {
+            errorInfo["traceId"] = traceId
+        }
         self.channel?.invokeMethod("onError", arguments: errorInfo)
     }
 

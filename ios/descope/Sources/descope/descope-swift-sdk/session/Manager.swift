@@ -76,41 +76,66 @@ public protocol DescopeSessionManagerDelegate: AnyObject {
 /// it becomes redundant after the user is signed out. See the documentation for
 /// the ``DescopeAuth/revokeSessions(_:refreshJwt:)`` function for more details.
 ///
-/// You can customize how the ``DescopeSessionManager`` behaves by using your own
-/// `storage` and `lifecycle` objects. See the documentation for the ``init(storage:lifecycle:)``
+/// The session manager periodically checks if the session needs to be refreshed
+/// (every 30 seconds by default), and refreshes it if it's about to expire (within
+/// 60 seconds by default) or if it's already expired.
+///
+/// You can customize how the ``DescopeSessionManager`` stores the session by using
+/// your own `storage` object. See the documentation for the ``init(storage:auth:config:)``
 /// initializer below for more details.
 @MainActor
 public class DescopeSessionManager {
     /// The object that handles session storage for this manager.
     private let storage: DescopeSessionStorage
-    
-    /// The object that handles session lifecycle for this manager.
-    private let lifecycle: DescopeSessionLifecycle
+
+    /// The object used to refresh the session.
+    private let auth: DescopeAuth
+
+    /// The logger used by this manager.
+    private let logger: DescopeLogger?
 
     /// The ``DescopeSession`` managed by this object.
-    public var session: DescopeSession? {
-        return lifecycle.session
+    public private(set) var session: DescopeSession? {
+        didSet {
+            if session?.refreshJwt != oldValue?.refreshJwt {
+                resetTimer()
+            }
+            if let session, session.refreshToken.isExpired {
+                logger.debug("Session has an expired refresh token", session.refreshToken.expiresAt)
+            }
+        }
+    }
+
+    /// How long before the session JWT expires the session is considered to need a refresh.
+    public var refreshTriggerInterval: TimeInterval = 60 /* seconds */
+
+    /// How often the session manager checks if the session needs to be refreshed, or 0 to disable.
+    public var periodicCheckFrequency: TimeInterval = 30 /* seconds */ {
+        didSet {
+            if periodicCheckFrequency != oldValue {
+                resetTimer()
+            }
+        }
     }
 
     /// Creates a new ``DescopeSessionManager`` object.
     ///
     /// This initializer can be used to create a ``DescopeSessionManager`` instance
-    /// with behaviors that are different from the defaults. You can either extend
-    /// or customize the ``SessionStorage`` and ``SessionLifecycle`` concrete classes,
-    /// or supply your own implementation of the respective protocols.
+    /// with a custom storage.
     ///
     /// - Parameters:
     ///   - storage: An instance of the ``SessionStorage`` class or some other custom
     ///     implementation of the ``DescopeSessionStorage`` protocol.
-    ///   - lifecycle: An instance of the ``SessionLifecycle`` class or some other custom
-    ///     implementation of the ``DescopeSessionLifecycle`` protocol.
-    public init(storage: DescopeSessionStorage, lifecycle: DescopeSessionLifecycle) {
+    ///   - auth: The ``DescopeAuth`` object used to refresh the session.
+    ///   - config: The ``DescopeConfig`` object used to configure the session manager.
+    public init(storage: DescopeSessionStorage, auth: DescopeAuth, config: DescopeConfig) {
         self.storage = storage
-        self.lifecycle = lifecycle
-        self.lifecycle.session = storage.loadSession()
-        self.lifecycle.onPeriodicRefresh = { [weak self] in self?.didUpdateTokens() }
+        self.auth = auth
+        self.logger = config.logger
+        self.session = storage.loadSession()
+        resetTimer()
     }
-    
+
     /// Set an active ``DescopeSession`` in this manager.
     ///
     /// You should call this function after a user finishes logging in to the
@@ -126,9 +151,9 @@ public class DescopeSessionManager {
     ///     unless they use custom `storage` objects they might overwrite
     ///     each other's saved sessions.
     public func manageSession(_ session: DescopeSession) {
-        let current = lifecycle.session
+        let current = self.session
 
-        lifecycle.session = session
+        self.session = session
         storage.saveSession(session)
 
         if let current, current.sessionJwt != session.sessionJwt || current.refreshJwt != session.refreshJwt {
@@ -152,7 +177,7 @@ public class DescopeSessionManager {
     ///     unless they use custom `storage` objects they might clear each
     ///     other's saved sessions.
     public func clearSession() {
-        lifecycle.session = nil
+        session = nil
         storage.removeSession()
     }
 
@@ -162,12 +187,23 @@ public class DescopeSessionManager {
     /// its session JWT expires within the next 60 seconds. If that's the case then
     /// the session is refreshed and saved to the keychain before returning.
     ///
-    /// - Note: When using a custom ``DescopeSessionManager`` object the exact behavior
-    ///     here depends on the `storage` and `lifecycle` objects.
+    /// Concurrent calls share a single refresh, and all of them return or throw
+    /// with its result once it completes.
+    ///
+    /// - Note: When using a custom `storage` object the exact behavior of saving
+    ///     the refreshed session depends on its implementation.
     public func refreshSessionIfNeeded() async throws(DescopeError) {
-        let refreshed = try await lifecycle.refreshSessionIfNeeded()
-        if refreshed {
-            didUpdateTokens()
+        guard let current = session, shouldRefresh(current) else { return }
+
+        // join the refresh already in flight for this session or start a new one
+        let refresh = refreshes[current.sessionJwt] ?? startRefresh(current)
+
+        do {
+            try await refresh.value.get()
+        } catch {
+            // the failure doesn't matter anymore if the session was replaced in the meantime
+            guard session?.sessionJwt == current.sessionJwt else { return }
+            throw error
         }
     }
 
@@ -202,7 +238,7 @@ public class DescopeSessionManager {
     ///     object then the exact behavior depends on the specific implementation of the
     ///     ``DescopeSessionStorage`` protocol.
     public func updateTokens(with refreshResponse: RefreshResponse) {
-        lifecycle.session?.updateTokens(with: refreshResponse)
+        session?.updateTokens(with: refreshResponse)
         didUpdateTokens()
     }
 
@@ -220,7 +256,7 @@ public class DescopeSessionManager {
     /// By default, the manager saves the updated session to the keychain before returning,
     /// but this can be overridden with a custom ``DescopeSessionStorage`` object.
     public func updateUser(with user: DescopeUser) {
-        lifecycle.session?.updateUser(with: user)
+        session?.updateUser(with: user)
         didUpdateUser()
     }
 
@@ -238,5 +274,88 @@ public class DescopeSessionManager {
         guard let session else { return }
         storage.saveSession(session)
         delegates.forEach { $0.sessionManagerDidUpdateUser(self, session: session) }
+    }
+
+    // Refresh
+
+    private typealias RefreshTask = Task<Result<Void, DescopeError>, Never>
+
+    private var refreshes: [String: RefreshTask] = [:]
+
+    private func shouldRefresh(_ session: DescopeSession) -> Bool {
+        // don't bother trying to refresh if according to device time the refresh token is already expired
+        guard !session.refreshToken.isExpired else { return false }
+        // only bother refreshing if we're close enough to the session token expiration
+        guard session.sessionToken.expiresAt.timeIntervalSinceNow <= refreshTriggerInterval else { return false }
+        // don't bother trying to refresh if the new session token will just have the same expiration
+        guard session.refreshToken.expiresAt.timeIntervalSince(session.sessionToken.expiresAt) >= 1 else { return false }
+        return true
+    }
+
+    private func startRefresh(_ current: DescopeSession) -> RefreshTask {
+        let refresh = Task { await performRefresh(current) }
+        refreshes[current.sessionJwt] = refresh
+        return refresh
+    }
+
+    private func performRefresh(_ current: DescopeSession) async -> Result<Void, DescopeError> {
+        defer { refreshes[current.sessionJwt] = nil }
+        logger.info("Refreshing session that is about to expire", current.sessionToken.expiresAt.timeIntervalSinceNow)
+        do {
+            let response = try await auth.refreshSession(refreshJwt: current.refreshJwt)
+            if session?.sessionJwt == current.sessionJwt {
+                session?.updateTokens(with: response)
+                didUpdateTokens()
+            } else {
+                logger.info("Skipping refresh because session has changed in the meantime")
+            }
+            return .success(())
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    // Periodic refresh
+
+    private var timer: Timer?
+
+    private func resetTimer() {
+        if periodicCheckFrequency > 0, let refreshToken = session?.refreshToken, !refreshToken.isExpired {
+            startTimer()
+        } else {
+            stopTimer()
+        }
+    }
+
+    private func startTimer() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: periodicCheckFrequency, repeats: true) { [weak self] timer in
+            guard let manager = self else { return timer.invalidate() }
+            Task {
+                await manager.periodicRefresh()
+            }
+        }
+    }
+
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+
+    private func periodicRefresh() async {
+        if let refreshToken = session?.refreshToken, refreshToken.isExpired {
+            logger.debug("Stopping periodic refresh for session with expired refresh token")
+            stopTimer()
+            return
+        }
+
+        do {
+            try await refreshSessionIfNeeded()
+        } catch .networkError {
+            logger.debug("Ignoring network error in periodic refresh")
+        } catch {
+            logger.error("Stopping periodic refresh after failure", error)
+            stopTimer()
+        }
     }
 }

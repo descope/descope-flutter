@@ -141,10 +141,22 @@ extension FlowBridge {
         nativeOptions.oauthProvider = flow.oauthNativeProvider?.name ?? ""
         nativeOptions.magicLinkRedirect = flow.magicLinkRedirect ?? ""
 
+        // take one session snapshot so refreshJwt and sessionJwt can't come from different sessions
+        let session = flow.providedSession
+
         var refreshJwt = ""
-        if let session = flow.providedSession {
+        if let session {
             logger.info("Passing refreshJwt to flow initialization", session.refreshJwt)
             refreshJwt = session.refreshJwt
+        }
+
+        // injected into the page's local storage like the refresh JWT, but only for
+        // web components that opted in via send-session-token. An expired session
+        // token is skipped so the flow never sees stale claims
+        var sessionJwt = ""
+        if let session, !session.sessionToken.isExpired {
+            logger.info("Passing sessionJwt to flow initialization")
+            sessionJwt = session.sessionJwt
         }
         
         var clientInputs = ""
@@ -157,12 +169,17 @@ extension FlowBridge {
             }
         }
         
-        call(function: "initialize", params: nativeOptions.payload, refreshJwt, clientInputs)
+        call(function: "initialize", params: nativeOptions.payload, refreshJwt, sessionJwt, clientInputs)
     }
 
     /// Called by the coordinator when it needs to update the refresh token in the page.
     func updateRefreshJwt(_ refreshJwt: String) {
         call(function: "updateRefreshJwt", params: refreshJwt)
+    }
+
+    /// Called by the coordinator when it needs to update the session token in the page.
+    func updateSessionJwt(_ sessionJwt: String) {
+        call(function: "updateSessionJwt", params: sessionJwt)
     }
 
     /// Called by the coordinator when it's done handling a bridge request
@@ -226,7 +243,7 @@ extension FlowBridge {
             logger.error("Bridge received failure event", message.body)
             if let dict = message.body as? [String: Any], var error = DescopeError(errorResponse: dict) {
                 if error.code == "E102122" { // convert server-side flow aborted error to client-side flow cancelled error
-                    error = DescopeError.flowCancelled.with(message: error.message)
+                    error = DescopeError.flowCancelled.with(message: error.message, traceId: error.traceId)
                 }
                 delegate?.bridgeDidFailAuthentication(self, error: error)
             } else if let reason = message.body as? String, !reason.isEmpty {
@@ -552,12 +569,13 @@ window.descopeBridge = {
             return true
         },
 
-        initialize(nativeOptions, refreshJwt, clientInputs) {
+        initialize(nativeOptions, refreshJwt, sessionJwt, clientInputs) {
             // update webpage sdk headers and print sdk type and version to native log
             this.updateConfigHeaders()
 
             this.component.nativeOptions = JSON.parse(nativeOptions)
             this.updateRefreshJwt(refreshJwt)
+            this.updateSessionJwt(sessionJwt)
             this.updateClientInputs(clientInputs)
             
             if (this.component.flowStatus === 'error') {
@@ -644,6 +662,16 @@ window.descopeBridge = {
                 const storagePrefix = this.component.storagePrefix || ''
                 const storageKey = `${storagePrefix}\(DescopeClient.refreshCookieName)`
                 window.localStorage.setItem(storageKey, refreshJwt)
+            }
+        },
+
+        updateSessionJwt(sessionJwt) {
+            const storagePrefix = this.component.storagePrefix || ''
+            const storageKey = `${storagePrefix}\(DescopeClient.sessionCookieName)`
+            if (sessionJwt && this.component.getAttribute('send-session-token') === 'true') {
+                window.localStorage.setItem(storageKey, sessionJwt)
+            } else {
+                window.localStorage.removeItem(storageKey)
             }
         },
 

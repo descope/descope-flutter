@@ -242,7 +242,8 @@ class _DescopeFlowViewState extends State<DescopeFlowView> implements DescopeSes
             var code = payload['code'] as String;
             var desc = payload['desc'] as String;
             var message = payload['message'] as String?;
-            error = DescopeException(code: code, desc: desc, message: message);
+            var traceId = payload['traceId'] as String?;
+            error = DescopeException(code: code, desc: desc, message: message, traceId: traceId);
           } catch (e) {
             error = DescopeException.flowFailed.add(message: "Unexpected error payload", cause: e);
           }

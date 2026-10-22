@@ -20,5 +20,5 @@ extension InternalErrors on DescopeException {
   /// `sessionJwt` or `refreshJwt` value.
   static const tokenError = DescopeException(code: 'F010005', desc: 'Failed to parse token');
 
-  DescopeException add({String? desc, String? message, dynamic cause}) => DescopeException(code: code, desc: desc ?? this.desc, message: message ?? this.message, cause: cause ?? this.cause);
+  DescopeException add({String? desc, String? message, dynamic cause, String? traceId}) => DescopeException(code: code, desc: desc ?? this.desc, message: message ?? this.message, cause: cause ?? this.cause, traceId: traceId ?? this.traceId);
 }

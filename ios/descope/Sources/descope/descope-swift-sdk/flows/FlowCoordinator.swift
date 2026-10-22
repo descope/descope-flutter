@@ -228,6 +228,7 @@ public class DescopeFlowCoordinator {
     private func updateRefreshJwt() {
         guard let session = flow?.providedSession else { return }
         bridge.updateRefreshJwt(session.refreshJwt)
+        bridge.updateSessionJwt(session.sessionToken.isExpired ? "" : session.sessionJwt)
     }
 
     // Resume
