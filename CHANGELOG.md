@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/descope/descope-flutter/compare/v0.11.0...v0.12.0) (2026-10-22)
+
+
+### Features
+
+* expose CF-Ray as traceId on errors ([#236](https://github.com/descope/descope-flutter/issues/236)) ([b3eab66](https://github.com/descope/descope-flutter/commit/b3eab668d57520f3a4969c8423ede179b7849655))
+
 ## [0.11.0](https://github.com/descope/descope-flutter/compare/v0.10.1...v0.11.0) (2026-08-16)
 
 
