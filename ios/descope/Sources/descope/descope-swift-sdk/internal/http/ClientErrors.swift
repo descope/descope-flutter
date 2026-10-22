@@ -19,7 +19,11 @@ extension DescopeError {
         if let value = dict["errorMessage"] as? String, !value.isEmpty {
             message = value
         }
-        self = DescopeError(code: code, desc: desc, message: message)
+        var traceId: String? = nil
+        if let value = dict["traceId"] as? String, !value.isEmpty {
+            traceId = value
+        }
+        self = DescopeError(code: code, desc: desc, message: message, traceId: traceId)
     }
 }
 

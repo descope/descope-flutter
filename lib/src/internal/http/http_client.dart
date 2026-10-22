@@ -65,7 +65,9 @@ class HttpClient {
       if (e == DescopeException.networkError) {
         logger?.log(level: DescopeLogger.info, message: 'Network called failed with http error', values: [request.url, e]);
       } else {
-        logger?.log(level: DescopeLogger.info, message: 'Network called failed with server error', values: [request.url, e]);
+        final traceId = e is DescopeException ? e.traceId : null;
+        final trace = traceId != null ? ' [CF-Ray: $traceId]' : '';
+        logger?.log(level: DescopeLogger.info, message: 'Network called failed with server error$trace', values: [request.url, e]);
       }
       rethrow;
     }
@@ -96,7 +98,9 @@ class HttpClient {
     if (response.statusCode >= 200 && response.statusCode <= 299) {
       return response.body;
     }
-    throw exceptionFromResponse(response.body) ?? generalServerError(response.statusCode);
+    final traceId = response.headers.entries.where((e) => e.key.toLowerCase() == 'cf-ray').firstOrNull?.value;
+    final exception = exceptionFromResponse(response.body) ?? generalServerError(response.statusCode);
+    throw exception.add(traceId: traceId);
   }
 }
 

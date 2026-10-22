@@ -181,4 +181,5 @@ private fun DescopeException.toMap(): Map<String, Any> = mutableMapOf<String, An
     put("code", code)
     put("desc", desc)
     message?.let { put("message", it) }
+    traceId?.let { put("traceId", it) }
 }

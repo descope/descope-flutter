@@ -72,11 +72,22 @@ class DescopeException implements Exception {
   /// will usually have the object thrown by the internal `http.Request` call.
   final dynamic cause;
 
+  /// An optional trace identifier for a failed network request.
+  ///
+  /// When the Descope server is accessed through its CDN (the default), this holds the
+  /// value of the `CF-Ray` response header of the failed request. You can log this value
+  /// or send it to Descope support to help trace and diagnose server errors.
+  ///
+  /// This is `null` for errors that aren't associated with a server response, such as
+  /// [DescopeException.networkError], or when the response didn't include the header.
+  final String? traceId;
+
   const DescopeException({
     required this.code,
     required this.desc,
     this.message,
     this.cause,
+    this.traceId,
   });
 
   const DescopeException._sdkError({
@@ -103,6 +114,10 @@ class DescopeException implements Exception {
     final message = this.message;
     if (message != null && message.isNotEmpty) {
       str += ', message: $message';
+    }
+    final traceId = this.traceId;
+    if (traceId != null) {
+      str += ', traceId: $traceId';
     }
     return 'DescopeException($str)';
   }
