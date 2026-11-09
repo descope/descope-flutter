@@ -23,6 +23,46 @@ jobs:
       - name: Test
         run: flutter test
 
+  min-version:
+    name: Minimum Flutter Version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Prepare
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: 'stable'
+          flutter-version: '3.22.0'
+      - name: Dependencies
+        run: flutter pub get
+      - name: Analyze
+        run: dart analyze
+
+  test-web:
+    name: Test Web (${{ matrix.compiler }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: dart2js
+            wasm_flag: ''
+          - compiler: dart2wasm
+            wasm_flag: '--wasm'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Prepare
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: 'stable'
+      - name: Dependencies
+        run: flutter pub get
+      - name: Test
+        run: flutter test --platform chrome ${{ matrix.wasm_flag }} test/web_browser_test.dart
+
   build-ios:
     name: Build iOS (${{ matrix.integration }})
     runs-on: macos-latest

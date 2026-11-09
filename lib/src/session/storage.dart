@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '/src/internal/others/stubs/stub_html.dart' if (dart.library.js) 'dart:html' hide Platform;
+import '/src/internal/others/stubs/stub_web.dart' if (dart.library.js_interop) 'package:web/web.dart';
 import '/src/types/user.dart';
 import 'manager.dart';
 import 'session.dart';
@@ -134,25 +134,25 @@ class SessionStorageWebStore implements SessionStorageStore {
 
   @override
   Future<String?> loadItem(String key) async {
-    var value = window.sessionStorage[key];
+    var value = window.sessionStorage.getItem(key);
     if (value != null) return value;
-    value = window.localStorage[key];
+    value = window.localStorage.getItem(key);
     if (value != null) {
-      window.sessionStorage[key] = value;
+      window.sessionStorage.setItem(key, value);
     }
     return value;
   }
 
   @override
   Future<void> removeItem(String key) async {
-    window.sessionStorage.remove(key);
-    window.localStorage.remove(key);
+    window.sessionStorage.removeItem(key);
+    window.localStorage.removeItem(key);
   }
 
   @override
   Future<void> saveItem({required String key, required String data}) async {
-    window.sessionStorage[key] = data;
-    window.localStorage.remove(key);
+    window.sessionStorage.setItem(key, data);
+    window.localStorage.removeItem(key);
   }
 }
 
