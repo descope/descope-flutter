@@ -4,27 +4,35 @@ class JS {
   const JS([this.name]);
 }
 
-class JSBoolean {
+class JSAny {}
+
+class JSFunction extends JSAny {}
+
+class JSBoolean extends JSAny {
   final bool _value;
-  const JSBoolean(this._value);
+  JSBoolean(this._value);
 
   bool get toDart => _value;
 }
 
-class JSString {
+class JSString extends JSAny {
   final String _value;
-  const JSString(this._value);
+  JSString(this._value);
 
   String get toDart => _value;
 }
 
-class JSPromise<T> {
+class JSPromise<T> extends JSAny {
   final T _value;
-  const JSPromise(this._value);
+  JSPromise(this._value);
 
   Future<T> get toDart async => _value;
 }
 
 extension StringToJS on String {
   JSString get toJS => JSString(this);
+}
+
+extension FunctionToJS on Function {
+  JSFunction get toJS => JSFunction();
 }
