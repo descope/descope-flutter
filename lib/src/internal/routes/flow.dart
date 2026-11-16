@@ -10,7 +10,8 @@ import 'package:flutter/services.dart';
 import '/src/internal/http/descope_client.dart';
 import '/src/internal/http/responses.dart';
 import '/src/internal/others/error.dart';
-import '/src/internal/others/stubs/stub_html.dart' if (dart.library.js) 'dart:html' hide Platform;
+import '/src/internal/others/stubs/stub_js_interop.dart' if (dart.library.js_interop) 'dart:js_interop';
+import '/src/internal/others/stubs/stub_web.dart' if (dart.library.js_interop) 'package:web/web.dart';
 import '/src/internal/routes/shared.dart';
 import '/src/sdk/routes.dart';
 import '/src/types/error.dart';
@@ -44,11 +45,6 @@ class Flow extends DescopeFlow {
   static const _eChannel = EventChannel('descope_flutter/events');
   static final _random = Random.secure();
   static final _sha256 = Sha256();
-
-  final _htmlValidator = NodeValidatorBuilder.common()
-    ..allowElement('style')
-    ..allowElement('script', attributes: ['src'])
-    ..allowElement(_webComponentTag, attributes: ['project-id', 'flow-id', 'base-url', 'locale', 'debug']);
 
   final DescopeClient client;
   _FlowRunner? _current;
@@ -141,31 +137,33 @@ class Flow extends DescopeFlow {
     _addFlowScriptToPage();
 
     // create a login container
-    var loginContainer = DivElement();
+    final loginContainer = document.createElement('div');
     loginContainer.className = "hidden-container";
-    Element wc = Element.html('<descope-wc project-id=${client.config.projectId} flow-id=$flowId base-url=${client.baseUrl}/>', validator: _htmlValidator);
-    loginContainer.children.add(wc);
-    // loginContainer.children.add(loadingElement);
-    document.body?.children.add(loginContainer);
+    final wc = document.createElement(_webComponentTag);
+    wc.setAttribute('project-id', client.config.projectId);
+    wc.setAttribute('flow-id', flowId);
+    wc.setAttribute('base-url', client.baseUrl);
+    loginContainer.appendChild(wc);
+    document.body?.appendChild(loginContainer);
+    runner._container = loginContainer;
+    runner._webComponent = wc;
 
     // js event listeners
     runner._readyListener = (Event event) {
       loginContainer.className = "login-container";
-    };
+    }.toJS;
 
     runner._successListener = (Event event) {
-      final eventDetail = (event as CustomEvent).detail as Map<dynamic, dynamic>;
-      final response = JWTServerResponse.fromJson(eventDetail.stringifyKeys());
+      final response = JWTServerResponse.fromJson(_eventDetail(event));
       final completer = _current?._completer;
       _cleanupWebComponent();
       _current = null;
       completer?.complete(response.toAuthenticationResponse());
-    };
+    }.toJS;
 
     runner._errorListener = (Event event) {
-      final eventDetail = (event as CustomEvent).detail as Map<dynamic, dynamic>;
-      _completeWithError(DescopeException.flowFailed.add(message: eventDetail['errorMessage']));
-    };
+      _completeWithError(DescopeException.flowFailed.add(message: _eventDetail(event)['errorMessage']));
+    }.toJS;
 
     wc.addEventListener(_eventReady, runner._readyListener);
     wc.addEventListener(_eventSuccess, runner._successListener);
@@ -173,27 +171,28 @@ class Flow extends DescopeFlow {
   }
 
   void _addFlowStyleToPage(_FlowRunner runner) {
-    var styleTag = '<style class="web-component-style">$_flowContainerClass {';
+    var styleTag = '$_flowContainerClass {';
     final css = runner._options.web?.flowContainerCss ?? _defaultContainerCss;
     css.forEach((key, value) {
       styleTag += '$key: $value;';
     });
-    styleTag += '}.hidden-container{display: none;}</style>';
-    var style = Element.html(styleTag, validator: _htmlValidator);
-    final existingStyle = querySelectorAll('.web-component-style');
-    if (existingStyle.isNotEmpty) {
-      existingStyle.first.remove();
-    }
-    document.head?.children.add(style);
+    styleTag += '}.hidden-container{display: none;}';
+    document.querySelector('.web-component-style')?.remove();
+    final style = document.createElement('style');
+    style.className = 'web-component-style';
+    style.textContent = styleTag;
+    document.head?.appendChild(style);
   }
 
   void _addFlowScriptToPage() {
     // when the script version updates, search and remove any preexisting tags (currently none)
     // added only once
     final webComponentClass = 'web-component-script-${_webComponentVersion.replaceAll('.', '-')}';
-    if (querySelectorAll('.$webComponentClass').isEmpty) {
-        var script = Element.html('<script src="https://cdn.jsdelivr.net/npm/@descope/web-component@$_webComponentVersion/dist/index.js" class="$webComponentClass"></script>', validator: _htmlValidator);
-        document.body?.children.add(script);
+    if (document.querySelector('.$webComponentClass') == null) {
+      final script = document.createElement('script') as HTMLScriptElement;
+      script.src = 'https://cdn.jsdelivr.net/npm/@descope/web-component@$_webComponentVersion/dist/index.js';
+      script.className = webComponentClass;
+      document.body?.appendChild(script);
     }
   }
 
@@ -239,12 +238,11 @@ class Flow extends DescopeFlow {
   void _cleanupWebComponent() {
     if (!kIsWeb) return;
     try {
-      Element e = querySelectorAll(_webComponentTag).first;
-      e.removeEventListener(_eventReady, _current?._readyListener);
-      e.removeEventListener(_eventSuccess, _current?._successListener);
-      e.removeEventListener(_eventError, _current?._successListener);
-      Element container = querySelectorAll(_flowContainerClass).first;
-      container.remove();
+      final e = _current?._webComponent;
+      e?.removeEventListener(_eventReady, _current?._readyListener);
+      e?.removeEventListener(_eventSuccess, _current?._successListener);
+      e?.removeEventListener(_eventError, _current?._errorListener);
+      _current?._container?.remove();
     } catch (ignored) {
       // any cleanup failures are silent
     }
@@ -314,6 +312,8 @@ class _FlowRunner {
   String? _codeVerifier;
 
   // web facilities
+  Element? _container;
+  Element? _webComponent;
   EventListener? _readyListener;
   EventListener? _successListener;
   EventListener? _errorListener;
@@ -321,16 +321,11 @@ class _FlowRunner {
   _FlowRunner(this._options);
 }
 
-extension StringifyKeys on Map<dynamic, dynamic> {
-  Map<String, dynamic> stringifyKeys() {
-    final result = <String, dynamic>{};
-    forEach((key, value) {
-      if (value is Map<dynamic, dynamic>) {
-        result[key] = value.stringifyKeys();
-      } else if (value != null) {
-        result[key.toString()] = value;
-      }
-    });
-    return result;
-  }
+// JSON round trip keeps number and collection types identical when compiled to JS or WASM
+Map<String, dynamic> _eventDetail(Event event) {
+  final json = _jsonStringify((event as CustomEvent).detail).toDart;
+  return jsonDecode(json) as Map<String, dynamic>;
 }
+
+@JS('JSON.stringify')
+external JSString _jsonStringify(JSAny? value);

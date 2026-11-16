@@ -1,4 +1,4 @@
-import 'package:descope/src/internal/others/stubs/stub_html.dart';
+import 'package:descope/src/internal/others/stubs/stub_web.dart';
 import 'package:descope/src/session/storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -15,17 +15,17 @@ void main() {
     });
 
     test('loadItem returns data from sessionStorage', () async {
-      window.sessionStorage['key'] = 'value';
+      window.sessionStorage.setItem('key', 'value');
       expect(await store.loadItem('key'), 'value');
-      expect(window.localStorage, isEmpty);
+      expect(window.localStorage.getItem('key'), isNull);
     });
 
     test('loadItem falls back to localStorage and copies to sessionStorage', () async {
-      window.localStorage['key'] = 'legacy';
+      window.localStorage.setItem('key', 'legacy');
       final result = await store.loadItem('key');
       expect(result, 'legacy');
-      expect(window.sessionStorage['key'], 'legacy'); // copied to sessionStorage on load
-      expect(window.localStorage.containsKey('key'), isTrue); // not cleared until next save
+      expect(window.sessionStorage.getItem('key'), 'legacy'); // copied to sessionStorage on load
+      expect(window.localStorage.getItem('key'), isNotNull); // not cleared until next save
     });
 
     test('loadItem returns null when nothing is stored', () async {
@@ -33,18 +33,18 @@ void main() {
     });
 
     test('saveItem writes to sessionStorage and clears localStorage', () async {
-      window.localStorage['key'] = 'legacy';
+      window.localStorage.setItem('key', 'legacy');
       await store.saveItem(key: 'key', data: 'value');
-      expect(window.sessionStorage['key'], 'value');
-      expect(window.localStorage.containsKey('key'), isFalse); // cleared on save
+      expect(window.sessionStorage.getItem('key'), 'value');
+      expect(window.localStorage.getItem('key'), isNull); // cleared on save
     });
 
     test('removeItem clears both sessionStorage and localStorage', () async {
-      window.sessionStorage['key'] = 'new';
-      window.localStorage['key'] = 'old';
+      window.sessionStorage.setItem('key', 'new');
+      window.localStorage.setItem('key', 'old');
       await store.removeItem('key');
-      expect(window.sessionStorage.containsKey('key'), isFalse);
-      expect(window.localStorage.containsKey('key'), isFalse);
+      expect(window.sessionStorage.getItem('key'), isNull);
+      expect(window.localStorage.getItem('key'), isNull);
     });
   });
 }

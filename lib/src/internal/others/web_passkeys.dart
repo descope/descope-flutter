@@ -1,4 +1,4 @@
-import '/src/internal/others/stubs/stub_html.dart' if (dart.library.js) 'dart:html' hide Platform;
+import '/src/internal/others/stubs/stub_web.dart' if (dart.library.js_interop) 'package:web/web.dart';
 import '/src/internal/others/stubs/stub_js_interop.dart' if (dart.library.js_interop) 'dart:js_interop';
 
 import '/src/types/error.dart';
@@ -15,8 +15,8 @@ class WebPasskeys {
   }
 
   String getOrigin() {
-    final origin = window.origin;
-    if (origin != null) {
+    final origin = window.location.origin;
+    if (origin.isNotEmpty) {
       return origin;
     }
     throw DescopeException.passkeyFailed.add(message:"Unable to get window origin");
@@ -37,9 +37,9 @@ class WebPasskeys {
 }
 
 void _setupJs() async {
-  ScriptElement scriptElement = ScriptElement();
+  final scriptElement = document.createElement('script') as HTMLScriptElement;
   scriptElement.text = _webauthnScript;
-  document.head?.children.add(scriptElement);
+  document.head?.appendChild(scriptElement);
 }
 
 @JS()

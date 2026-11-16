@@ -23,6 +23,10 @@ You can read more on the [Descope Website](https://descope.com).
 
 ## Quickstart
 
+The SDK requires Dart 3.4 and Flutter 3.22 or newer. Flutter web apps
+are supported when compiled to JavaScript, or to WebAssembly with
+Flutter 3.24 or newer.
+
 A Descope `Project ID` is required to initialize the SDK. Find it
 on the [project page](https://app.descope.com/settings/project) in
 the Descope Console.
