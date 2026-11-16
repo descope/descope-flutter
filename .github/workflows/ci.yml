@@ -23,6 +23,32 @@ jobs:
       - name: Test
         run: flutter test
 
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Prepare
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: 'stable'
+      - name: Generate example platform files
+        working-directory: example
+        run: flutter create --platforms=android --project-name=descope_example .
+      - name: Dependencies
+        working-directory: example
+        run: flutter pub get
+      - name: Build
+        working-directory: example
+        run: |
+          set -o pipefail
+          flutter build apk --debug 2>&1 | tee build.log
+          if grep -q "apply Kotlin Gradle Plugin (KGP): .*descope" build.log; then
+            echo "::error::The descope plugin still applies the Kotlin Gradle Plugin"
+            exit 1
+          fi
+
   build-ios:
     name: Build iOS (${{ matrix.integration }})
     runs-on: macos-latest

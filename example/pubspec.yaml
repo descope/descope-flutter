@@ -1,5 +1,5 @@
 name: descope_example
-description: "Example app used to build the Descope plugin natively (CocoaPods and Swift Package Manager)."
+description: "Example app used to build the Descope plugin natively (Android, CocoaPods and Swift Package Manager)."
 publish_to: 'none'
 
 version: 1.0.0+1
