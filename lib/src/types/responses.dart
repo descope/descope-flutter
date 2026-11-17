@@ -25,7 +25,10 @@ class AuthenticationResponse {
   /// This is always empty for non-flow authentications.
   final Map<String, dynamic> flowOutput;
 
-  AuthenticationResponse(this.sessionToken, this.refreshToken, this.isFirstAuthentication, this.user, this.externalToken, this.flowOutput);
+  /// Whether a passkey from another device or a security key was used.
+  final bool isExternalPasskey;
+
+  AuthenticationResponse(this.sessionToken, this.refreshToken, this.isFirstAuthentication, this.user, this.externalToken, this.flowOutput, [this.isExternalPasskey = false]);
 }
 
 /// Returned from the refreshSession call.
