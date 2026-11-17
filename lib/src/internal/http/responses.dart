@@ -16,8 +16,9 @@ class JWTServerResponse {
   bool firstSeen;
   String? externalToken;
   Map<String, dynamic>? flowOutput;
+  bool? externalPasskey;
 
-  JWTServerResponse(this.sessionJwt, this.refreshJwt, this.user, this.firstSeen, this.externalToken, this.flowOutput);
+  JWTServerResponse(this.sessionJwt, this.refreshJwt, this.user, this.firstSeen, this.externalToken, this.flowOutput, this.externalPasskey);
   static var fromJson = _$JWTServerResponseFromJson;
   static var decoder = _parseHeaders(fromJson, (response, headers) {
     final cookies = _cookiesFromHeaders(headers);
