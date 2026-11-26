@@ -16,6 +16,7 @@ JWTServerResponse _$JWTServerResponseFromJson(Map<String, dynamic> json) =>
       json['firstSeen'] as bool,
       json['externalToken'] as String?,
       json['flowOutput'] as Map<String, dynamic>?,
+      json['externalPasskey'] as bool?,
     );
 
 UserResponse _$UserResponseFromJson(Map<String, dynamic> json) => UserResponse(

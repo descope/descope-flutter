@@ -231,6 +231,7 @@ private struct RegisterFinish: Codable {
     var rawId: String
     var response: Response
     var type: String = "public-key"
+    var authenticatorAttachment: String?
     
     struct Response: Codable {
         var attestationObject: String
@@ -246,7 +247,7 @@ private struct RegisterFinish: Codable {
         let clientDataJSON = registration.rawClientDataJSON.base64URLEncodedString()
         
         let response = Response(attestationObject: attestationObject, clientDataJSON: clientDataJSON)
-        let object = RegisterFinish(id: credentialId, rawId: credentialId, response: response)
+        let object = RegisterFinish(id: credentialId, rawId: credentialId, response: response, authenticatorAttachment: encodeAttachment(registration))
         
         guard let encodedObject = try? JSONEncoder().encode(object), let encoded = String(bytes: encodedObject, encoding: .utf8) else { throw DescopeError.encodeError.with(message: "Invalid register finish object") }
         return encoded
@@ -258,6 +259,7 @@ private struct AssertionFinish: Codable {
     var rawId: String
     var response: Response
     var type: String = "public-key"
+    var authenticatorAttachment: String?
     
     struct Response: Codable {
         var authenticatorData: String
@@ -277,7 +279,7 @@ private struct AssertionFinish: Codable {
         let signature = assertion.signature.base64URLEncodedString()
         
         let response = Response(authenticatorData: authenticatorData, clientDataJSON: clientDataJSON, signature: signature, userHandle: userHandle)
-        let object = AssertionFinish(id: credentialId, rawId: credentialId, response: response)
+        let object = AssertionFinish(id: credentialId, rawId: credentialId, response: response, authenticatorAttachment: encodeAttachment(assertion))
         
         guard let encodedObject = try? JSONEncoder().encode(object), let encoded = String(bytes: encodedObject, encoding: .utf8) else { throw DescopeError.encodeError.with(message: "Invalid assertion finish object") }
         return encoded
@@ -289,5 +291,16 @@ private struct AssertionFinish: Codable {
             return stringValue
         }
         return value.base64URLEncodedString()
+    }
+}
+
+@available(iOS 15.0, *)
+private func encodeAttachment(_ credential: ASAuthorizationCredential) -> String? {
+    guard #available(iOS 16.6, macOS 13.5, *) else { return nil }
+    let attachment = (credential as? ASAuthorizationPlatformPublicKeyCredentialRegistration)?.attachment ?? (credential as? ASAuthorizationPlatformPublicKeyCredentialAssertion)?.attachment
+    switch attachment {
+    case .platform: return "platform"
+    case .crossPlatform: return "cross-platform"
+    default: return nil
     }
 }

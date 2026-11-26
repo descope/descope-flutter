@@ -39,4 +39,14 @@ void main() {
     final response = JWTServerResponse.fromJson(_payload()).toAuthenticationResponse();
     expect(response.flowOutput, isEmpty);
   });
+
+  test('external passkey is parsed when present', () {
+    final response = JWTServerResponse.fromJson({..._payload(), 'externalPasskey': true}).toAuthenticationResponse();
+    expect(response.isExternalPasskey, true);
+  });
+
+  test('external passkey is false when missing', () {
+    final response = JWTServerResponse.fromJson(_payload()).toAuthenticationResponse();
+    expect(response.isExternalPasskey, false);
+  });
 }

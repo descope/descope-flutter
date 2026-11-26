@@ -77,6 +77,7 @@ function descopeEncodeCreateResponse(credential) {
     id: credential.id,
     rawId: descopeEncodeBase64Url(credential.rawId),
     type: credential.type,
+    authenticatorAttachment: credential.authenticatorAttachment ?? undefined,
     response: {
       attestationObject: descopeEncodeBase64Url(credential.response.attestationObject),
       clientDataJSON: descopeEncodeBase64Url(credential.response.clientDataJSON),
@@ -107,6 +108,7 @@ function descopeEncodeGetResponse(credential) {
     id: credential.id,
     rawId: descopeEncodeBase64Url(credential.rawId),
     type: credential.type,
+    authenticatorAttachment: credential.authenticatorAttachment ?? undefined,
     response: {
       authenticatorData: descopeEncodeBase64Url(credential.response.authenticatorData),
       clientDataJSON: descopeEncodeBase64Url(credential.response.clientDataJSON),
